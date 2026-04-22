@@ -1,0 +1,198 @@
+// mockData.ts — Data layer for BoutiqueCoastalLanding
+// ✅ Scalable: add images by appending to the arrays below. No component changes needed.
+
+export const siteConfig = {
+  whatsappUrl:
+    "https://wa.me/+56939063695?text=Hola,%20estoy%20interesado%20en%20el%20departamento%20en%20La%20Serena.%20%C2%BFEst%C3%A1%20disponible?",
+  address: "Avenida del Mar 3500, Edificio Playa Serena",
+  location: "La Serena, Cuatro Esquinas",
+  mapUrl: "https://maps.app.goo.gl/SfjUJLWFQcFtjJzC6",
+  googleMapsEmbedSrc:
+    "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3458.742468307434!2d-71.26871032394334!3d-29.90053937499645!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x9691ca5cd0e6af11%3A0xc66c1b3fbc062b14!2sAv.%20del%20Mar%203500%2C%20La%20Serena%2C%20Coquimbo!5e0!3m2!1ses-419!2scl!4v1700000000000!5m2!1ses-419!2scl",
+};
+
+// ─── HERO ─────────────────────────────────────────────────────────────────────
+export const heroData = {
+  headline: "Despierta Frente al Mar",
+  tagline: "79 m² · Primera línea · 2 dormitorios · Cuatro Esquinas, La Serena",
+  subheadline: "Escríbeme y lo coordinamos — sin intermediarios.",
+  image: "/images/destacadas/05-terraza-nocturna.webp",
+  imageAlt: "Terraza iluminada frente al mar en La Serena",
+  ctaText: "Ver disponibilidad por WhatsApp",
+};
+
+// ─── EXPERIENCE ───────────────────────────────────────────────────────────────
+export const experienceData = {
+  sectionTitle: "La Experiencia",
+  sectionSubtitle:
+    "No es solo un lugar para dormir. Es donde el Pacífico se convierte en el paisaje de tu día.",
+  features: [
+    {
+      icon: "waves",
+      title: "Primera Línea Real",
+      description:
+        "La playa está abajo. El océano está enfrente. No hay edificio entre tú y el mar.",
+    },
+    {
+      icon: "sofa",
+      title: "Comodidad Premium",
+      description:
+        "Ropa de cama de hotel, cocina equipada y espacios diseñados para descansar de verdad.",
+    },
+    {
+      icon: "shield",
+      title: "Seguro y Tranquilo",
+      description:
+        "Conserjería 24/7, estacionamiento privado y acceso controlado en el Edificio Playa Serena.",
+    },
+  ],
+};
+
+// ─── GALLERY ──────────────────────────────────────────────────────────────────
+// ✅ To add more images: append { src, alt } objects to any array below.
+// No component changes needed — carousels render dynamically.
+export const galleryData = {
+  // A. DESTACADAS — Máx. 5 fotos de impacto emocional
+  featured: {
+    title: "Vistas que se quedan contigo",
+    subtitle: "Lo primero que ves al abrir la puerta.",
+    ctaText: "¿Te imaginas aquí? Escríbeme",
+    images: [
+      { src: "/images/destacadas/05-terraza-nocturna.webp", alt: "Terraza iluminada con vista nocturna al mar" },
+      { src: "/images/destacadas/04-piscina nocturna.webp", alt: "Piscina del condominio de noche" },
+      { src: "/images/destacadas/06-terraza-noche.webp", alt: "Terraza privada en la noche" },
+      { src: "/images/destacadas/03-vista-balcon.webp", alt: "Vista al Pacífico desde el balcón" },
+      { src: "/images/destacadas/01-vista-entrada.webp", alt: "Vista panorámica desde la entrada" },
+    ],
+  },
+
+  // B. EL DEPARTAMENTO — Recorrido interior lógico
+  interiors: {
+    title: "El departamento",
+    subtitle: "Cada espacio pensado para que te sientas en casa.",
+    ctaText: "¿Te gusta lo que ves? Consultemos fechas",
+    images: [
+      { src: "/images/el-departamento/03-living-comedor3.webp", alt: "Living comedor con vista" },
+      { src: "/images/el-departamento/04-living-comedor4.webp", alt: "Living comedor amplio" },
+      { src: "/images/el-departamento/06-living-comedor2.webp", alt: "Comedor con iluminación natural" },
+      { src: "/images/el-departamento/07-living-vista-balcon.webp", alt: "Vista al balcón desde el living" },
+      { src: "/images/el-departamento/08-habitacion1.webp", alt: "Dormitorio principal" },
+      { src: "/images/el-departamento/09-habitacion1-2.webp", alt: "Dormitorio principal, otro ángulo" },
+      { src: "/images/el-departamento/12-camas-habitacion2.webp", alt: "Segunda habitación" },
+      { src: "/images/el-departamento/15-vista-balcon.webp", alt: "Balcón con vista al mar" },
+      { src: "/images/el-departamento/18-vista-balcon4.webp", alt: "Amanecer desde el balcón" },
+      { src: "/images/el-departamento/19-vista-balcon5.webp", alt: "Vista amplia del océano desde terraza" },
+      { src: "/images/el-departamento/02-entrada-departamento.webp", alt: "Entrada del departamento" },
+    ],
+  },
+
+  // C. AMENIDADES — Espacios comunes del edificio
+  amenities: {
+    title: "Amenidades del edificio",
+    subtitle: "Más allá del departamento, el condominio te sorprende.",
+    ctaText: "Reserva tu estadía — sin complicaciones",
+    images: [
+      { src: "/images/amenidades/terraza-atardecer.webp", alt: "Terraza del edificio al atardecer" },
+      { src: "/images/amenidades/piscina-dia.webp", alt: "Piscina exterior durante el día" },
+      { src: "/images/amenidades/piscina-noche.webp", alt: "Piscina iluminada de noche" },
+      { src: "/images/amenidades/quincho.webp", alt: "Quincho y área de parrilla" },
+      { src: "/images/amenidades/terraza-dia.webp", alt: "Terraza común del edificio" },
+      { src: "/images/amenidades/terraza-dia2.webp", alt: "Vista desde terraza compartida" },
+      { src: "/images/amenidades/terraza-noche.webp", alt: "Terraza del edificio de noche" },
+      { src: "/images/amenidades/terraza-noche2.webp", alt: "Atardecer desde terraza común" },
+      { src: "/images/amenidades/palmeras-terraza.webp", alt: "Palmeras en la terraza del edificio" },
+      { src: "/images/amenidades/aerea-condominio.webp", alt: "Vista aérea del condominio" },
+      { src: "/images/amenidades/frontis-condominio.webp", alt: "Fachada principal del edificio" },
+    ],
+  },
+};
+
+// ─── SPECIFICATIONS ───────────────────────────────────────────────────────────
+export const specificationsData = {
+  sectionTitle: "Especificaciones",
+  items: [
+    { icon: "area", label: "79 m²", sublabel: "Superficie total" },
+    { icon: "bed", label: "2 Dormitorios", sublabel: "Habitaciones" },
+    { icon: "terrace", label: "Terraza", sublabel: "16.06 m²" },
+    { icon: "car", label: "Estacionamiento", sublabel: "1 privado" },
+  ],
+};
+
+// ─── AVAILABILITY CALENDAR ────────────────────────────────────────────────────
+// ✅ To mark dates as occupied: add "YYYY-MM-DD" strings to blockedDates.
+export const availabilityData = {
+  title: "Disponibilidad",
+  subtitle: "Consulta las fechas que te interesan — te respondo directamente.",
+  ctaText: "¿Te interesan estas fechas? Escríbeme y lo coordinamos",
+  // Format: "YYYY-MM-DD"
+  blockedDates: [
+    // Example (remove/update with real dates):
+    "2025-07-14", "2025-07-15", "2025-07-16", "2025-07-17", "2025-07-18",
+    "2025-07-28", "2025-07-29", "2025-07-30", "2025-07-31",
+    "2025-08-15", "2025-08-16", "2025-08-17",
+  ],
+};
+
+// ─── DISCOVER LA SERENA ───────────────────────────────────────────────────────
+export const discoverData = {
+  sectionTitle: "Descubre La Serena y alrededores",
+  sectionSubtitle: "El departamento es el punto de partida. Lo que hay alrededor, el regalo.",
+  items: [
+    {
+      emoji: "🏖️",
+      title: "Playas de La Serena",
+      description: "Cuatro Esquinas, Totoralillo, La Herradura. Aguas tranquilas y arena blanca a metros.",
+    },
+    {
+      emoji: "🍷",
+      title: "Gastronomía costera",
+      description: "Mariscos frescos, ceviche y restaurantes frente al mar. La Avenida del Mar es el escenario.",
+    },
+    {
+      emoji: "🌵",
+      title: "Valle del Elqui",
+      description: "A 45 minutos en auto. Piscos, viñedos y los cielos más estrellados del mundo.",
+    },
+    {
+      emoji: "🎭",
+      title: "Centro histórico",
+      description: "La Recova, la Plaza de Armas y el mercado artesanal. Arquitectura colonial a 10 minutos.",
+    },
+  ],
+};
+
+// ─── TESTIMONIALS ─────────────────────────────────────────────────────────────
+export const testimonialsData = {
+  sectionTitle: "Lo que dicen quienes estuvieron aquí",
+  ctaText: "Quiero vivir esto — hablar con el anfitrión",
+  items: [
+    {
+      name: "María José V.",
+      avatar: "MJ",
+      source: "Airbnb · Enero 2025",
+      rating: 5,
+      text: "Las fotos no le hacen justicia. Despertar mirando el mar desde la terraza fue lo mejor de nuestras vacaciones. Impecable.",
+    },
+    {
+      name: "Carlos R.",
+      avatar: "CR",
+      source: "Booking · Febrero 2025",
+      rating: 5,
+      text: "Ubicación inmejorable. Excelente WiFi para trabajar y las tardes con el sonido del mar son priceless. Volvemos.",
+    },
+    {
+      name: "Familia Silva",
+      avatar: "FS",
+      source: "Directo · Marzo 2025",
+      rating: 5,
+      text: "Fuimos con nuestro hijo pequeño. Espacios amplios, limpios y modernos. El estacionamiento privado fue un plus enorme.",
+    },
+  ],
+};
+
+// ─── FOOTER CTA ───────────────────────────────────────────────────────────────
+export const footerCtaData = {
+  headline: "¿Lista tu próxima escapada?",
+  subheadline: "Escríbeme directo. Sin formularios, sin esperas.",
+  ctaText: "Consultar disponibilidad",
+};
