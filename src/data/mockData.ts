@@ -68,8 +68,8 @@ export const galleryData = {
 
   // B. EL DEPARTAMENTO — Recorrido interior lógico
   interiors: {
-    title: "El departamento",
-    subtitle: "Cada espacio pensado para que te sientas en casa.",
+    title: "Tu espacio frente al mar",
+    subtitle: "Luz natural, calma y todo listo para que simplemente llegues a disfrutar.",
     ctaText: "¿Te gusta lo que ves? Consultemos fechas",
     images: [
       { src: "/images/el-departamento/03-living-comedor3.webp", alt: "Living comedor con vista" },
@@ -88,8 +88,8 @@ export const galleryData = {
 
   // C. AMENIDADES — Espacios comunes del edificio
   amenities: {
-    title: "Amenidades del edificio",
-    subtitle: "Más allá del departamento, el condominio te sorprende.",
+    title: "Donde empieza tu descanso",
+    subtitle: "Un lugar pensado para bajar el ritmo y sentirte cómodo desde el primer momento.",
     ctaText: "Reserva tu estadía — sin complicaciones",
     images: [
       { src: "/images/amenidades/terraza-atardecer.webp", alt: "Terraza del edificio al atardecer" },
@@ -125,38 +125,42 @@ export const availabilityData = {
   subtitle: "Consulta las fechas que te interesan — te respondo directamente.",
   ctaText: "¿Te interesan estas fechas? Escríbeme y lo coordinamos",
   // Format: "YYYY-MM-DD"
+  // ✅ To mark dates as unavailable: add "YYYY-MM-DD" strings below.
   blockedDates: [
-    // Example (remove/update with real dates):
-    "2025-07-14", "2025-07-15", "2025-07-16", "2025-07-17", "2025-07-18",
-    "2025-07-28", "2025-07-29", "2025-07-30", "2025-07-31",
-    "2025-08-15", "2025-08-16", "2025-08-17",
+    "2026-05-01", "2026-05-02", "2026-05-03", "2026-05-04", "2026-05-05",
+    "2026-05-16", "2026-05-17", "2026-05-18",
+    "2026-06-10", "2026-06-11", "2026-06-12", "2026-06-13", "2026-06-14",
+    "2026-07-01", "2026-07-02", "2026-07-03", "2026-07-04", "2026-07-05",
+    "2026-07-06", "2026-07-07", "2026-07-08",
+    "2026-07-25", "2026-07-26", "2026-07-27",
+    "2026-08-15", "2026-08-16", "2026-08-17",
   ],
 };
 
 // ─── DISCOVER LA SERENA ───────────────────────────────────────────────────────
 export const discoverData = {
-  sectionTitle: "Descubre La Serena y alrededores",
-  sectionSubtitle: "El departamento es el punto de partida. Lo que hay alrededor, el regalo.",
+  sectionTitle: "Lo que vas a vivir aquí",
+  sectionSubtitle: "No es solo el lugar, es todo lo que lo rodea: mar, buena comida y noches que se quedan contigo.",
   items: [
     {
-      emoji: "🏖️",
-      title: "Playas de La Serena",
-      description: "Cuatro Esquinas, Totoralillo, La Herradura. Aguas tranquilas y arena blanca a metros.",
+      emoji: "🌊",
+      title: "Playas a pasos del departamento",
+      description: "Camina a la playa de Cuatro Esquinas al atardecer o recorre hasta Totoralillo para aguas más claras. La vista al mar te acompaña todo el día.",
     },
     {
-      emoji: "🍷",
-      title: "Gastronomía costera",
-      description: "Mariscos frescos, ceviche y restaurantes frente al mar. La Avenida del Mar es el escenario.",
+      emoji: "🍽️",
+      title: "Restaurantes que valen la pena",
+      description: "Desde un ceviche frente al mar en Bakulic hasta una cena tranquila en Tololo Beach. Comer bien acá es parte del viaje.",
     },
     {
-      emoji: "🌵",
-      title: "Valle del Elqui",
-      description: "A 45 minutos en auto. Piscos, viñedos y los cielos más estrellados del mundo.",
+      emoji: "🌌",
+      title: "La magia del Valle del Elqui",
+      description: "A menos de una hora: cielos estrellados, viñas y una energía única. Ideal para una escapada de día o una noche distinta.",
     },
     {
-      emoji: "🎭",
-      title: "Centro histórico",
-      description: "La Recova, la Plaza de Armas y el mercado artesanal. Arquitectura colonial a 10 minutos.",
+      emoji: "🏛️",
+      title: "Paseos con historia",
+      description: "Recorre La Recova, la Plaza de Armas y sus calles coloniales. Un plan perfecto para una mañana tranquila.",
     },
   ],
 };

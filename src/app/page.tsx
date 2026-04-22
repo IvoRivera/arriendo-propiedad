@@ -2,6 +2,7 @@
 // Section order optimized for CRO: Hero → Availability → Experience → Gallery → Discover → Specs → Location+Trust → Footer
 
 import { CoastalHero } from "@/components/coastal/CoastalHero";
+import { CoastalAvailability } from "@/components/coastal/CoastalAvailability";
 import { CoastalExperience } from "@/components/coastal/CoastalExperience";
 import { CoastalGallery } from "@/components/coastal/CoastalGallery";
 import { CoastalDiscover } from "@/components/coastal/CoastalDiscover";
@@ -15,6 +16,9 @@ export default function Home() {
     <main className="min-h-screen bg-[#faf7f2]">
       {/* 1. Hero — emotional first impression */}
       <CoastalHero />
+
+      {/* 2. Availability — date range picker with WhatsApp CTA */}
+      <CoastalAvailability />
 
       <CoastalExperience />
 
