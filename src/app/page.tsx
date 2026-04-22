@@ -2,7 +2,6 @@
 // Section order optimized for CRO: Hero → Availability → Experience → Gallery → Discover → Specs → Location+Trust → Footer
 
 import { CoastalHero } from "@/components/coastal/CoastalHero";
-import { CoastalAvailability } from "@/components/coastal/CoastalAvailability";
 import { CoastalExperience } from "@/components/coastal/CoastalExperience";
 import { CoastalGallery } from "@/components/coastal/CoastalGallery";
 import { CoastalDiscover } from "@/components/coastal/CoastalDiscover";
@@ -17,10 +16,6 @@ export default function Home() {
       {/* 1. Hero — emotional first impression */}
       <CoastalHero />
 
-      {/* 2. Availability — high priority, above fold on scroll */}
-      <CoastalAvailability />
-
-      {/* 3. Experience — value proposition */}
       <CoastalExperience />
 
       {/* 4. Gallery — 3 carousels: Destacadas / Departamento / Amenidades */}
