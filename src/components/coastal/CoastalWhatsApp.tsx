@@ -18,14 +18,14 @@ export const CoastalWhatsApp: React.FC<CoastalWhatsAppProps> = ({ className = ""
       initial={{ scale: 0.9, opacity: 1 }}
       animate={{ scale: 1, opacity: 1 }}
       transition={{ delay: 1, type: "spring", stiffness: 260, damping: 20 }}
-      className={`fixed bottom-6 right-5 z-[9999] ${className}`}
+      className={`fixed bottom-6 right-5 z-[9999] pointer-events-none ${className}`}
     >
       <a
         href={siteConfig.whatsappUrl}
         target="_blank"
         rel="noopener noreferrer"
         aria-label="Contactar por WhatsApp"
-        className="relative flex items-center justify-center w-14 h-14 bg-[#6b7c4a] hover:bg-[#5a6a3d] rounded-full shadow-[0_4px_20px_rgba(107,124,74,0.35)] hover:shadow-[0_4px_28px_rgba(107,124,74,0.5)] transition-all duration-300 hover:scale-110"
+        className="relative flex items-center justify-center w-14 h-14 bg-[#6b7c4a] hover:bg-[#5a6a3d] rounded-full shadow-[0_4px_20px_rgba(107,124,74,0.35)] hover:shadow-[0_4px_28px_rgba(107,124,74,0.5)] transition-all duration-300 hover:scale-110 pointer-events-auto"
       >
         {/* Soft pulse ring */}
         <span className="absolute inset-0 rounded-full bg-[#6b7c4a] opacity-40 animate-ping" />

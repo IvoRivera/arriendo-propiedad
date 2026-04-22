@@ -1,21 +1,10 @@
-// CoastalAvailability.tsx — Two-input date picker (check-in / check-out)
-// Uses react-day-picker v9, single mode, one calendar per input.
-//
-// FIX LOG:
-// - Import react-day-picker's own style.css so disabled/.rdp-* classes work correctly
-// - Override colors via CSS custom properties on .rdp-root, not via classNames hacks
-// - Remove pointer-events-none from disabled td (was blocking iOS touch on entire rows)
-// - Remove overflow-hidden from panel (was blocking iOS touch propagation)
-// - Add touch-action: manipulation to day buttons via CSS
-// - Use position:fixed panel on mobile so it is never clipped by a parent
-
 "use client";
 
-import React, { useState, useRef, useEffect, useId } from "react";
+import React, { useState, useEffect, useId } from "react";
+import { createPortal } from "react-dom";
 import { DayPicker } from "react-day-picker";
 import { es } from "react-day-picker/locale";
-// ✅ Import rdp default stylesheet — REQUIRED for disabled/selected states to work
-import "react-day-picker/src/style.css";
+import "react-day-picker/style.css";
 import { Calendar, MessageCircle, X, ChevronDown } from "lucide-react";
 import { availabilityData } from "@/data/mockData";
 
@@ -24,7 +13,6 @@ import { availabilityData } from "@/data/mockData";
 function parseBlockedDates(dates: string[]): Date[] {
   return dates.map((s) => {
     const [y, m, d] = s.split("-").map(Number);
-    // Use UTC midnight to avoid timezone shifting the date by a day
     return new Date(y, m - 1, d, 0, 0, 0, 0);
   });
 }
@@ -62,7 +50,7 @@ function buildWhatsAppUrl(from: Date, to: Date): string {
   return `https://wa.me/+56939063695?text=${msg}`;
 }
 
-// ─── DateInput — single reusable input + calendar ────────────────────────────
+// ─── DateInput — Usando React Portals ────────────────────────────────────────
 
 interface DateInputProps {
   id: string;
@@ -86,23 +74,16 @@ function DateInput({
   defaultMonth,
 }: DateInputProps) {
   const [open, setOpen] = useState(false);
-  const panelRef = useRef<HTMLDivElement>(null);
-  const btnRef = useRef<HTMLButtonElement>(null);
+  const [mounted, setMounted] = useState(false);
   const panelId = `${id}-panel`;
 
-  // ── Close on outside pointer (mouse + touch) ──────────────────────────────
+  // Asegurar que el portal solo se ejecute en el cliente para evitar errores de hidratación
   useEffect(() => {
-    if (!open) return;
-    function onPointerDown(e: PointerEvent) {
-      const t = e.target as Node;
-      if (panelRef.current?.contains(t) || btnRef.current?.contains(t)) return;
-      setOpen(false);
-    }
-    document.addEventListener("pointerdown", onPointerDown, true);
-    return () => document.removeEventListener("pointerdown", onPointerDown, true);
-  }, [open]);
+    setMounted(true);
+  }, []);
 
-  // ── Close on Escape ───────────────────────────────────────────────────────
+
+  // Cierre con Escape
   useEffect(() => {
     if (!open) return;
     function onKey(e: KeyboardEvent) {
@@ -115,9 +96,7 @@ function DateInput({
   function handleSelect(date: Date | undefined) {
     if (!date) return;
     onSelect(date);
-    // Small delay — lets the day_button tap complete before dismounting,
-    // avoids "double-tap required" on iOS Safari.
-    setTimeout(() => setOpen(false), 120);
+    setTimeout(() => setOpen(false), 200); // Feedback visual breve
   }
 
   function handleClear(e: React.MouseEvent) {
@@ -127,30 +106,34 @@ function DateInput({
 
   return (
     <div className="relative flex-1 min-w-0">
-      {/* ── Input trigger ── */}
-      <button
-        ref={btnRef}
+      {/* ── BOTÓN LIMPIO ── */}
+      <div
         id={id}
-        type="button"
+        role="button"
+        tabIndex={0}
         aria-expanded={open}
         aria-controls={panelId}
-        aria-label={`${label}: ${selected ? formatDisplay(selected) : hint}`}
-        onClick={() => setOpen((v) => !v)}
-        style={{ touchAction: "manipulation" }}
-        className={[
-          "w-full text-left flex flex-col gap-0.5 px-4 py-3.5 rounded-2xl border",
-          "bg-white transition-all duration-200",
-          open
+        onClick={(e) => {
+          e.preventDefault();
+          setOpen(true);
+        }}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            setOpen(true);
+          }
+        }}
+        className={`w-full text-left flex flex-col gap-0.5 px-4 py-3.5 rounded-2xl border transition-all duration-200 bg-white cursor-pointer select-none touch-manipulation ${open
             ? "border-[#6b7c4a] shadow-[0_0_0_3px_rgba(107,124,74,0.12)]"
-            : "border-[#e2d9cc] hover:border-[#b5a99a] shadow-sm hover:shadow-md",
-        ].join(" ")}
+            : "border-[#e2d9cc] hover:border-[#b5a99a] shadow-sm"
+          }`}
       >
-        <span className="text-[10px] uppercase tracking-[0.14em] font-semibold text-[#9a8a78]">
+        <span className="block text-[10px] uppercase tracking-[0.14em] font-semibold text-[#9a8a78]">
           {label}
         </span>
-        <div className="flex items-center justify-between gap-2">
+        <span className="flex items-center justify-between gap-2 mt-0.5">
           <span
-            className={`text-sm font-medium truncate ${selected ? "text-[#2c2416]" : "text-[#b5a99a]"
+            className={`block text-sm font-medium truncate ${selected ? "text-[#2c2416]" : "text-[#b5a99a]"
               }`}
           >
             {selected ? formatDisplay(selected) : hint}
@@ -159,11 +142,8 @@ function DateInput({
             <span
               role="button"
               tabIndex={0}
-              aria-label={`Borrar ${label}`}
-              onPointerDown={(e) => e.stopPropagation()}
               onClick={handleClear}
-              onKeyDown={(e) => e.key === "Enter" && onClear()}
-              className="shrink-0 p-0.5 rounded-full text-[#b5a99a] hover:text-[#2c2416] hover:bg-[#f5f0e8] transition-colors cursor-pointer"
+              className="shrink-0 p-1 -m-1 rounded-full text-[#b5a99a] hover:text-[#2c2416] hover:bg-[#f5f0e8] transition-colors"
             >
               <X className="w-3.5 h-3.5" />
             </span>
@@ -173,74 +153,69 @@ function DateInput({
                 }`}
             />
           )}
-        </div>
-      </button>
+        </span>
+      </div>
 
-      {/* ── Calendar panel ── */}
-      {open && (
-        <div
-          id={panelId}
-          ref={panelRef}
-          role="dialog"
-          aria-modal="false"
-          aria-label={`Calendario para ${label}`}
-          // ✅ NO overflow-hidden — it breaks iOS touch propagation
-          // ✅ z-[9999] so it's above everything including the floating WA button
-          style={{ top: "calc(100% + 8px)", touchAction: "manipulation" }}
-          className="absolute z-[9999] left-1/2 -translate-x-1/2 w-[308px] bg-white border border-[#e2d9cc] rounded-2xl shadow-[0_8px_48px_rgba(44,36,22,0.14)]"
-        >
-          {/* Legend */}
-          <div className="flex items-center justify-center gap-4 pt-3 pb-2 px-3 border-b border-[#f0e8dc]">
-            <span className="flex items-center gap-1 text-[10px] text-[#9a8a78]">
-              <span className="inline-block w-2.5 h-2.5 rounded-full bg-[#6b7c4a]" />
-              Disponible
-            </span>
-            <span className="flex items-center gap-1 text-[10px] text-[#9a8a78]">
-              <span className="inline-block w-2.5 h-2.5 rounded-full bg-[#d4c9b8]" />
-              Ocupado
-            </span>
-          </div>
-
-          {/* ── DayPicker ── */}
-          {/*
-            Styling strategy:
-            - We import the rdp default CSS (handles .rdp-disabled, .rdp-selected, etc.)
-            - We override brand colors via CSS custom properties on .rdp-root
-            - classNames is used ONLY for layout tweaks (padding, font size)
-            - We do NOT use pointer-events-none on disabled cells (breaks iOS)
-          */}
-          <div className="p-3">
-            <DayPicker
-              locale={es}
-              mode="single"
-              selected={selected}
-              onSelect={handleSelect}
-              defaultMonth={defaultMonth ?? selected ?? today()}
-              disabled={disabledDays}
-              showOutsideDays={false}
-              classNames={{
-                root: "rdp-coastal-root",
-                // Only override non-layout classes — table sizing is via CSS vars
-                caption_label: "rdp-caption_label rdp-coastal-caption",
-                button_previous: "rdp-button_previous rdp-coastal-nav-btn",
-                button_next: "rdp-button_next rdp-coastal-nav-btn",
-              }}
-            />
-          </div>
-
-          {/* Footer */}
-          <div className="px-3 pb-3 pt-2 flex justify-end border-t border-[#f0e8dc]">
-            <button
-              type="button"
-              onClick={() => setOpen(false)}
-              style={{ touchAction: "manipulation" }}
-              className="text-xs font-medium text-[#6b7c4a] hover:underline"
+      {/* ── PORTAL INMUNE A LAYOUTS ── */}
+      {open &&
+        mounted &&
+        createPortal(
+          <div
+            className="fixed inset-0 z-[99999] flex items-center justify-center bg-black/60 p-4 transition-opacity cursor-default pointer-events-auto"
+            onClick={(e) => {
+              // Solo cerrar si se hace click directamente en el backdrop (evita Ghost Clicks en iOS)
+              if (e.target === e.currentTarget) setOpen(false);
+            }}
+          >
+            <div
+              id={panelId}
+              role="dialog"
+              aria-modal="true"
+              onClick={(e) => e.stopPropagation()}
+              className="bg-white border border-[#e2d9cc] rounded-2xl shadow-2xl w-full max-w-[320px] max-h-[90vh] overflow-y-auto animate-in fade-in zoom-in-95 duration-200 relative z-[100000] pointer-events-auto"
             >
-              Cerrar
-            </button>
-          </div>
-        </div>
-      )}
+              <div className="flex items-center justify-center gap-4 pt-4 pb-3 px-4 border-b border-[#f0e8dc]">
+                <span className="flex items-center gap-1.5 text-[10px] font-medium text-[#9a8a78]">
+                  <span className="inline-block w-2.5 h-2.5 rounded-full bg-[#6b7c4a]" />
+                  Disponible
+                </span>
+                <span className="flex items-center gap-1.5 text-[10px] font-medium text-[#9a8a78]">
+                  <span className="inline-block w-2.5 h-2.5 rounded-full bg-[#d4c9b8]" />
+                  Ocupado
+                </span>
+              </div>
+
+              <div className="p-4 flex justify-center">
+                <DayPicker
+                  locale={es}
+                  mode="single"
+                  selected={selected}
+                  onSelect={handleSelect}
+                  defaultMonth={defaultMonth ?? selected ?? today()}
+                  disabled={disabledDays}
+                  showOutsideDays={false}
+                  classNames={{
+                    root: "rdp-coastal-root",
+                    caption_label: "rdp-caption_label rdp-coastal-caption",
+                    button_previous: "rdp-button_previous rdp-coastal-nav-btn",
+                    button_next: "rdp-button_next rdp-coastal-nav-btn",
+                  }}
+                />
+              </div>
+
+              <div className="px-4 py-3 flex justify-end border-t border-[#f0e8dc] bg-[#faf7f2] rounded-b-2xl">
+                <button
+                  type="button"
+                  onClick={() => setOpen(false)}
+                  className="text-sm font-semibold text-[#6b7c4a] hover:text-[#5a6a3d] transition-colors py-1 px-3 bg-white border border-[#e2d9cc] rounded-lg shadow-sm"
+                >
+                  Cerrar calendario
+                </button>
+              </div>
+            </div>
+          </div>,
+          document.body
+        )}
     </div>
   );
 }
@@ -290,101 +265,64 @@ export const CoastalAvailability: React.FC<CoastalAvailabilityProps> = ({
 
   return (
     <>
-      {/*
-        ✅ Global CSS overrides for react-day-picker inside our wrapper.
-        These use the ACTUAL rdp class names (.rdp-day_button, .rdp-disabled, etc.)
-        so they work correctly and don't conflict with the default stylesheet.
-        touch-action: manipulation is set on all interactive elements for iOS.
-      */}
       <style>{`
-        /* ── Brand color tokens ── */
         .rdp-coastal-root {
           --rdp-accent-color: #6b7c4a;
           --rdp-accent-background-color: #e8eedf;
           --rdp-today-color: #c8883a;
           --rdp-selected-border: 2px solid #6b7c4a;
           --rdp-disabled-opacity: 0.35;
-          --rdp-outside-opacity: 0;
-          /* Cell sizing — controls the table column widths */
           --rdp-day-width: 40px;
           --rdp-day-height: 40px;
           --rdp-day_button-width: 36px;
           --rdp-day_button-height: 36px;
-          --rdp-nav-height: 36px;
-          --rdp-nav_button-width: 32px;
-          --rdp-nav_button-height: 32px;
         }
-
-        /* ── Caption layout ── */
         .rdp-coastal-root .rdp-coastal-caption {
-          font-size: 0.875rem;
+          font-size: 0.9rem;
           font-weight: 600;
           color: #2c2416;
           text-transform: capitalize;
         }
-
-        /* ── Weekday header — small caps ── */
         .rdp-coastal-root .rdp-weekday {
-          font-size: 10px;
+          font-size: 11px;
           font-weight: 600;
           text-transform: uppercase;
           color: #9a8a78;
-          opacity: 1;
         }
-
-        /* ── Available day hover ── */
-        .rdp-coastal-root .rdp-day_button:not(:disabled):not([aria-disabled="true"]):hover {
-          background-color: #f0ebe0;
+        @media (hover: hover) {
+          .rdp-coastal-root .rdp-day_button:not(:disabled):not([aria-disabled="true"]):hover {
+            background-color: #f0ebe0;
+          }
+          .rdp-coastal-root .rdp-selected .rdp-day_button:hover {
+            background-color: #5a6a3d;
+          }
+          .rdp-coastal-nav-btn:hover {
+            background-color: #f5f0e8;
+          }
         }
-
-        /* ── Selected day ── */
         .rdp-coastal-root .rdp-selected .rdp-day_button {
           background-color: #6b7c4a;
           color: white;
           border-color: #6b7c4a;
         }
-        .rdp-coastal-root .rdp-selected .rdp-day_button:hover {
-          background-color: #5a6a3d;
-        }
-
-        /* ── Blocked / disabled days: strikethrough, faded, still tappable ── */
         .rdp-coastal-root .rdp-disabled {
-          /* Do NOT set pointer-events:none on the td — kills iOS touch rows */
           opacity: var(--rdp-disabled-opacity);
         }
         .rdp-coastal-root .rdp-disabled .rdp-day_button {
           text-decoration: line-through;
           color: #9a8a78;
           cursor: not-allowed;
-          pointer-events: none; /* safe on the button itself, not the td */
         }
-
-        /* ── Nav button hover ── */
-        .rdp-coastal-nav-btn:hover {
-          background-color: #f5f0e8;
-        }
-
-        /* ── iOS touch fixes ── */
+        /* Elimina los overrides agresivos de iOS, la etiqueta button limpia es suficiente */
         .rdp-coastal-root .rdp-day_button,
         .rdp-coastal-root .rdp-button_previous,
         .rdp-coastal-root .rdp-button_next {
-          touch-action: manipulation;
-          -webkit-tap-highlight-color: transparent;
-        }
-
-        /* Remove iOS button styling */
-        .rdp-coastal-root button {
-          -webkit-appearance: none;
-          appearance: none;
+          cursor: pointer; 
         }
       `}</style>
 
-      <section
-        className={`bg-[#faf7f2] py-16 md:py-20 px-6 ${className}`}
-        aria-label="Disponibilidad"
-      >
+      <section className={`relative z-30 bg-[#faf7f2] py-16 md:py-20 px-6 ${className}`}>
         <div className="max-w-2xl mx-auto">
-          {/* Header */}
           <div className="text-center mb-10">
             <p className="text-xs uppercase tracking-[0.18em] text-[#6b7c4a] font-medium mb-3">
               Disponibilidad
@@ -400,7 +338,6 @@ export const CoastalAvailability: React.FC<CoastalAvailabilityProps> = ({
             </p>
           </div>
 
-          {/* Two-input row */}
           <div className="flex flex-col sm:flex-row gap-3">
             <DateInput
               id={`${uid}-checkin`}
@@ -412,9 +349,8 @@ export const CoastalAvailability: React.FC<CoastalAvailabilityProps> = ({
               disabledDays={checkInDisabled}
             />
 
-            {/* Arrow divider — desktop only */}
             <div className="hidden sm:flex items-center justify-center text-[#b5a99a] shrink-0 pt-5">
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden>
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                 <path
                   d="M3 8h10M9 4l4 4-4 4"
                   stroke="currentColor"
@@ -437,59 +373,40 @@ export const CoastalAvailability: React.FC<CoastalAvailabilityProps> = ({
             />
           </div>
 
-          {/* Hint after check-in is selected */}
           {checkIn && !checkOut && (
             <p className="mt-3 text-xs text-center text-[#9a8a78]">
               Ahora selecciona tu fecha de salida
             </p>
           )}
 
-          {/* WhatsApp CTA */}
           {hasSelection && (
             <div className="mt-6">
               <div className="bg-white border border-[#e2d9cc] rounded-2xl p-5 text-center shadow-sm">
                 <div className="flex items-center justify-center gap-3 mb-1">
                   <div className="text-center">
-                    <p className="text-[10px] uppercase tracking-widest text-[#9a8a78] font-medium">
-                      Llegada
-                    </p>
-                    <p className="text-sm font-semibold text-[#2c2416]">
-                      {formatDisplay(checkIn)}
-                    </p>
+                    <p className="text-[10px] uppercase tracking-widest text-[#9a8a78] font-medium">Llegada</p>
+                    <p className="text-sm font-semibold text-[#2c2416]">{formatDisplay(checkIn)}</p>
                   </div>
                   <div className="text-[#b5a99a]">
-                    <svg width="20" height="20" viewBox="0 0 16 16" fill="none" aria-hidden>
-                      <path
-                        d="M3 8h10M9 4l4 4-4 4"
-                        stroke="currentColor"
-                        strokeWidth="1.5"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
+                    <svg width="20" height="20" viewBox="0 0 16 16" fill="none">
+                      <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                     </svg>
                   </div>
                   <div className="text-center">
-                    <p className="text-[10px] uppercase tracking-widest text-[#9a8a78] font-medium">
-                      Salida
-                    </p>
-                    <p className="text-sm font-semibold text-[#2c2416]">
-                      {formatDisplay(checkOut)}
-                    </p>
+                    <p className="text-[10px] uppercase tracking-widest text-[#9a8a78] font-medium">Salida</p>
+                    <p className="text-sm font-semibold text-[#2c2416]">{formatDisplay(checkOut)}</p>
                   </div>
                 </div>
 
                 <p className="text-xs text-[#9a8a78] mb-4">
-                  {nights} {nights === 1 ? "noche" : "noches"} · Consulta sin
-                  compromiso
+                  {nights} {nights === 1 ? "noche" : "noches"} · Consulta sin compromiso
                 </p>
 
                 <a
                   href={buildWhatsAppUrl(checkIn, checkOut)}
                   target="_blank"
                   rel="noopener noreferrer"
-                  id="availability-whatsapp-cta"
-                  style={{ touchAction: "manipulation" }}
-                  className="inline-flex items-center gap-2.5 bg-[#6b7c4a] hover:bg-[#5a6a3d] text-white font-medium text-sm px-7 py-3.5 rounded-full transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5 w-full justify-center"
+                  className="inline-flex items-center gap-2.5 bg-[#6b7c4a] hover:bg-[#5a6a3d] text-white font-medium text-sm px-7 py-3.5 rounded-full transition-all duration-300 shadow-sm w-full justify-center"
                 >
                   <MessageCircle className="w-4 h-4 shrink-0" fill="currentColor" />
                   <span>Quiero quedarme aquí en estas fechas</span>
@@ -497,22 +414,6 @@ export const CoastalAvailability: React.FC<CoastalAvailabilityProps> = ({
               </div>
             </div>
           )}
-
-          {/* Legend */}
-          <div className="mt-6 flex items-center justify-center gap-5">
-            <span className="flex items-center gap-1.5 text-xs text-[#9a8a78]">
-              <span className="inline-block w-2.5 h-2.5 rounded-full bg-[#6b7c4a]" />
-              Disponible
-            </span>
-            <span className="flex items-center gap-1.5 text-xs text-[#9a8a78]">
-              <span className="inline-block w-2.5 h-2.5 rounded-full bg-[#d4c9b8]" />
-              Ocupado
-            </span>
-            <span className="flex items-center gap-1.5 text-xs text-[#9a8a78]">
-              <Calendar className="w-3 h-3" strokeWidth={1.5} />
-              Toca cada campo para elegir
-            </span>
-          </div>
         </div>
       </section>
     </>

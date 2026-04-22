@@ -14,6 +14,13 @@ const newsreader = Newsreader({
   weight: ["300", "400", "500", "600"],
 });
 
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+};
+
 export const metadata: Metadata = {
   title: "Departamento Premium Frente al Mar | La Serena, Cuatro Esquinas",
   description:
@@ -27,7 +34,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="es" className="scroll-smooth">
+    <html lang="es">
       <body
         className={`${inter.variable} ${newsreader.variable} antialiased bg-[#faf7f2] text-[#2c2416]`}
       >

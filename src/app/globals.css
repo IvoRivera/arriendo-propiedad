@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@source "../../node_modules/react-day-picker";
 
 /* ─── Coastal Design System — Stitch: Boutique Coastal Rental ─── */
 @theme inline {
