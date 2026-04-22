@@ -43,12 +43,7 @@ function nightCount(from: Date, to: Date): number {
   return Math.round((to.getTime() - from.getTime()) / (1000 * 60 * 60 * 24));
 }
 
-function buildWhatsAppUrl(from: Date, to: Date): string {
-  const msg = encodeURIComponent(
-    `Hola! Me gustaría quedarme en el departamento en La Serena.\nFechas: ${formatLong(from)} al ${formatLong(to)}\n¿Está disponible?`
-  );
-  return `https://wa.me/+56939063695?text=${msg}`;
-}
+
 
 // ─── DateInput — Usando React Portals ────────────────────────────────────────
 
@@ -224,10 +219,12 @@ function DateInput({
 
 interface CoastalAvailabilityProps {
   readonly className?: string;
+  onAction?: () => void;
 }
 
 export const CoastalAvailability: React.FC<CoastalAvailabilityProps> = ({
   className = "",
+  onAction,
 }) => {
   const [checkIn, setCheckIn] = useState<Date | undefined>();
   const [checkOut, setCheckOut] = useState<Date | undefined>();
@@ -402,15 +399,13 @@ export const CoastalAvailability: React.FC<CoastalAvailabilityProps> = ({
                   {nights} {nights === 1 ? "noche" : "noches"} · Consulta sin compromiso
                 </p>
 
-                <a
-                  href={buildWhatsAppUrl(checkIn, checkOut)}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2.5 bg-[#6b7c4a] hover:bg-[#5a6a3d] text-white font-medium text-sm px-7 py-3.5 rounded-full transition-all duration-300 shadow-sm w-full justify-center"
+                <button
+                  onClick={onAction}
+                  className="inline-flex items-center gap-2.5 bg-[#6b7c4a] hover:bg-[#5a6a3d] text-white font-medium text-sm px-7 py-3.5 rounded-full transition-all duration-300 shadow-sm w-full justify-center cursor-pointer"
                 >
                   <MessageCircle className="w-4 h-4 shrink-0" fill="currentColor" />
                   <span>Quiero quedarme aquí en estas fechas</span>
-                </a>
+                </button>
               </div>
             </div>
           )}

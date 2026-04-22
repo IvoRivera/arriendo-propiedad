@@ -7,9 +7,10 @@ import { siteConfig, testimonialsData } from "@/data/mockData";
 
 interface CoastalLocationTestimonialsProps {
   readonly className?: string;
+  onAction?: () => void;
 }
 
-export const CoastalLocationTestimonials: React.FC<CoastalLocationTestimonialsProps> = ({ className = "" }) => {
+export const CoastalLocationTestimonials: React.FC<CoastalLocationTestimonialsProps> = ({ className = "", onAction }) => {
   return (
     <section className={`bg-[#faf7f2] py-14 md:py-16 px-6 border-t border-[#e2d9cc] ${className}`}>
       <div className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-16">
@@ -93,15 +94,13 @@ export const CoastalLocationTestimonials: React.FC<CoastalLocationTestimonialsPr
           </div>
 
           {/* Post-testimonials CTA — trust-based */}
-          <a
-            href={siteConfig.whatsappUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-2.5 bg-[#6b7c4a] hover:bg-[#5a6a3d] text-white font-medium text-sm px-7 py-3.5 rounded-full transition-all duration-300 hover:shadow-md w-full justify-center md:w-auto"
+          <button
+            onClick={onAction}
+            className="inline-flex items-center gap-2.5 bg-[#6b7c4a] hover:bg-[#5a6a3d] text-white font-medium text-sm px-7 py-3.5 rounded-full transition-all duration-300 hover:shadow-md w-full justify-center md:w-auto cursor-pointer"
           >
             <MessageCircle className="w-4 h-4" fill="currentColor" />
             <span>{testimonialsData.ctaText}</span>
-          </a>
+          </button>
         </div>
 
       </div>

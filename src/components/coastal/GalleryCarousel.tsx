@@ -18,7 +18,7 @@ interface GalleryCarouselProps {
   readonly subtitle?: string;
   readonly images: CarouselImage[];
   readonly ctaText?: string;
-  readonly ctaHref: string;
+  readonly onAction?: () => void;
   readonly bgColor?: string; // e.g. "bg-[#f5f0e8]" or "bg-[#faf7f2]"
 }
 
@@ -27,7 +27,7 @@ export const GalleryCarousel: React.FC<GalleryCarouselProps> = ({
   subtitle,
   images,
   ctaText,
-  ctaHref,
+  onAction,
   bgColor = "bg-[#faf7f2]",
 }) => {
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -112,7 +112,7 @@ export const GalleryCarousel: React.FC<GalleryCarouselProps> = ({
                   src={image.src}
                   alt={image.alt}
                   fill
-                  sizes="(max-width: 640px) 85vw, 420px"
+                  sizes="(max-width: 768px) 100vw, 50vw"
                   className="object-cover transition-transform duration-500 group-hover:scale-[1.03]"
                 />
                 <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300" />
@@ -165,15 +165,13 @@ export const GalleryCarousel: React.FC<GalleryCarouselProps> = ({
       {/* Contextual CTA */}
       {ctaText && (
         <div className="px-6 mt-8 flex justify-center">
-          <a
-            href={ctaHref}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 text-[#6b7c4a] hover:text-[#5a6a3d] border border-[#6b7c4a] hover:bg-[#6b7c4a] hover:text-white text-sm font-medium px-6 py-3 rounded-full transition-all duration-300"
+          <button
+            onClick={onAction}
+            className="inline-flex items-center gap-2 text-[#6b7c4a] hover:text-[#5a6a3d] border border-[#6b7c4a] hover:bg-[#6b7c4a] hover:text-white text-sm font-medium px-6 py-3 rounded-full transition-all duration-300 cursor-pointer"
           >
             <MessageCircle className="w-4 h-4" />
             <span>{ctaText}</span>
-          </a>
+          </button>
         </div>
       )}
 
@@ -220,6 +218,7 @@ export const GalleryCarousel: React.FC<GalleryCarouselProps> = ({
                   src={images[lightboxIndex].src}
                   alt={images[lightboxIndex].alt}
                   fill
+                  sizes="(max-width: 768px) 100vw, 50vw"
                   className="object-contain"
                 />
               </div>

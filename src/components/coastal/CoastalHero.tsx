@@ -8,9 +8,10 @@ import { heroData, siteConfig } from "@/data/mockData";
 
 interface CoastalHeroProps {
     readonly className?: string;
+    onAction?: () => void;
 }
 
-export const CoastalHero: React.FC<CoastalHeroProps> = ({ className = "" }) => {
+export const CoastalHero: React.FC<CoastalHeroProps> = ({ className = "", onAction }) => {
     return (
         <section 
             className={`relative w-full min-h-[560px] h-[78vh] md:h-[82vh] flex items-center justify-center text-center px-6 ${className}`}
@@ -21,6 +22,7 @@ export const CoastalHero: React.FC<CoastalHeroProps> = ({ className = "" }) => {
                     src={heroData.image}
                     alt={heroData.imageAlt}
                     fill
+                    sizes="(max-width: 768px) 100vw, 50vw"
                     priority
                     className="object-cover object-center"
                 />
@@ -41,16 +43,14 @@ export const CoastalHero: React.FC<CoastalHeroProps> = ({ className = "" }) => {
                     {heroData.headline}
                 </h1>
 
-                <a
-                    href={siteConfig.whatsappUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2.5 bg-[#6b7c4a] hover:bg-[#5a6a3d] text-white font-medium text-sm md:text-base px-8 py-4 rounded-full transition-all duration-300 hover:shadow-xl relative z-20 mb-5"
+                <button
+                    onClick={onAction}
+                    className="inline-flex items-center gap-2.5 bg-[#6b7c4a] hover:bg-[#5a6a3d] text-white font-medium text-sm md:text-base px-8 py-4 rounded-full transition-all duration-300 hover:shadow-xl relative z-20 mb-5 cursor-pointer"
                     style={{ touchAction: "manipulation" }}
                 >
                     <span>{heroData.ctaText}</span>
                     <MessageCircle className="w-4 h-4" fill="currentColor" />
-                </a>
+                </button>
 
                 <p className="text-white/60 text-xs tracking-wide font-light">
                     {heroData.subheadline}

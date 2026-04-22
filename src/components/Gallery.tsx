@@ -48,6 +48,7 @@ export default function Gallery() {
               src={images[0].src} 
               alt={images[0].alt} 
               fill 
+              sizes="(max-width: 768px) 100vw, 50vw"
               className="object-cover transition-transform duration-700 group-hover:scale-105" 
             />
             <div className="absolute inset-0 bg-slate-900/10 group-hover:bg-transparent transition-colors duration-300" />
@@ -66,6 +67,7 @@ export default function Gallery() {
               src={images[1].src} 
               alt={images[1].alt} 
               fill 
+              sizes="(max-width: 768px) 100vw, 50vw"
               className="object-cover transition-transform duration-700 group-hover:scale-105" 
             />
             <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-black/20">
@@ -83,6 +85,7 @@ export default function Gallery() {
               src={images[2].src} 
               alt={images[2].alt} 
               fill 
+              sizes="(max-width: 768px) 100vw, 50vw"
               className="object-cover transition-transform duration-700 group-hover:scale-105" 
             />
             <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-black/20">
@@ -131,6 +134,7 @@ export default function Gallery() {
                 src={images[selectedImage].src}
                 alt={images[selectedImage].alt}
                 fill
+                sizes="(max-width: 768px) 100vw, 50vw"
                 className="object-contain"
               />
             </motion.div>

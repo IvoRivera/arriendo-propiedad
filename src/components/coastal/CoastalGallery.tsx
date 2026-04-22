@@ -8,9 +8,10 @@ import { galleryData, siteConfig } from "@/data/mockData";
 
 interface CoastalGalleryProps {
   readonly className?: string;
+  onAction?: () => void;
 }
 
-export const CoastalGallery: React.FC<CoastalGalleryProps> = ({ className = "" }) => {
+export const CoastalGallery: React.FC<CoastalGalleryProps> = ({ className = "", onAction }) => {
   const { featured, interiors, amenities } = galleryData;
 
   return (
@@ -23,7 +24,7 @@ export const CoastalGallery: React.FC<CoastalGalleryProps> = ({ className = "" }
         subtitle={featured.subtitle}
         images={featured.images}
         ctaText={featured.ctaText}
-        ctaHref={siteConfig.whatsappUrl}
+        onAction={onAction}
         bgColor="bg-[#f5f0e8]"
       />
 
@@ -34,7 +35,7 @@ export const CoastalGallery: React.FC<CoastalGalleryProps> = ({ className = "" }
           subtitle={interiors.subtitle}
           images={interiors.images}
           ctaText={interiors.ctaText}
-          ctaHref={siteConfig.whatsappUrl}
+          onAction={onAction}
           bgColor="bg-[#faf7f2]"
         />
       </div>
@@ -46,7 +47,7 @@ export const CoastalGallery: React.FC<CoastalGalleryProps> = ({ className = "" }
           subtitle={amenities.subtitle}
           images={amenities.images}
           ctaText={amenities.ctaText}
-          ctaHref={siteConfig.whatsappUrl}
+          onAction={onAction}
           bgColor="bg-[#f5f0e8]"
         />
       </div>

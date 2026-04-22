@@ -7,9 +7,10 @@ import { footerCtaData, siteConfig } from "@/data/mockData";
 
 interface CoastalFooterCtaProps {
   readonly className?: string;
+  onAction?: () => void;
 }
 
-export const CoastalFooterCta: React.FC<CoastalFooterCtaProps> = ({ className = "" }) => {
+export const CoastalFooterCta: React.FC<CoastalFooterCtaProps> = ({ className = "", onAction }) => {
   return (
     <footer className={`bg-[#f5f0e8] border-t border-[#e2d9cc] ${className}`}>
       {/* CTA block */}
@@ -23,15 +24,13 @@ export const CoastalFooterCta: React.FC<CoastalFooterCtaProps> = ({ className = 
         <p className="text-[#6b5d4f] text-sm font-light mb-8 max-w-xs mx-auto">
           {footerCtaData.subheadline}
         </p>
-        <a
-          href={siteConfig.whatsappUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-flex items-center gap-2.5 bg-[#6b7c4a] hover:bg-[#5a6a3d] text-white font-medium text-sm px-8 py-4 rounded-full transition-all duration-300 hover:shadow-md hover:-translate-y-0.5"
+        <button
+          onClick={onAction}
+          className="inline-flex items-center gap-2.5 bg-[#6b7c4a] hover:bg-[#5a6a3d] text-white font-medium text-sm px-8 py-4 rounded-full transition-all duration-300 hover:shadow-md hover:-translate-y-0.5 cursor-pointer"
         >
           <MessageCircle className="w-4 h-4" fill="currentColor" />
           <span>{footerCtaData.ctaText}</span>
-        </a>
+        </button>
       </div>
 
       {/* Bottom bar */}
