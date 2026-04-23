@@ -77,6 +77,20 @@ export const CoastalRequestModal: React.FC<CoastalRequestModalProps> = ({ isOpen
 
       if (supabaseError) throw supabaseError;
 
+      // Silently notify owner via email
+      try {
+        fetch("/api/notify-new-request", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            ...data,
+            status: "pending"
+          }),
+        });
+      } catch (emailErr) {
+        console.error("Failed to trigger email notification:", emailErr);
+      }
+
       setIsSubmitted(true);
     } catch (err: any) {
       console.error("Error submitting request:", err);

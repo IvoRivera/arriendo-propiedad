@@ -118,7 +118,7 @@ export const specificationsData = {
   sectionTitle: "Especificaciones",
   items: [
     { icon: "area", label: "79 m²", sublabel: "Superficie total" },
-    { icon: "bed", label: "2 Dormitorios", sublabel: "Habitaciones" },
+    { icon: "bed", label: "2 Dormitorios, 1 Baño", sublabel: "Habitaciones" },
     { icon: "terrace", label: "Terraza", sublabel: "16.06 m²" },
     { icon: "car", label: "Estacionamiento", sublabel: "1 privado" },
   ],
