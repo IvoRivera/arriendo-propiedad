@@ -7,7 +7,7 @@ import * as z from "zod";
 import { X, CheckCircle2, Calendar, Users, MessageSquare, UserPlus } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
-import { supabase } from "@/lib/supabase";
+import { supabasePublic } from "@/lib/supabase";
 
 const requestSchema = z.object({
   full_name: z.string().min(3, "El nombre debe tener al menos 3 caracteres"),
@@ -59,7 +59,7 @@ export const CoastalRequestModal: React.FC<CoastalRequestModalProps> = ({ isOpen
     setSubmitError(null);
 
     try {
-      const { error: supabaseError } = await supabase
+      const { error: supabaseError } = await supabasePublic
         .from("booking_requests")
         .insert([
           {

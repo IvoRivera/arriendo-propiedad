@@ -1,5 +1,6 @@
 import { Resend } from 'resend';
 import { NextResponse } from 'next/server';
+import { getLiveConfig } from '@/lib/systemConfig';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -17,10 +18,14 @@ export async function POST(req: Request) {
       referred_by,
       status
     } = body;
+    
+    // Fetch system configuration directly from Supabase (Live mode)
+    const freshConfig = await getLiveConfig();
+    const ownerEmail = freshConfig['OWNER_EMAIL'] || process.env.OWNER_EMAIL || '';
 
     const { data, error } = await resend.emails.send({
       from: 'ArriendoLS <onboarding@resend.dev>',
-      to: process.env.OWNER_EMAIL || '',
+      to: ownerEmail,
       subject: `Nueva solicitud de arriendo - ${full_name}`,
       text: `
         Nueva solicitud de estadía recibida:
