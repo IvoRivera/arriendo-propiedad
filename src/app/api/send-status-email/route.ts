@@ -1,5 +1,6 @@
 import { Resend } from 'resend';
 import { NextResponse } from 'next/server';
+import { getLiveConfigServer, validatePropertyRentValue } from '@/lib/systemConfigServer';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -14,23 +15,21 @@ export async function POST(req: Request) {
       check_out
     } = body;
 
-    const ownerName = process.env.OWNER_NAME || 'Anfitrión';
-    const whatsappLink = process.env.OWNER_WHATSAPP_LINK || '';
-    const ownerEmail = process.env.OWNER_EMAIL || '';
-    const propertyRentValue = process.env.NEXT_PUBLIC_PROPERTY_RENT_VALUE || '$100.000';
+    // Fetch system configuration securely (Service Role + Server Only)
+    const freshConfig = await getLiveConfigServer();
+    
+    // Validate critical values
+    const dailyPrice = validatePropertyRentValue(freshConfig['PROPERTY_RENT_VALUE']);
 
-    // Calculation logic - Moved up to be available for bankDetails
+    const ownerName = freshConfig['OWNER_NAME'] || process.env.OWNER_NAME || 'Anfitrión';
+    const whatsappLink = freshConfig['OWNER_WHATSAPP_LINK'] || process.env.OWNER_WHATSAPP_LINK || '';
+    const ownerEmail = freshConfig['OWNER_EMAIL'] || process.env.OWNER_EMAIL || '';
+
+    // Calculation logic
     const start = new Date(check_in);
     const end = new Date(check_out);
     const diffTime = Math.abs(end.getTime() - start.getTime());
     const nightsCount = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-    let dailyPrice = parseInt(propertyRentValue.replace(/\D/g, '')) || 0;
-
-    // Safety guard: Si el precio es menor a 50,000 por error de ambiente, forzar a 100,000
-    if (dailyPrice < 50000) {
-      dailyPrice = 100000;
-    }
 
     const totalAmount = nightsCount * dailyPrice;
     const totalFormatted = new Intl.NumberFormat('es-CL').format(totalAmount);
@@ -38,11 +37,11 @@ export async function POST(req: Request) {
 
     const bankDetails = `
           Monto a transferir: ${nightsCount} noches x $${displayPrice} = $${totalFormatted}
-          Nombre: ${process.env.OWNER_BANK_NAME}
-          RUT: ${process.env.OWNER_BANK_RUT}
-          Banco: ${process.env.OWNER_BANK_NAME_ENTITY} - ${process.env.OWNER_BANK_ACCOUNT_TYPE}
-          Número de cuenta: ${process.env.OWNER_BANK_ACCOUNT_NUMBER}
-          Email: ${process.env.OWNER_BANK_EMAIL}
+          Nombre: ${freshConfig['OWNER_BANK_NAME'] || process.env.OWNER_BANK_NAME}
+          RUT: ${freshConfig['OWNER_BANK_RUT'] || process.env.OWNER_BANK_RUT}
+          Banco: ${freshConfig['OWNER_BANK_NAME_ENTITY'] || process.env.OWNER_BANK_NAME_ENTITY} - ${freshConfig['OWNER_BANK_ACCOUNT_TYPE'] || process.env.OWNER_BANK_ACCOUNT_TYPE}
+          Número de cuenta: ${freshConfig['OWNER_BANK_ACCOUNT_NUMBER'] || process.env.OWNER_BANK_ACCOUNT_NUMBER}
+          Email: ${freshConfig['OWNER_BANK_EMAIL'] || process.env.OWNER_BANK_EMAIL}
     `;
 
     let subject = "";
@@ -128,8 +127,22 @@ export async function POST(req: Request) {
     }
 
     return NextResponse.json({ data });
-  } catch (err) {
-    console.error('API Error:', err);
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+  } catch (err: any) {
+    if (process.env.NODE_ENV === 'development') {
+      console.error('API Error:', err);
+    }
+    
+    // Controlled error responses
+    if (err.message?.startsWith('CONFIG_')) {
+      return NextResponse.json(
+        { error: 'Configuration Error', details: err.message }, 
+        { status: 500 }
+      );
+    }
+
+    return NextResponse.json(
+      { error: 'Internal Server Error' }, 
+      { status: 500 }
+    );
   }
 }
