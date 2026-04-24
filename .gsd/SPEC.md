@@ -3,27 +3,31 @@
 > **Status**: `FINALIZED`
 
 ## Vision
-A premium, trust-based rental booking platform for a boutique property in La Serena. The system eliminates transactional friction in favor of a curated, high-end guest experience, utilizing a dynamic configuration backend to maintain site-wide consistency.
+Optimizar la experiencia de reserva del sitio (mobile-first) alineando el flujo a un modelo basado en formulario (no WhatsApp), aumentando claridad, control sobre el huésped y reduciendo fricción y errores. A la vez, mantener un tono humano, claro y sin agresividad, integrando reglas e inventario de forma natural.
 
 ## Goals
-1. **Live Data Synchronization**: Transition the UI from static mock data to a fully dynamic state, pulling prices and availability directly from the Supabase configuration tables.
-2. **Premium Interaction Design**: Maintain and enhance the "Boutique Coastal" aesthetic with smooth transitions, automated booking steps, and editorial-grade typography.
-3. **Administrative Security**: Harden the admin configuration routes with robust middleware to protect the property's pricing and settings integrity.
+1. **UX/UI (Front-end)**: Cambiar narrativa a "Solicitud de reserva", mejorar navegación y cierre de carruseles de imágenes (mobile/desktop), y restaurar estado de carga emocional antes del formulario.
+2. **Reglas de Negocio**: Límite estricto de 4 huéspedes y visualización preventiva de disponibilidad sin romper el flujo.
+3. **Reglas de Alojamiento**: Presentación clara de reglas, aceptación obligatoria (checkbox), y filtros anti-fiesta (ej. pedir "Motivo del viaje").
+4. **Sistema de Inventario**: Flujo de inventario pre y post estadía para proteger activos mediante confirmación del huésped al check-in y revisión al check-out.
+5. **Consideraciones Técnicas**: Optimización mobile-first (inputs grandes), estados del sistema claros (Loading, Error, Success), persistencia de datos (Supabase) y contenido editable a futuro.
 
 ## Non-Goals (Out of Scope)
-- **Instant Payment Integration**: Payments are handled externally (e.g., WhatsApp/Transfer); the platform only manages the request and trust-validation flow.
-- **Multi-Property Support**: The system is purpose-built for a single boutique unit.
+- **Instant Payment Integration**: Pagos continúan siendo externos/manuales en esta fase; el sistema se preparará para ellos pero no los ejecuta.
+- **Multi-Property Support**: Sistema diseñado para un solo departamento.
 
 ## Users
-- **Guests**: High-end travelers looking for a curated stay who value privacy and direct contact.
-- **Owner**: Admin user who needs to update seasonal pricing and block dates via a simple, secure dashboard.
+- **Guests**: Viajeros buscando descanso y desconexión, que aprecian una experiencia fluida y transparente.
+- **Owner**: Administrador que requiere validación de huéspedes, aceptación de reglas y control de inventario.
 
 ## Constraints
 - **Tech Stack**: Next.js 15 (App Router), Supabase, Framer Motion, Resend.
-- **Budget/Timeline**: Focus on "Day 1" operational stability and visual excellence.
+- **UX Requirement**: Tono humano y amigable, no legal ni hostil.
 
 ## Success Criteria
-- [ ] No hardcoded prices remain in `mockData.ts` or component defaults.
-- [ ] The Hero section and Booking Modal display the identical live price from Supabase.
-- [ ] Admin routes are protected by production-grade IP/Auth middleware.
-- [ ] Booking requests are successfully delivered via Resend with the correct estimated totals.
+- [ ] No existen referencias a contacto vía WhatsApp para iniciar la reserva.
+- [ ] Carruseles tienen navegación clara y botón de cerrar visible/funcional en mobile (swipe/tap).
+- [ ] Flujo muestra pantalla de carga emocional antes del formulario.
+- [ ] Límite de 4 huéspedes aplicado y disponibilidad visible antes de enviar.
+- [ ] Reglas aceptadas obligatoriamente y motivo de viaje capturado.
+- [ ] Sistema de confirmación de inventario funcional para el check-in.
