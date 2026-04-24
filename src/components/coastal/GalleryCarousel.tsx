@@ -116,6 +116,8 @@ export const GalleryCarousel: React.FC<GalleryCarouselProps> = ({
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [lightboxIndex, images.length]);
 
+  const [lastTouchTime, setLastTouchTime] = useState(0);
+
   return (
     <div className={`${bgColor} py-14 md:py-16`}>
       <div className="px-6 mb-6">
@@ -128,6 +130,7 @@ export const GalleryCarousel: React.FC<GalleryCarouselProps> = ({
           ref={scrollRef}
           className="flex overflow-x-auto snap-x snap-mandatory scroll-smooth gap-3 px-6 pb-2"
           style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+          onScroll={() => setLastTouchTime(Date.now())} // Update time on any scroll
         >
           {images.map((image, index) => (
             <button
@@ -135,14 +138,8 @@ export const GalleryCarousel: React.FC<GalleryCarouselProps> = ({
               type="button"
               className="flex-none w-[85vw] sm:w-[420px] snap-start rounded-xl overflow-hidden cursor-pointer group outline-none"
               onClick={() => {
-                console.log("Gallery Image Clicked:", index);
-                setLightboxIndex(index);
-              }}
-              onPointerDown={(e) => {
-                // Only trigger if not a drag (very basic check: immediate down)
-                // Actually, for a gallery click, we can be aggressive and then let them scroll
-                // but let's just use the same pattern
-                e.stopPropagation();
+                // If the user was recently scrolling (within 100ms), don't open lightbox
+                if (Date.now() - lastTouchTime < 100) return;
                 setLightboxIndex(index);
               }}
             >
@@ -161,13 +158,13 @@ export const GalleryCarousel: React.FC<GalleryCarouselProps> = ({
         </div>
 
         {activeIndex > 0 && (
-          <button onClick={prev} className="hidden md:flex absolute left-2 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/80 rounded-full shadow-md items-center justify-center z-10 cursor-pointer">
-            <ChevronLeft className="w-5 h-5" />
+          <button onClick={prev} className="hidden md:flex absolute left-2 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/80 rounded-full shadow-md items-center justify-center z-10 cursor-pointer border border-[#e2d9cc]">
+            <ChevronLeft className="w-5 h-5 text-[#2c2416]" />
           </button>
         )}
         {activeIndex < images.length - 1 && (
-          <button onClick={next} className="hidden md:flex absolute right-2 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/80 rounded-full shadow-md items-center justify-center z-10 cursor-pointer">
-            <ChevronRight className="w-5 h-5" />
+          <button onClick={next} className="hidden md:flex absolute right-2 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/80 rounded-full shadow-md items-center justify-center z-10 cursor-pointer border border-[#e2d9cc]">
+            <ChevronRight className="w-5 h-5 text-[#2c2416]" />
           </button>
         )}
 
@@ -181,59 +178,62 @@ export const GalleryCarousel: React.FC<GalleryCarouselProps> = ({
 
       {lightboxIndex !== null && (
         <div 
-          className="fixed inset-0 z-[99998] flex flex-col items-center justify-center bg-black/98 backdrop-blur-sm animate-in fade-in duration-300" 
+          className="fixed inset-0 z-[99998] flex flex-col items-center justify-center bg-black/95 backdrop-blur-2xl animate-in fade-in duration-300" 
           onClick={() => setLightboxIndex(null)}
           onTouchStart={onTouchStart}
           onTouchMove={onTouchMove}
           onTouchEnd={onTouchEnd}
         >
           {/* Top Bar */}
-          <div className="absolute top-0 left-0 right-0 p-6 flex justify-between items-center z-50">
-            <span className="text-white/50 text-xs font-mono uppercase tracking-[0.3em]">
+          <div className="absolute top-0 left-0 right-0 p-6 flex justify-between items-center z-[100]">
+            <span className="text-white/70 text-[10px] font-mono uppercase tracking-[0.4em] bg-white/10 px-3 py-1 rounded-full backdrop-blur-md">
               {lightboxIndex + 1} / {images.length}
             </span>
             <button 
-              className="text-white hover:text-white bg-black/40 hover:bg-black/60 p-3 rounded-full transition-all cursor-pointer z-[99999]" 
+              className="text-white hover:text-white bg-white/10 hover:bg-white/20 p-3 rounded-full transition-all cursor-pointer z-[100] backdrop-blur-md border border-white/10" 
               onClick={(e) => { e.stopPropagation(); setLightboxIndex(null); }}
+              aria-label="Cerrar galería"
             >
-              <X className="w-8 h-8" strokeWidth={2} />
+              <X className="w-6 h-6 sm:w-8 sm:h-8" strokeWidth={2} />
             </button>
           </div>
 
-          {/* Navigation Buttons (Desktop Only) */}
+          {/* Navigation Buttons (Visible on all devices for better UX) */}
           <button 
-            className="hidden md:flex absolute left-6 text-white/40 hover:text-white p-4 z-50 transition-all cursor-pointer" 
+            className="absolute left-2 sm:left-6 text-white/40 hover:text-white p-4 z-50 transition-all cursor-pointer group active:scale-95" 
             onClick={lightboxPrev}
+            aria-label="Imagen anterior"
           >
-            <ChevronLeft className="w-12 h-12" strokeWidth={1} />
+            <ChevronLeft className="w-10 h-10 sm:w-16 sm:h-16 group-hover:scale-110 transition-transform" strokeWidth={1.5} />
           </button>
 
           {/* Image Container */}
           <div 
-            className="relative w-full h-full flex items-center justify-center p-4 md:p-20" 
+            className="relative w-full h-full flex items-center justify-center p-4 sm:p-20" 
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="relative w-full h-full max-w-6xl flex items-center justify-center select-none">
+            <div className="relative w-full h-full max-w-6xl flex items-center justify-center select-none shadow-2xl">
               <Image 
                 src={images[lightboxIndex].src} 
                 alt={images[lightboxIndex].alt} 
                 fill 
-                className="object-contain pointer-events-none" 
+                className="object-contain pointer-events-none drop-shadow-2xl" 
                 priority
               />
             </div>
           </div>
 
           <button 
-            className="hidden md:flex absolute right-6 text-white/40 hover:text-white p-4 z-50 transition-all cursor-pointer" 
+            className="absolute right-2 sm:right-6 text-white/40 hover:text-white p-4 z-50 transition-all cursor-pointer group active:scale-95" 
             onClick={lightboxNext}
+            aria-label="Siguiente imagen"
           >
-            <ChevronRight className="w-12 h-12" strokeWidth={1} />
+            <ChevronRight className="w-10 h-10 sm:w-16 sm:h-16 group-hover:scale-110 transition-transform" strokeWidth={1.5} />
           </button>
 
           {/* Bottom Caption */}
-          <div className="absolute bottom-8 left-0 right-0 text-center px-6 pointer-events-none">
-            <p className="text-white/80 text-sm font-light italic max-w-md mx-auto">
+          <div className="absolute bottom-10 left-0 right-0 text-center px-6 pointer-events-none">
+            <p className="text-white/90 text-sm sm:text-base font-light italic max-w-xl mx-auto drop-shadow-md">
               {images[lightboxIndex].alt}
             </p>
           </div>

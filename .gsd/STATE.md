@@ -12,6 +12,7 @@ We successfully completed and verified Phase 6 and Phase 8, concluding the **v1.
 - **Phase 6**: Hardened the booking flow with Supabase availability integration, concurrency checks, max guest limits, anti-party logic, and mandatory house rules.
 - **Phase 8**: Polished the mobile experience by preventing iOS Safari auto-zoom on inputs (`text-base`) and ensured `rules_accepted` is persisted to Supabase.
 - **Inventory MVP**: Set up the `inventory_logs` schema and a digital check-in page for guests.
+- **Bug Fix**: Resolved an infinite loading issue in `CoastalAvailability` affecting incognito mobile users by replacing `cache: 'no-store'` with manual cache-busting and adding fetch timeouts.
 
 ## In-Progress Work
 None. The milestone is fully complete and verified.

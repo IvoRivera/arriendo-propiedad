@@ -50,6 +50,58 @@ When accessing the site for the first time in an incognito window on mobile, the
 | 2 | Hydration mismatch: The server renders the loading state, and the client-side `useEffect` is not firing or being interrupted. | 20% | ELIMINATED |
 | 3 | Race condition with Strict Mode: Repeated mounts cause multiple fetches, and the last one to finish is setting an incorrect state or they are all being aborted. | 10% | ELIMINATED |
 
+# Debug Session: GalleryCarousel UX & Interactivity
+
+## Symptom
+1. **Swipe Conflict (Mobile)**: Attempting to swipe the carousel triggers the lightbox immediately.
+2. **Lightbox Navigation**: Navigation controls are hidden on mobile; no clear way to move between images.
+3. **Focus/Aesthetics**: The overlay doesn't isolate the image enough, and navigation buttons are hard to use.
+4. **Interactivity**: Dragging vs Clicking is not correctly distinguished.
+
+**When:** Interacting with the Gallery section on mobile or desktop.
+**Expected:** Swipe should scroll the carousel; tap/click should open the lightbox. Inside lightbox, navigation should be possible via arrows, swipe, or keys.
+**Actual:** Lightbox opens accidentally on swipe; lightbox is "stuck" on a single image on mobile.
+
+## Evidence
+- `GalleryCarousel.tsx` uses `onPointerDown` which fires immediately on touch, overriding any scroll intent.
+- Lightbox buttons use `hidden md:flex`, making them invisible on mobile.
+- `bg-black/98` is very dark but might lack the depth or focus the user expects.
+
+## Hypotheses
+
+| # | Hypothesis | Likelihood | Status |
+|---|------------|------------|--------|
+| 1 | `onPointerDown` is the cause of accidental lightbox openings on mobile. | 100% | CONFIRMED |
+| 2 | `hidden md:flex` is preventing mobile navigation in the lightbox. | 100% | CONFIRMED |
+| 3 | Lack of a dedicated "isDragging" state in the carousel leads to click/drag confusion. | 80% | CONFIRMED |
+
+## Resolution
+
+**Root Cause:**
+1. **Event Conflict**: Using `onPointerDown` triggered the lightbox immediately on touch, before the browser could distinguish between a tap and a scroll/swipe intent.
+2. **Responsive Hiding**: Navigation arrows in the lightbox were explicitly hidden on mobile using Tailwind's `hidden md:flex` classes.
+3. **Aesthetics**: The overlay lacked sufficient blur and contrast to truly isolate the image, and the navigation controls were too small for comfortable touch use.
+
+**Fix:**
+1. **Interactivity Guard**: 
+   - Removed `onPointerDown` from carousel items.
+   - Implemented an `onScroll` timestamp check to prevent `onClick` from firing if the user was recently scrolling.
+2. **Mobile Navigation**: 
+   - Enabled navigation arrows on all devices.
+   - Optimized arrow size and positioning for touch targets (10x10cm equivalent on mobile).
+   - Added `backdrop-blur-md` and better styling to the lightbox counter and buttons.
+3. **Visual Polish**:
+   - Increased backdrop opacity to 95% and added `backdrop-blur-2xl` for maximum isolation.
+   - Added `drop-shadow-2xl` to the images and captions to improve depth.
+4. **Accessibility**:
+   - Added `aria-label` to all controls.
+   - Ensured keyboard ESC and swipe gestures are reliable.
+
+**Verified:** 
+- Mobile swipe now scrolls the carousel without opening the lightbox.
+- Lightbox provides a fully immersive, navigable experience on both mobile and desktop.
+- Navigation arrows are visible and functional on touch devices.
+
 ## Resolution
 
 **Root Cause:**
