@@ -1,45 +1,44 @@
 # Project State
 
-> Last Updated: 2026-04-24 13:25
+> Last Updated: 2026-04-24 15:09
 
 ## Current Position
 - **Phase**: Phase 4: Mobile Interaction & Stability
-- **Task**: Finalize mobile interactivity and clean up debug tools.
-- **Status**: Resolved at 2026-04-24 14:48 (Local Time)
+- **Task**: Finalizing build verification (fixing ESLint errors).
+- **Status**: Paused at 2026-04-24 15:09
 
 ## Last Session Summary
-Successfully identified and resolved a critical mobile interaction failure. The root cause was identified as a version incompatibility between **Next.js 16 (unstable)** and **React 19.2 (unstable)** on mobile Safari/iOS. INTERACTION IS NOW RESTORED on mobile devices.
+Fixed `NextRequest` typing issues in middleware, updated `eslint-config-next` imports for flat config compatibility, and fixed several ESLint errors preventing `npm run build` from succeeding. 
 
 ## In-Progress Work
-- **Dependency Stabilization**: Downgraded to **Next.js 15.1.0** and **React 19.0.0 (stable)**.
-- **Modal Stability**: Refactored `CoastalRequestModal` to use **`createPortal`** to ensure it escapes any parent CSS constraints on mobile.
-- **Calendar Logic**: Fixed a race condition in `CoastalAvailability` where calendars were auto-closing on touch.
-- **Debugger Polish**: Fixed a crash in `MobileDebugger` related to SVG classNames.
+- Partially fixed ESLint errors to pass the Next.js production build.
+- Files modified: `eslint.config.mjs`, `src/middleware.ts`, `src/lib/adminAuth.ts`, `src/lib/availability.ts`, `src/lib/systemConfig.ts`, `src/components/coastal/CoastalLocationTestimonials.tsx`, `src/components/SocialProof.tsx`, `src/components/coastal/CoastalRequestModal.tsx`, `src/components/coastal/GalleryCarousel.tsx`.
+- Tests status: Build (`npm run build`) is still failing due to remaining ESLint errors.
 
 ## Blockers
-- **None**: Primary interaction pipeline is now functional on both Desktop and Mobile.
+- None, just need to finish fixing the remaining linting errors.
 
 ## Context Dump
 ### Decisions Made
-- **Portal Strategy**: Used `createPortal` for the request modal to bypass Safari's layout clipping and stacking context issues.
-- **Version Downgrade**: Prioritized production stability over experimental features by reverting to stable Next/React versions.
-- **Inline Style Debugging**: Used inline styles during isolation to bypass Tailwind compilation issues during debugging.
+- **ESLint Config**: Switched to `FlatCompat` to use `eslint-config-next` with Next.js 15 flat config format and added ignores for `.next`, `node_modules` to prevent excessive linting.
+- **Type Safety**: Replaced `any` with specific types (`SupabaseClient`, `User`) in `adminAuth.ts` and `systemConfig.ts`.
+- **Cleanup**: Deleted `MobileDebugger.tsx` as it was no longer needed and caused linting errors.
 
 ### Approaches Tried
-- **Minimal Reproduction**: Replaced the entire app with a single button. This confirmed the issue was at the **Root/Runtime** level, not in individual components.
-- **Survival Test**: Used native `alert()` and `onclick` bypassing React. This confirmed that the React runtime itself was failing to hydrate on mobile.
-- **Diagnostic Logging**: Injected a black bar in the `<head>` to report User Agent and JS execution state.
+- **Linting**: Fixed unused variables, unescaped quotes, and `prefer-const` violations.
+- **Build Verification**: Ran `npm run build` iteratively to catch and fix errors.
 
 ### Current Hypothesis
-- **Resolved**: The issue was a silent runtime crash during hydration caused by unstable dependency versions on mobile Safari.
+- The build will pass once the remaining ESLint errors in `DateBlockingManager`, `SystemConfigPanel`, `CoastalAvailability`, `CoastalGallery`, and `CoastalHero` are fixed.
 
 ### Files of Interest
-- `package.json`: Contains the stabilized versions.
-- `src/components/coastal/CoastalRequestModal.tsx`: Uses the new portal implementation.
-- `src/components/coastal/CoastalAvailability.tsx`: Contains the corrected calendar logic.
-- `src/app/globals.css`: Restored to standard Tailwind v3 syntax.
+- `src/components/admin/DateBlockingManager.tsx`: Unused `CheckCircle2`.
+- `src/components/admin/SystemConfigPanel.tsx`: `any` usage on lines 34, 155.
+- `src/components/coastal/CoastalAvailability.tsx`: `any` usage on line 31, unused `getValue` on 137.
+- `src/components/coastal/CoastalGallery.tsx`: Unused `siteConfig`.
+- `src/components/coastal/CoastalHero.tsx`: `any` usage on line 69.
 
 ## Next Steps
-1. **Remove Debugger**: Remove `MobileDebugger` from `layout.tsx` once final verification is complete.
-2. **Gallery Interactivity**: Check if the gallery lightbox needs a similar `createPortal` refactor for consistent mobile behavior.
-3. **Audit Roadmap**: Review Phase 5 requirements to continue with feature enhancements.
+1. Fix the remaining ESLint errors listed in "Files of Interest".
+2. Run `npm run build` to verify the build succeeds.
+3. Mark Phase 4 as complete and move to Phase 5.
