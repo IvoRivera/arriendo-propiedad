@@ -28,6 +28,8 @@ export const metadata: Metadata = {
   keywords: "departamento La Serena, arriendo frente al mar, Cuatro Esquinas, Edificio Playa Serena",
 };
 
+import { ConfigProvider } from "@/components/providers/ConfigProvider";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -38,7 +40,9 @@ export default function RootLayout({
       <body
         className={`${inter.variable} ${newsreader.variable} antialiased bg-[#faf7f2] text-[#2c2416]`}
       >
-        {children}
+        <ConfigProvider>
+          {children}
+        </ConfigProvider>
       </body>
     </html>
   );
