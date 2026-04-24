@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import type { NextRequest } from 'next/request';
+import type { NextRequest } from 'next/server';
 
 /**
  * Next.js Edge Middleware
@@ -12,7 +12,8 @@ const RATE_LIMIT_WINDOW = 60000;
 const MAX_REQUESTS = 30; // Global threshold
 
 export function middleware(req: NextRequest) {
-  const ip = req.ip || req.headers.get('x-forwarded-for')?.split(',')[0] || 'unknown';
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const ip = (req as any).ip || req.headers.get('x-forwarded-for')?.split(',')[0] || 'unknown';
   const { pathname } = req.nextUrl;
 
   // 1. Rate Limiting Logic

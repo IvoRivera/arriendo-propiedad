@@ -1,12 +1,8 @@
-// GalleryCarousel.tsx — Reusable horizontal carousel for all 3 gallery sections
-// Mobile-first: touch/swipe, snap scrolling, dot indicators, lightbox on tap
-
 "use client";
 
 import React, { useRef, useState, useCallback, useEffect } from "react";
 import Image from "next/image";
-import { motion, AnimatePresence } from "framer-motion";
-import { MessageCircle, X, ChevronLeft, ChevronRight } from "lucide-react";
+import { X, ChevronLeft, ChevronRight } from "lucide-react";
 
 export interface CarouselImage {
   readonly src: string;
@@ -19,33 +15,30 @@ interface GalleryCarouselProps {
   readonly images: CarouselImage[];
   readonly ctaText?: string;
   readonly onAction?: () => void;
-  readonly bgColor?: string; // e.g. "bg-[#f5f0e8]" or "bg-[#faf7f2]"
+  readonly bgColor?: string;
 }
 
 export const GalleryCarousel: React.FC<GalleryCarouselProps> = ({
   title,
   subtitle,
   images,
-  ctaText,
-  onAction,
   bgColor = "bg-[#faf7f2]",
 }) => {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [activeIndex, setActiveIndex] = useState(0);
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
 
-  // Track active dot via IntersectionObserver on the scroll container
   useEffect(() => {
     const container = scrollRef.current;
     if (!container) return;
-
     const handleScroll = () => {
       const scrollLeft = container.scrollLeft;
       const itemWidth = container.offsetWidth;
-      const newIndex = Math.round(scrollLeft / itemWidth);
-      setActiveIndex(newIndex);
+      if (itemWidth > 0) {
+        const newIndex = Math.round(scrollLeft / itemWidth);
+        setActiveIndex(newIndex);
+      }
     };
-
     container.addEventListener("scroll", handleScroll, { passive: true });
     return () => container.removeEventListener("scroll", handleScroll);
   }, []);
@@ -67,33 +60,62 @@ export const GalleryCarousel: React.FC<GalleryCarouselProps> = ({
     scrollTo(newIdx);
   }, [activeIndex, images.length, scrollTo]);
 
-  // Lightbox navigation
-  const lightboxPrev = useCallback((e: React.MouseEvent) => {
+  const lightboxPrev = (e: React.MouseEvent) => {
     e.stopPropagation();
     setLightboxIndex((i) => (i !== null ? (i - 1 + images.length) % images.length : null));
-  }, [images.length]);
+  };
 
-  const lightboxNext = useCallback((e: React.MouseEvent) => {
+  const lightboxNext = (e: React.MouseEvent) => {
     e.stopPropagation();
     setLightboxIndex((i) => (i !== null ? (i + 1) % images.length : null));
-  }, [images.length]);
+  };
+
+  const [touchStart, setTouchStart] = useState<number | null>(null);
+  const [touchEnd, setTouchEnd] = useState<number | null>(null);
+
+  const minSwipeDistance = 50;
+
+  const onTouchStart = (e: React.TouchEvent) => {
+    setTouchEnd(null);
+    setTouchStart(e.targetTouches[0].clientX);
+  };
+
+  const onTouchMove = (e: React.TouchEvent) => {
+    setTouchEnd(e.targetTouches[0].clientX);
+  };
+
+  const onTouchEnd = () => {
+    if (!touchStart || !touchEnd) return;
+    const distance = touchStart - touchEnd;
+    const isLeftSwipe = distance > minSwipeDistance;
+    const isRightSwipe = distance < -minSwipeDistance;
+
+    if (isLeftSwipe) {
+      setLightboxIndex((i) => (i !== null ? (i + 1) % images.length : null));
+    } else if (isRightSwipe) {
+      setLightboxIndex((i) => (i !== null ? (i - 1 + images.length) % images.length : null));
+    }
+  };
+
+  // Keyboard navigation for lightbox
+  useEffect(() => {
+    if (lightboxIndex === null) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "ArrowLeft") setLightboxIndex((i) => (i !== null ? (i - 1 + images.length) % images.length : null));
+      if (e.key === "ArrowRight") setLightboxIndex((i) => (i !== null ? (i + 1) % images.length : null));
+      if (e.key === "Escape") setLightboxIndex(null);
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [lightboxIndex, images.length]);
 
   return (
     <div className={`${bgColor} py-14 md:py-16`}>
-      {/* Section header */}
       <div className="px-6 mb-6">
-        <h2
-          className="text-2xl md:text-3xl font-serif font-normal text-[#2c2416] mb-1"
-          style={{ fontFamily: "var(--font-newsreader), 'Georgia', serif" }}
-        >
-          {title}
-        </h2>
-        {subtitle && (
-          <p className="text-[#8a7a6a] text-sm font-light">{subtitle}</p>
-        )}
+        <h2 className="text-2xl md:text-3xl font-serif font-normal text-[#2c2416] mb-1">{title}</h2>
+        {subtitle && <p className="text-[#8a7a6a] text-sm font-light">{subtitle}</p>}
       </div>
 
-      {/* Carousel track — full-bleed, snap scroll */}
       <div className="relative">
         <div
           ref={scrollRef}
@@ -101,11 +123,21 @@ export const GalleryCarousel: React.FC<GalleryCarouselProps> = ({
           style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
         >
           {images.map((image, index) => (
-            <div
+            <button
               key={index}
-              // Each slide: 85vw on mobile, up to 420px on desktop
-              className="flex-none w-[85vw] sm:w-[420px] snap-start rounded-xl overflow-hidden cursor-pointer group"
-              onClick={() => setLightboxIndex(index)}
+              type="button"
+              className="flex-none w-[85vw] sm:w-[420px] snap-start rounded-xl overflow-hidden cursor-pointer group outline-none"
+              onClick={() => {
+                console.log("Gallery Image Clicked:", index);
+                setLightboxIndex(index);
+              }}
+              onPointerDown={(e) => {
+                // Only trigger if not a drag (very basic check: immediate down)
+                // Actually, for a gallery click, we can be aggressive and then let them scroll
+                // but let's just use the same pattern
+                e.stopPropagation();
+                setLightboxIndex(index);
+              }}
             >
               <div className="relative aspect-[4/3] w-full">
                 <Image
@@ -115,131 +147,84 @@ export const GalleryCarousel: React.FC<GalleryCarouselProps> = ({
                   sizes="(max-width: 768px) 100vw, 50vw"
                   className="object-cover transition-transform duration-500 group-hover:scale-[1.03]"
                 />
-                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300" />
               </div>
-            </div>
+            </button>
           ))}
-          {/* Trailing spacer so last card scrolls fully into view on mobile */}
           <div className="flex-none w-4" aria-hidden />
         </div>
 
-        {/* Desktop arrow controls */}
         {activeIndex > 0 && (
-          <button
-            onClick={prev}
-            className="hidden md:flex absolute left-2 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/80 hover:bg-white rounded-full shadow-md items-center justify-center transition-all duration-200 z-10"
-            aria-label="Imagen anterior"
-          >
-            <ChevronLeft className="w-5 h-5 text-[#2c2416]" />
+          <button onClick={prev} className="hidden md:flex absolute left-2 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/80 rounded-full shadow-md items-center justify-center z-10 cursor-pointer">
+            <ChevronLeft className="w-5 h-5" />
           </button>
         )}
         {activeIndex < images.length - 1 && (
-          <button
-            onClick={next}
-            className="hidden md:flex absolute right-2 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/80 hover:bg-white rounded-full shadow-md items-center justify-center transition-all duration-200 z-10"
-            aria-label="Siguiente imagen"
-          >
-            <ChevronRight className="w-5 h-5 text-[#2c2416]" />
+          <button onClick={next} className="hidden md:flex absolute right-2 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/80 rounded-full shadow-md items-center justify-center z-10 cursor-pointer">
+            <ChevronRight className="w-5 h-5" />
           </button>
         )}
       </div>
 
-      {/* Dot indicators */}
-      {images.length > 1 && (
-        <div className="flex justify-center gap-1.5 mt-4 px-6">
-          {images.map((_, index) => (
-            <button
-              key={index}
-              onClick={() => scrollTo(index)}
-              aria-label={`Ir a imagen ${index + 1}`}
-              className={`rounded-full transition-all duration-300 ${
-                index === activeIndex
-                  ? "w-5 h-2 bg-[#6b7c4a]"
-                  : "w-2 h-2 bg-[#d4c9b8] hover:bg-[#9a8a78]"
-              }`}
-            />
-          ))}
-        </div>
-      )}
-
-      {/* Contextual CTA */}
-      {ctaText && (
-        <div className="px-6 mt-8 flex justify-center">
-          <button
-            onClick={onAction}
-            className="inline-flex items-center gap-2 text-[#6b7c4a] hover:text-[#5a6a3d] border border-[#6b7c4a] hover:bg-[#6b7c4a] hover:text-white text-sm font-medium px-6 py-3 rounded-full transition-all duration-300 cursor-pointer"
-          >
-            <MessageCircle className="w-4 h-4" />
-            <span>{ctaText}</span>
-          </button>
-        </div>
-      )}
-
-      {/* Fullscreen Lightbox */}
-      <AnimatePresence>
-        {lightboxIndex !== null && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
-            className="fixed inset-0 z-[9998] flex items-center justify-center bg-black/95"
-            onClick={() => setLightboxIndex(null)}
-          >
-            {/* Close */}
-            <button
-              className="absolute top-4 right-4 text-white/70 hover:text-white p-2 z-10"
-              onClick={(e) => { e.stopPropagation(); setLightboxIndex(null); }}
-              aria-label="Cerrar"
-            >
-              <X className="w-7 h-7" />
-            </button>
-
-            {/* Prev */}
-            <button
-              className="absolute left-3 md:left-6 text-white/60 hover:text-white p-2 z-10"
-              onClick={lightboxPrev}
-              aria-label="Anterior"
-            >
-              <ChevronLeft className="w-9 h-9" />
-            </button>
-
-            {/* Image */}
-            <motion.div
-              key={lightboxIndex}
-              initial={{ opacity: 0, scale: 0.96 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.2 }}
-              className="relative w-full h-full flex items-center justify-center px-16"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div className="relative w-full max-w-4xl max-h-[85vh] aspect-[4/3]">
-                <Image
-                  src={images[lightboxIndex].src}
-                  alt={images[lightboxIndex].alt}
-                  fill
-                  sizes="(max-width: 768px) 100vw, 50vw"
-                  className="object-contain"
-                />
-              </div>
-            </motion.div>
-
-            {/* Next */}
-            <button
-              className="absolute right-3 md:right-6 text-white/60 hover:text-white p-2 z-10"
-              onClick={lightboxNext}
-              aria-label="Siguiente"
-            >
-              <ChevronRight className="w-9 h-9" />
-            </button>
-
-            {/* Counter */}
-            <p className="absolute bottom-5 text-white/40 text-xs tracking-wider">
+      {lightboxIndex !== null && (
+        <div 
+          className="fixed inset-0 z-[99998] flex flex-col items-center justify-center bg-black/98 backdrop-blur-sm animate-in fade-in duration-300" 
+          onClick={() => setLightboxIndex(null)}
+          onTouchStart={onTouchStart}
+          onTouchMove={onTouchMove}
+          onTouchEnd={onTouchEnd}
+        >
+          {/* Top Bar */}
+          <div className="absolute top-0 left-0 right-0 p-6 flex justify-between items-center z-50">
+            <span className="text-white/50 text-xs font-mono uppercase tracking-[0.3em]">
               {lightboxIndex + 1} / {images.length}
+            </span>
+            <button 
+              className="text-white/70 hover:text-white p-2 transition-colors cursor-pointer" 
+              onClick={(e) => { e.stopPropagation(); setLightboxIndex(null); }}
+            >
+              <X className="w-8 h-8" strokeWidth={1.5} />
+            </button>
+          </div>
+
+          {/* Navigation Buttons (Desktop Only) */}
+          <button 
+            className="hidden md:flex absolute left-6 text-white/40 hover:text-white p-4 z-50 transition-all cursor-pointer" 
+            onClick={lightboxPrev}
+          >
+            <ChevronLeft className="w-12 h-12" strokeWidth={1} />
+          </button>
+
+          {/* Image Container */}
+          <div 
+            className="relative w-full h-full flex items-center justify-center p-4 md:p-20" 
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="relative w-full h-full max-w-6xl flex items-center justify-center select-none">
+              <Image 
+                src={images[lightboxIndex].src} 
+                alt={images[lightboxIndex].alt} 
+                fill 
+                className="object-contain pointer-events-none" 
+                priority
+              />
+            </div>
+          </div>
+
+          <button 
+            className="hidden md:flex absolute right-6 text-white/40 hover:text-white p-4 z-50 transition-all cursor-pointer" 
+            onClick={lightboxNext}
+          >
+            <ChevronRight className="w-12 h-12" strokeWidth={1} />
+          </button>
+
+          {/* Bottom Caption */}
+          <div className="absolute bottom-8 left-0 right-0 text-center px-6 pointer-events-none">
+            <p className="text-white/80 text-sm font-light italic max-w-md mx-auto">
+              {images[lightboxIndex].alt}
             </p>
-          </motion.div>
-        )}
-      </AnimatePresence>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

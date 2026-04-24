@@ -15,8 +15,7 @@ export async function POST(req: Request) {
       check_out,
       guests_count,
       trip_reason,
-      referred_by,
-      status
+      referred_by
     } = body;
     
     // Fetch system configuration directly from Supabase (Live mode)

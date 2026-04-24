@@ -26,7 +26,7 @@ export default function LoginPage() {
       if (loginError) throw loginError;
 
       router.push("/admin");
-    } catch (err: any) {
+    } catch (err) {
       console.error("Login error:", err);
       setError("Credenciales inválidas o error de conexión.");
     } finally {

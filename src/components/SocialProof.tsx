@@ -45,7 +45,7 @@ export default function SocialProof() {
               </div>
               
               <p className="text-slate-300 mb-8 leading-relaxed italic text-sm md:text-base">
-                "{t.text}"
+                &quot;{t.text}&quot;
               </p>
               
               <div>

@@ -4,7 +4,7 @@
 
 import React from "react";
 import { GalleryCarousel } from "@/components/coastal/GalleryCarousel";
-import { galleryData, siteConfig } from "@/data/mockData";
+import { galleryData } from "@/data/mockData";
 
 interface CoastalGalleryProps {
   readonly className?: string;

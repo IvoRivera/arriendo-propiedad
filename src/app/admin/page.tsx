@@ -1,9 +1,10 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import type { User as SupabaseUser } from "@supabase/supabase-js";
 import { supabaseAdmin } from "@/lib/supabase";
 import { useRouter } from "next/navigation";
-import { CheckCircle, XCircle, Clock, Calendar, Phone, LogOut, RefreshCw, Archive, ArchiveRestore, Eye, EyeOff, Filter, User, AlertCircle, Settings, Inbox as InboxIcon } from "lucide-react";
+import { XCircle, Calendar, LogOut, RefreshCw, Archive, ArchiveRestore, Eye, Filter, User, AlertCircle, Settings, Inbox as InboxIcon } from "lucide-react";
 import { SystemConfigPanel } from "@/components/admin/SystemConfigPanel";
 import { DateBlockingManager } from "@/components/admin/DateBlockingManager";
 import { initConfig } from "@/lib/systemConfig";
@@ -26,7 +27,7 @@ export default function AdminPage() {
   const [requests, setRequests] = useState<BookingRequest[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<SupabaseUser | null>(null);
   const [selectedStatuses, setSelectedStatuses] = useState<string[]>([]);
   const [archivedIds, setArchivedIds] = useState<string[]>([]);
   const [showArchived, setShowArchived] = useState(false);
@@ -77,7 +78,7 @@ export default function AdminPage() {
 
       if (fetchError) throw fetchError;
       setRequests(data || []);
-    } catch (err: any) {
+    } catch (err) {
       console.error("Error fetching requests:", err);
       setError("No se pudieron cargar las solicitudes. Verifica tus permisos.");
     } finally {
@@ -131,7 +132,7 @@ export default function AdminPage() {
       setRequests(prev => prev.map(req =>
         req.id === id ? { ...req, status: newStatus } : req
       ));
-    } catch (err: any) {
+    } catch (err) {
       console.error("Error updating status:", err);
       alert("Error al actualizar el estado.");
     }

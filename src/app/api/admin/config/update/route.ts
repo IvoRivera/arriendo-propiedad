@@ -1,8 +1,5 @@
 import { NextResponse } from 'next/server';
-import { createSessionClient, supabaseService } from '@/lib/supabaseServer';
 import { validateConfigValue } from '@/lib/configSchema';
-import { getAdminEmails } from '@/lib/adminAuth';
-
 import { verifyAdminRequest } from '@/lib/adminAuth';
 
 export async function POST(req: Request) {
@@ -46,12 +43,13 @@ export async function POST(req: Request) {
 
     return NextResponse.json({ success: true, data, warning: validation.warning });
 
-  } catch (err: any) {
+  } catch (err) {
     console.error('[ConfigUpdateAPI] Fatal Error:', err);
+    const errorMsg = err instanceof Error ? err.message : 'Error desconocido';
     return NextResponse.json({ 
       success: false, 
       error: 'Error interno del servidor', 
-      details: err.message 
+      details: errorMsg 
     }, { status: 500 });
   }
 }

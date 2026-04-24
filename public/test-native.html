@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TEST NATIVO</title>
+    <style>
+        body {
+            background: #111;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            font-family: sans-serif;
+        }
+        button {
+            padding: 20px 40px;
+            font-size: 20px;
+            background: #ff0000;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <h1>ESTA PÁGINA NO TIENE REACT</h1>
+    <p>Si este botón funciona, el problema es React.</p>
+    <button onclick="alert('INTERACCIÓN NATIVA OK')">PROBAR CLICK</button>
+    <script>
+        window.addEventListener('touchstart', () => {
+            document.body.style.background = 'blue';
+        });
+    </script>
+</body>
+</html>

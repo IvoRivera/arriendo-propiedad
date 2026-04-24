@@ -19,7 +19,7 @@ A premium, trust-based rental booking platform for a boutique property in La Ser
 - **Owner**: Admin user who needs to update seasonal pricing and block dates via a simple, secure dashboard.
 
 ## Constraints
-- **Tech Stack**: Next.js 16 (App Router), Supabase, Framer Motion, Resend.
+- **Tech Stack**: Next.js 15 (App Router), Supabase, Framer Motion, Resend.
 - **Budget/Timeline**: Focus on "Day 1" operational stability and visual excellence.
 
 ## Success Criteria

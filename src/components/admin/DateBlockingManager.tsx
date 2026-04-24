@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import { DayPicker, DateRange } from "react-day-picker";
 import { es } from "react-day-picker/locale";
 import "react-day-picker/style.css";
-import { Calendar, Trash2, Plus, Clock, AlertCircle, CheckCircle2 } from "lucide-react";
+import { Calendar, Trash2, Plus, Clock, AlertCircle } from "lucide-react";
 import { supabaseAdmin } from "@/lib/supabase";
 
 interface BlockedDate {
@@ -114,19 +114,69 @@ export function DateBlockingManager() {
           </div>
         </div>
 
-        <div className="flex justify-center mb-8 bg-[#faf7f2] rounded-2xl p-4 border border-[#f0e8dc]">
+        <div className="mb-8 bg-[#faf7f2]/50 rounded-2xl p-6 border border-[#e2d9cc]/30">
+          <style jsx global>{`
+            .rdp-admin-root {
+              --rdp-cell-size: 40px;
+              --rdp-accent-color: #6b7c4a;
+              --rdp-background-color: #faf7f2;
+              margin: 0;
+            }
+            .rdp-admin-root .rdp-day {
+              border: 1px solid #f0e8dc;
+              border-radius: 0;
+              margin: 0;
+              height: var(--rdp-cell-size);
+              width: var(--rdp-cell-size);
+              font-size: 0.8rem;
+              transition: all 0.2s;
+            }
+            .rdp-admin-root .rdp-day:hover {
+              background-color: #f0e8dc !important;
+              color: #2c2416;
+            }
+            .rdp-admin-root .rdp-day_selected {
+              background-color: #6b7c4a !important;
+              color: white !important;
+              border-color: #6b7c4a;
+              z-index: 10;
+            }
+            .rdp-admin-root .rdp-day_range_middle {
+              background-color: #6b7c4a15 !important;
+              color: #6b7c4a !important;
+            }
+            .rdp-admin-root .rdp-months {
+              justify-content: center;
+            }
+            .rdp-admin-root .rdp-head_cell {
+              font-size: 0.65rem;
+              font-weight: 700;
+              text-transform: uppercase;
+              color: #9a8a78;
+              padding-bottom: 0.5rem;
+            }
+          `}</style>
           <DayPicker
             locale={es}
             mode="range"
             selected={range}
             onSelect={setRange}
             disabled={{ before: new Date() }}
+            className="rdp-admin-root"
             classNames={{
-              root: "rdp-admin-root",
-              day_selected: "bg-[#6b7c4a] text-white",
-              day_range_middle: "bg-[#6b7c4a]/10 text-[#6b7c4a]",
-              day_range_start: "bg-[#6b7c4a] text-white rounded-l-full",
-              day_range_end: "bg-[#6b7c4a] text-white rounded-r-full",
+              root: "mx-auto",
+              months: "flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0",
+              month: "space-y-4",
+              caption: "flex justify-between pt-1 relative items-center mb-2",
+              caption_label: "text-sm font-semibold text-[#2c2416] font-serif italic",
+              nav: "flex items-center gap-1",
+              nav_button: "h-7 w-7 bg-white border border-[#e2d9cc] rounded-lg flex items-center justify-center text-[#9a8a78] hover:text-[#6b7c4a] hover:border-[#6b7c4a] transition-all",
+              table: "w-full border-collapse",
+              head_row: "flex",
+              head_cell: "text-[#9a8a78] rounded-md w-10 font-bold text-[10px] uppercase",
+              row: "flex w-full mt-0",
+              cell: "text-center text-sm p-0 relative focus-within:relative focus-within:z-20",
+              day: "h-10 w-10 p-0 font-normal aria-selected:opacity-100",
             }}
           />
         </div>

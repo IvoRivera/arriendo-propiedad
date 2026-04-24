@@ -63,12 +63,13 @@ export async function GET(req: Request) {
 
     return NextResponse.json({ success: true, data });
 
-  } catch (err: any) {
+  } catch (err) {
     console.error('[ConfigHistoryAPI] Fatal Error:', err);
+    const errorMsg = err instanceof Error ? err.message : 'Error desconocido';
     return NextResponse.json({ 
       success: false, 
       error: 'Error interno', 
-      details: err.message 
+      details: errorMsg 
     }, { status: 500 });
   }
 }

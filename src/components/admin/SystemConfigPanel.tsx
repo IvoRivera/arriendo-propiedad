@@ -5,6 +5,13 @@ import { supabaseAdmin } from "@/lib/supabase";
 import { setLocalConfig, initConfig } from "@/lib/systemConfig";
 import { Save, RefreshCw, Check, AlertCircle, User, CreditCard, DollarSign, Clock, Info } from "lucide-react";
 
+interface HistoryItem {
+  changed_at: string;
+  changed_by_email: string;
+  old_value: string | null;
+  new_value: string;
+}
+
 const CONFIG_WHITELIST = [
   { key: 'OWNER_NAME', label: 'Nombre del Propietario', category: 'Identidad del Propietario', icon: <User className="w-4 h-4" />, type: 'text' },
   { key: 'OWNER_EMAIL', label: 'Email del Propietario', category: 'Identidad del Propietario', icon: <User className="w-4 h-4" />, type: 'email' },
@@ -31,7 +38,7 @@ export function SystemConfigPanel() {
   
   // Historial
   const [openHistoryKey, setOpenHistoryKey] = useState<string | null>(null);
-  const [history, setHistory] = useState<Record<string, any[]>>({});
+  const [history, setHistory] = useState<Record<string, HistoryItem[]>>({});
   const [loadingHistory, setLoadingHistory] = useState<string | null>(null);
 
   useEffect(() => {
@@ -152,9 +159,10 @@ export function SystemConfigPanel() {
         setSuccessMsg(null);
         setError(null);
       }, 4000);
-    } catch (err: any) {
+    } catch (err) {
       console.error("Error updating config:", err);
-      setError({ message: err.message || `Error al actualizar ${key}`, type: 'error' });
+      const errorMessage = err instanceof Error ? err.message : `Error al actualizar ${key}`;
+      setError({ message: errorMessage, type: 'error' });
     } finally {
       setSavingKey(null);
     }

@@ -17,15 +17,14 @@ const newsreader = Newsreader({
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  maximumScale: 1,
-  userScalable: false,
+  userScalable: true,
+  viewportFit: "cover",
 };
 
 export const metadata: Metadata = {
   title: "Departamento Premium Frente al Mar | La Serena, Cuatro Esquinas",
   description:
     "Exclusivo departamento en La Serena (Cuatro Esquinas). 2 Dormitorios, terraza frontal al Pacífico, diseño premium. Reserva tu estadía.",
-  keywords: "departamento La Serena, arriendo frente al mar, Cuatro Esquinas, Edificio Playa Serena",
 };
 
 import { ConfigProvider } from "@/components/providers/ConfigProvider";
@@ -37,9 +36,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="es">
-      <body
-        className={`${inter.variable} ${newsreader.variable} antialiased bg-[#faf7f2] text-[#2c2416]`}
-      >
+      <body className={`${inter.variable} ${newsreader.variable} font-sans antialiased bg-[#faf7f2] text-[#2c2416]`}>
         <ConfigProvider>
           {children}
         </ConfigProvider>

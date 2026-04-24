@@ -47,7 +47,14 @@ export async function getAdminEmails(): Promise<string[]> {
  * 1. INTERNAL_SECRET via 'x-internal-key' header
  * 2. User JWT via 'Authorization: Bearer <token>' + Whitelist check
  */
-export async function verifyAdminRequest(req: Request) {
+import { SupabaseClient, User } from '@supabase/supabase-js';
+
+type AdminAuthResult = 
+  | { success: true; mode: 'SYSTEM'; client: SupabaseClient }
+  | { success: true; mode: 'USER'; user: User; client: SupabaseClient }
+  | { success: false; error: string; status: number };
+
+export async function verifyAdminRequest(req: Request): Promise<AdminAuthResult> {
   const internalKey = req.headers.get('x-internal-key');
   const authHeader = req.headers.get('authorization');
   const systemSecret = process.env.INTERNAL_SECRET;

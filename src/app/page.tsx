@@ -13,37 +13,50 @@ import { CoastalRequestModal } from "@/components/coastal/CoastalRequestModal";
 
 export default function Home() {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedDates, setSelectedDates] = useState<{ checkIn: Date; checkOut: Date } | null>(null);
 
-  const openModal = () => setIsModalOpen(true);
-  const closeModal = () => setIsModalOpen(false);
+  const openModal = (dates?: { checkIn: Date; checkOut: Date }) => {
+    if (dates) setSelectedDates(dates);
+    setIsModalOpen(true);
+  };
+
+  const closeModal = () => {
+    setIsModalOpen(false);
+    setSelectedDates(null);
+  };
 
   return (
-    <main className="min-h-screen bg-[#faf7f2]">
+    <main className="min-h-screen bg-[#faf7f2] relative">
       {/* 1. Hero — emotional first impression */}
-      <CoastalHero onAction={openModal} />
+      <CoastalHero onAction={() => openModal()} />
 
       {/* 2. Availability — date range picker with Modal CTA */}
-      <CoastalAvailability onAction={openModal} />
+      <CoastalAvailability onAction={(dates) => openModal(dates)} />
 
+      {/* 3. Experience — values and core selling points */}
       <CoastalExperience />
 
-      {/* 4. Gallery — 3 carousels: Destacadas / Departamento / Amenidades */}
-      <CoastalGallery onAction={openModal} />
+      {/* 4. Gallery — curated views */}
+      <CoastalGallery onAction={() => openModal()} />
 
-      {/* 5. Discover La Serena — context + aspirational content */}
+      {/* 5. Discover La Serena — local context */}
       <CoastalDiscover />
 
-      {/* 6. Specifications — trust via concrete facts */}
+      {/* 6. Specifications — premium details */}
       <CoastalSpecs />
 
-      {/* 7. Location + Testimonials — social proof + CTA */}
-      <CoastalLocationTestimonials onAction={openModal} />
+      {/* 7. Location + Testimonials */}
+      <CoastalLocationTestimonials onAction={() => openModal()} />
 
       {/* 8. Footer CTA */}
-      <CoastalFooterCta onAction={openModal} />
+      <CoastalFooterCta onAction={() => openModal()} />
 
-      {/* Premium Request Modal */}
-      <CoastalRequestModal isOpen={isModalOpen} onClose={closeModal} />
+      {/* MODAL SYSTEM — Powered by Portals for absolute mobile stability */}
+      <CoastalRequestModal 
+        isOpen={isModalOpen} 
+        onClose={closeModal} 
+        initialDates={selectedDates}
+      />
     </main>
   );
 }

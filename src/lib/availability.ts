@@ -23,7 +23,7 @@ export async function getLiveBlockedDates(): Promise<Date[]> {
       manualBlocks.forEach(range => {
         const start = new Date(range.start_date);
         const end = new Date(range.end_date);
-        let current = new Date(start);
+        const current = new Date(start);
         
         while (current <= end) {
           blockedDates.push(new Date(current));
@@ -42,7 +42,7 @@ export async function getLiveBlockedDates(): Promise<Date[]> {
       confirmedBookings.forEach(booking => {
         const start = new Date(booking.check_in);
         const end = new Date(booking.check_out);
-        let current = new Date(start);
+        const current = new Date(start);
         
         // We block every night of the stay
         // Usually, check_out morning is available for check_in afternoon

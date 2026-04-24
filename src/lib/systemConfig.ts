@@ -40,7 +40,7 @@ export async function initConfig(force = false) {
 
       if (data) {
         const freshConfig: Record<string, ConfigItem> = {};
-        data.forEach((item: any) => {
+        data.forEach((item: { key: string; value: string; updated_at: string; updated_by: string; updated_by_email?: string }) => {
           freshConfig[item.key] = {
             value: item.value,
             updated_at: item.updated_at,

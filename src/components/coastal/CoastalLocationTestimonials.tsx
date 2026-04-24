@@ -3,7 +3,7 @@
 
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useRef } from "react";
 import { Star, MapPin, MessageCircle } from "lucide-react";
 import { siteConfig, testimonialsData } from "@/data/mockData";
 
@@ -13,26 +13,7 @@ interface CoastalLocationTestimonialsProps {
 }
 
 export const CoastalLocationTestimonials: React.FC<CoastalLocationTestimonialsProps> = ({ className = "", onAction }) => {
-  const [showMap, setShowMap] = useState(false);
   const mapRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting) {
-          setShowMap(true);
-          observer.disconnect();
-        }
-      },
-      { threshold: 0.1, rootMargin: "100px" }
-    );
-
-    if (mapRef.current) {
-      observer.observe(mapRef.current);
-    }
-
-    return () => observer.disconnect();
-  }, []);
 
   return (
     <section className={`bg-[#faf7f2] py-14 md:py-16 px-6 border-t border-[#e2d9cc] ${className}`}>
@@ -52,23 +33,16 @@ export const CoastalLocationTestimonials: React.FC<CoastalLocationTestimonialsPr
             ref={mapRef}
             className="w-full h-56 rounded-xl overflow-hidden border border-[#d4c9b8] mb-5 bg-[#f0ebe0] relative flex items-center justify-center"
           >
-            {showMap ? (
-              <iframe
-                src={siteConfig.googleMapsEmbedSrc}
-                width="100%"
-                height="100%"
-                style={{ border: 0 }}
-                allowFullScreen={false}
-                loading="lazy"
-                referrerPolicy="no-referrer-when-downgrade"
-                className="opacity-90 hover:opacity-100 transition-opacity duration-300"
-              />
-            ) : (
-              <div className="text-[#9a8a78] flex flex-col items-center gap-2">
-                <MapPin className="w-6 h-6 opacity-20 animate-pulse" />
-                <span className="text-[10px] uppercase tracking-widest font-medium opacity-40">Cargando mapa...</span>
-              </div>
-            )}
+            <iframe
+              src={siteConfig.googleMapsEmbedSrc}
+              width="100%"
+              height="100%"
+              style={{ border: 0 }}
+              allowFullScreen={false}
+              loading="lazy"
+              referrerPolicy="no-referrer-when-downgrade"
+              className="opacity-90 hover:opacity-100 transition-opacity duration-300"
+            />
           </div>
 
           <div className="flex items-start gap-2 text-[#6b5d4f] text-sm">
@@ -120,7 +94,7 @@ export const CoastalLocationTestimonials: React.FC<CoastalLocationTestimonialsPr
                   </div>
                 </div>
                 <p className="text-[#6b5d4f] text-sm font-light leading-relaxed italic">
-                  "{item.text}"
+                  &quot;{item.text}&quot;
                 </p>
               </div>
             ))}

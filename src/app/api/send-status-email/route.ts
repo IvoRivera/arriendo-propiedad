@@ -127,13 +127,13 @@ export async function POST(req: Request) {
     }
 
     return NextResponse.json({ data });
-  } catch (err: any) {
+  } catch (err) {
     if (process.env.NODE_ENV === 'development') {
       console.error('API Error:', err);
     }
     
     // Controlled error responses
-    if (err.message?.startsWith('CONFIG_')) {
+    if (err instanceof Error && err.message?.startsWith('CONFIG_')) {
       return NextResponse.json(
         { error: 'Configuration Error', details: err.message }, 
         { status: 500 }
