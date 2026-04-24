@@ -5,7 +5,7 @@ import { createPortal } from "react-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { X, CheckCircle2, CalendarDays, AlertCircle, RefreshCw, ShieldCheck } from "lucide-react";
+import { X, CheckCircle2, CalendarDays, ShieldCheck } from "lucide-react";
 import { DayPicker } from "react-day-picker";
 import "react-day-picker/style.css";
 import { es } from "date-fns/locale";
@@ -128,6 +128,7 @@ export const CoastalRequestModal: React.FC<CoastalRequestModalProps> = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [isPreparing, setIsPreparing] = useState(false);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [availabilityStatus, setAvailabilityStatus] = useState<'loading' | 'error' | 'success'>('loading');
   const [blockedDateStrings, setBlockedDateStrings] = useState<string[]>([]);
   const [activePicker, setActivePicker] = useState<'check_in' | 'check_out' | null>(null);
@@ -183,7 +184,7 @@ export const CoastalRequestModal: React.FC<CoastalRequestModalProps> = ({
       } else {
         setAvailabilityStatus('error');
       }
-    } catch (e: any) {
+    } catch (e: unknown) {
       clearTimeout(timeoutId);
       console.error('[CoastalRequestModal] fetchAvailability error:', e);
       setAvailabilityStatus('error');
@@ -239,7 +240,7 @@ export const CoastalRequestModal: React.FC<CoastalRequestModalProps> = ({
     if (date <= checkInDate) return true;
     
     // Check range logic
-    let current = new Date(checkInDate);
+    const current = new Date(checkInDate);
     current.setDate(current.getDate() + 1);
     while (current < date) {
       const year = current.getFullYear();
@@ -284,7 +285,7 @@ export const CoastalRequestModal: React.FC<CoastalRequestModalProps> = ({
         // Generate range of dates to check
         const start = parseISO(data.check_in);
         const end = parseISO(data.check_out);
-        let curr = new Date(start);
+        const curr = new Date(start);
         const datesToRequest: string[] = [];
         while (curr <= end) {
           const year = curr.getFullYear();

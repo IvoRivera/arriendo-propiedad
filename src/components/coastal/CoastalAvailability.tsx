@@ -7,7 +7,7 @@ import { DayPicker } from "react-day-picker";
 import "react-day-picker/style.css";
 import { ChevronDown, X, RefreshCw, CalendarDays, AlertCircle } from "lucide-react";
 
-import { useConfig } from "@/components/providers/ConfigProvider";
+// import { useConfig } from "@/components/providers/ConfigProvider";
 
 // Custom styles for the calendar
 const calendarStyles = `
@@ -236,7 +236,7 @@ export const CoastalAvailability: React.FC<CoastalAvailabilityProps> = ({ onActi
     if (date <= checkIn) return true;
 
     // Prevent checkout if there is a blocked date between checkIn and selected date
-    let current = new Date(checkIn);
+    const current = new Date(checkIn);
     current.setDate(current.getDate() + 1); // Start checking from day after check-in
     
     // We check up to the day BEFORE the selected checkout date.
@@ -268,6 +268,12 @@ export const CoastalAvailability: React.FC<CoastalAvailabilityProps> = ({ onActi
               <span className="text-[10px] uppercase tracking-[0.2em] font-bold text-[#6b7c4a] animate-pulse">
                 Cargando Disponibilidad...
               </span>
+              <button 
+                onClick={(e) => { e.stopPropagation(); fetchAvailability(); }}
+                className="mt-1 text-[9px] text-[#9a8a78] hover:text-[#6b7c4a] underline underline-offset-2 transition-colors pointer-events-auto"
+              >
+                ¿Demora mucho? Reintentar
+              </button>
             </div>
           </div>
         )}

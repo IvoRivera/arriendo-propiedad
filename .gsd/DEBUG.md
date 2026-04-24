@@ -149,17 +149,21 @@ When accessing the site for the first time in an incognito window on mobile, the
 ## Resolution
 
 **Root Cause:** 
-1. **Breaking Change in v16**: The `middleware.ts` convention has been officially replaced by `proxy.ts` in this project's version of Next.js.
-2. **Internal Module Refactor**: Next.js 16 refactored instrumentation modules, making existing `.next` caches incompatible.
+1. **Incompatible Framework Jump**: Updating to Next.js 16.2.4 (React 19) introduced breaking changes and dependency conflicts (e.g. `framer-motion`, `lucide-react`) that caused a fatal Client-Side JS error, "killing" all button interactivity.
+2. **Convention Mismatch**: `proxy.ts` was not fully supported/ready for the project's existing routing in v15.1, leading to hanging API calls.
+3. **Stale Artifacts**: Deleting `.next` was necessary to clear internal module mapping errors.
 
 **Fix:**
-1. **Migration**: Renamed `src/middleware.ts` to `src/proxy.ts` and updated the exported function name to `proxy`.
-2. **Cache Purge**: Deleted the `.next` directory to force a fresh recompilation of all modules.
-3. **Verification**: Restarted the dev server to confirm the warnings and module errors are gone.
+1. **Reversion**: Reverted Next.js to a stable patch (`v15.1.4`) and restored the `middleware.ts` convention.
+2. **Linting**: Fixed several lint errors in `CoastalAvailability` and `CoastalRequestModal` that were blocking builds.
+3. **UX Resilience**: Added a "Reintentar" button to the `CoastalAvailability` loading overlay to prevent users from getting stuck if a fetch hangs.
+4. **Cache Clean**: Purged `.next` and re-synchronized dependencies.
 
 **Verified:**
-- `proxy.ts` is correctly recognized by the framework.
-- No `Module not found` errors on startup.
+- Page loads correctly.
+- Interactivity restored (buttons respond).
+- Availability fetches successfully (or provides a retry path).
+- Build passes Lint check.
 
 ## Resolution
 
