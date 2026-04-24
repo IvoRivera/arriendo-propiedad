@@ -1,5 +1,31 @@
 # JOURNAL.md
 
+## Session: 2026-04-24 19:25
+
+### Objective
+Resolve critical mobile loading hangs and gallery interactivity conflicts. Fix build errors and restore stability after a failed Next.js 16 update.
+
+### Accomplished
+- [x] **Availability Resilience**: Implemented manual cache busting and `AbortController` timeouts to fix infinite "Cargando Disponibilidad" on mobile.
+- [x] **Gallery UX**: Separated swipe vs tap logic in `GalleryCarousel` using displacement thresholds (10px).
+- [x] **Stability Recovery**: Reverted `next` to `15.1.4` and restored `middleware.ts` after v16 broke client-side JS.
+- [x] **Linting**: Resolved all build-blocking lint errors.
+- [x] **Manual Retry**: Added a fallback link for users if the availability fetch takes too long.
+
+### Verification
+- [x] Verified `GET /api/public/availability` returns `200 OK` on the dev server.
+- [x] Verified buttons respond correctly in the browser.
+- [x] Verified `npm run build` clears the Lint stage.
+
+### Paused Because
+User requested a pause to finish the session. Interactivity and loading issues are confirmed fixed.
+
+### Handoff Notes
+- The site is now stable on Next.js 15.1.4. **Do not upgrade to 16.x** without a comprehensive plan for React 19 / dependency compatibility.
+- `middleware.ts` is the active routing file.
+
+---
+
 ## Session: 2026-04-24 17:13
 
 ### Objective
