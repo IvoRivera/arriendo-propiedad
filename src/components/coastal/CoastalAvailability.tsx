@@ -6,7 +6,8 @@ import { DayPicker } from "react-day-picker";
 import { es } from "react-day-picker/locale";
 import "react-day-picker/style.css";
 import { Calendar, MessageCircle, X, ChevronDown } from "lucide-react";
-import { availabilityData } from "@/data/mockData";
+import { availabilityData, heroData } from "@/data/mockData";
+import { useConfig } from "@/components/providers/ConfigProvider";
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -119,8 +120,8 @@ function DateInput({
           }
         }}
         className={`w-full text-left flex flex-col gap-0.5 px-4 py-3.5 rounded-2xl border transition-all duration-200 bg-white cursor-pointer select-none touch-manipulation ${open
-            ? "border-[#6b7c4a] shadow-[0_0_0_3px_rgba(107,124,74,0.12)]"
-            : "border-[#e2d9cc] hover:border-[#b5a99a] shadow-sm"
+          ? "border-[#6b7c4a] shadow-[0_0_0_3px_rgba(107,124,74,0.12)]"
+          : "border-[#e2d9cc] hover:border-[#b5a99a] shadow-sm"
           }`}
       >
         <span className="block text-[10px] uppercase tracking-[0.14em] font-semibold text-[#9a8a78]">
@@ -219,7 +220,7 @@ function DateInput({
 
 interface CoastalAvailabilityProps {
   readonly className?: string;
-  onAction?: () => void;
+  onAction?: (dates?: { checkIn: Date; checkOut: Date }) => void;
 }
 
 export const CoastalAvailability: React.FC<CoastalAvailabilityProps> = ({
@@ -257,8 +258,16 @@ export const CoastalAvailability: React.FC<CoastalAvailabilityProps> = ({
     setCheckOut(undefined);
   }
 
+  const { getValue } = useConfig();
+  const livePriceStr = getValue("PROPERTY_RENT_VALUE") || heroData.pricePerNight;
+
   const hasSelection = checkIn && checkOut;
   const nights = hasSelection ? nightCount(checkIn, checkOut) : 0;
+
+  const pricePerNightNum = parseInt(livePriceStr.replace(/\D/g, ''));
+  const totalPrice = nights * pricePerNightNum;
+  const totalPriceFormatted = new Intl.NumberFormat('es-CL').format(totalPrice);
+  const displayPricePerNight = new Intl.NumberFormat('es-CL').format(pricePerNightNum);
 
   return (
     <>
@@ -377,35 +386,64 @@ export const CoastalAvailability: React.FC<CoastalAvailabilityProps> = ({
           )}
 
           {hasSelection && (
-            <div className="mt-6">
-              <div className="bg-white border border-[#e2d9cc] rounded-2xl p-5 text-center shadow-sm">
-                <div className="flex items-center justify-center gap-3 mb-1">
-                  <div className="text-center">
-                    <p className="text-[10px] uppercase tracking-widest text-[#9a8a78] font-medium">Llegada</p>
-                    <p className="text-sm font-semibold text-[#2c2416]">{formatDisplay(checkIn)}</p>
+            <div className="mt-10">
+              <div className="bg-white border border-[#e2d9cc] rounded-2xl p-8 sm:p-10 shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
+                <div className="flex flex-col items-center text-center">
+                  <p className="text-[10px] uppercase tracking-[0.3em] text-[#6b7c4a] font-light mb-8">
+                    Tu estadía
+                  </p>
+
+                  <div className="flex items-center justify-center gap-8 mb-10 w-full max-w-md">
+                    <div className="flex-1 text-right">
+                      <p className="text-[10px] uppercase tracking-[0.15em] text-[#9a8a78] font-medium mb-1.5">Llegada</p>
+                      <p className="text-base font-medium text-[#2c2416]">{formatDisplay(checkIn)}</p>
+                    </div>
+                    <div className="text-[#e2d9cc] shrink-0">
+                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                        <path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
+                    </div>
+                    <div className="flex-1 text-left">
+                      <p className="text-[10px] uppercase tracking-[0.15em] text-[#9a8a78] font-medium mb-1.5">Salida</p>
+                      <p className="text-base font-medium text-[#2c2416]">{formatDisplay(checkOut)}</p>
+                    </div>
                   </div>
-                  <div className="text-[#b5a99a]">
-                    <svg width="20" height="20" viewBox="0 0 16 16" fill="none">
-                      <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+
+                  <div className="w-full border-t border-[#e2d9cc] pt-8 mb-10 flex flex-col gap-3">
+                    <div className="flex justify-between items-center text-sm">
+                      <span className="text-[#6b5d4f] font-light italic">
+                        {nights} {nights === 1 ? "noche" : "noches"} de desconexión
+                      </span>
+                      <span className="text-[#2c2416] font-medium tracking-tight">
+                        ${displayPricePerNight} <span className="text-[10px] text-[#9a8a78] uppercase tracking-wider ml-1">/ noche</span>
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-baseline pt-4 border-t border-[#f5f0e8]">
+                      <span className="text-xs uppercase tracking-widest text-[#2c2416] font-medium">Total estimado</span>
+                      <span className="text-3xl font-serif text-[#2c2416] italic" style={{ fontFamily: "var(--font-newsreader), serif" }}>
+                        ${totalPriceFormatted}
+                      </span>
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={() => onAction?.(hasSelection ? { checkIn, checkOut } : undefined)}
+                    className="group relative inline-flex items-center gap-4 bg-[#6b7c4a] hover:bg-[#5a6a3d] text-white font-medium text-xs uppercase tracking-[0.2em] px-12 py-5 rounded-full transition-all duration-300 shadow-lg hover:shadow-xl w-full justify-center cursor-pointer"
+                  >
+                    <span>Continuar solicitud</span>
+                    <svg
+                      className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1"
+                      viewBox="0 0 16 16"
+                      fill="none"
+                    >
+                      <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                     </svg>
-                  </div>
-                  <div className="text-center">
-                    <p className="text-[10px] uppercase tracking-widest text-[#9a8a78] font-medium">Salida</p>
-                    <p className="text-sm font-semibold text-[#2c2416]">{formatDisplay(checkOut)}</p>
-                  </div>
+                  </button>
+
+                  <p className="mt-6 text-[10px] text-[#9a8a78] uppercase tracking-[0.15em] font-light">
+                    * No es un compromiso de pago aún
+                  </p>
                 </div>
-
-                <p className="text-xs text-[#9a8a78] mb-4">
-                  {nights} {nights === 1 ? "noche" : "noches"} · Consulta sin compromiso
-                </p>
-
-                <button
-                  onClick={onAction}
-                  className="inline-flex items-center gap-2.5 bg-[#6b7c4a] hover:bg-[#5a6a3d] text-white font-medium text-sm px-7 py-3.5 rounded-full transition-all duration-300 shadow-sm w-full justify-center cursor-pointer"
-                >
-                  <MessageCircle className="w-4 h-4 shrink-0" fill="currentColor" />
-                  <span>Quiero quedarme aquí en estas fechas</span>
-                </button>
               </div>
             </div>
           )}
