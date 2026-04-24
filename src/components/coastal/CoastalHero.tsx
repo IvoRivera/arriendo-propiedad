@@ -3,7 +3,7 @@
 
 import React from "react";
 import Image from "next/image";
-import { MessageCircle } from "lucide-react";
+import { Calendar } from "lucide-react";
 import { heroData } from "@/data/mockData";
 
 import { useConfig } from "@/components/providers/ConfigProvider";
@@ -78,7 +78,7 @@ export const CoastalHero: React.FC<CoastalHeroProps> = ({ className = "", onActi
                     className="bg-[#6b7c4a] hover:bg-[#5a6a3d] text-white font-bold text-[11px] md:text-xs uppercase tracking-[0.2em] px-10 py-4.5 rounded-full transition-all duration-300 hover:shadow-2xl hover:-translate-y-0.5 active:scale-95 cursor-pointer inline-flex items-center gap-3 group relative z-50"
                 >
                     <span>{getValue("hero_cta_text") || heroData.ctaText}</span>
-                    <MessageCircle className="w-4 h-4" fill="currentColor" />
+                    <Calendar className="w-4 h-4" fill="currentColor" />
                 </button>
 
                 <p className="text-white/60 text-xs tracking-wide font-light mt-6">

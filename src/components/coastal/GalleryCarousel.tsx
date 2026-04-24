@@ -70,25 +70,32 @@ export const GalleryCarousel: React.FC<GalleryCarouselProps> = ({
     setLightboxIndex((i) => (i !== null ? (i + 1) % images.length : null));
   };
 
-  const [touchStart, setTouchStart] = useState<number | null>(null);
-  const [touchEnd, setTouchEnd] = useState<number | null>(null);
+  const [touchStart, setTouchStart] = useState<{ x: number, y: number } | null>(null);
+  const [touchEnd, setTouchEnd] = useState<{ x: number, y: number } | null>(null);
 
   const minSwipeDistance = 50;
 
   const onTouchStart = (e: React.TouchEvent) => {
     setTouchEnd(null);
-    setTouchStart(e.targetTouches[0].clientX);
+    setTouchStart({ x: e.targetTouches[0].clientX, y: e.targetTouches[0].clientY });
   };
 
   const onTouchMove = (e: React.TouchEvent) => {
-    setTouchEnd(e.targetTouches[0].clientX);
+    setTouchEnd({ x: e.targetTouches[0].clientX, y: e.targetTouches[0].clientY });
   };
 
   const onTouchEnd = () => {
     if (!touchStart || !touchEnd) return;
-    const distance = touchStart - touchEnd;
-    const isLeftSwipe = distance > minSwipeDistance;
-    const isRightSwipe = distance < -minSwipeDistance;
+    const distanceX = touchStart.x - touchEnd.x;
+    const distanceY = touchStart.y - touchEnd.y;
+    
+    if (Math.abs(distanceY) > Math.abs(distanceX) && Math.abs(distanceY) > minSwipeDistance) {
+      setLightboxIndex(null);
+      return;
+    }
+
+    const isLeftSwipe = distanceX > minSwipeDistance;
+    const isRightSwipe = distanceX < -minSwipeDistance;
 
     if (isLeftSwipe) {
       setLightboxIndex((i) => (i !== null ? (i + 1) % images.length : null));
@@ -163,6 +170,13 @@ export const GalleryCarousel: React.FC<GalleryCarouselProps> = ({
             <ChevronRight className="w-5 h-5" />
           </button>
         )}
+
+        {/* Mobile Navigation Counter */}
+        <div className="flex justify-center items-center mt-4 md:hidden pb-2">
+          <div className="bg-white/70 px-4 py-1.5 rounded-full shadow-sm text-[10px] text-[#8a7a6a] font-mono uppercase tracking-widest border border-[#e2d9cc]/50">
+            {activeIndex + 1} / {images.length}
+          </div>
+        </div>
       </div>
 
       {lightboxIndex !== null && (
@@ -179,10 +193,10 @@ export const GalleryCarousel: React.FC<GalleryCarouselProps> = ({
               {lightboxIndex + 1} / {images.length}
             </span>
             <button 
-              className="text-white/70 hover:text-white p-2 transition-colors cursor-pointer" 
+              className="text-white hover:text-white bg-black/40 hover:bg-black/60 p-3 rounded-full transition-all cursor-pointer z-[99999]" 
               onClick={(e) => { e.stopPropagation(); setLightboxIndex(null); }}
             >
-              <X className="w-8 h-8" strokeWidth={1.5} />
+              <X className="w-8 h-8" strokeWidth={2} />
             </button>
           </div>
 

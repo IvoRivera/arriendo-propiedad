@@ -183,7 +183,7 @@ export const CoastalAvailability: React.FC<CoastalAvailabilityProps> = ({ onActi
               disabled={!checkIn || !checkOut}
               className="md:w-auto w-full bg-[#6b7c4a] hover:bg-[#5a6a3d] disabled:bg-[#d4c9b8] text-white px-10 py-4.5 md:py-0 rounded-2xl md:rounded-xl font-bold text-[11px] uppercase tracking-[0.2em] transition-all shadow-lg active:scale-95 disabled:grayscale"
             >
-              Consultar
+              Solicitud de Reserva
             </button>
           </div>
         </div>

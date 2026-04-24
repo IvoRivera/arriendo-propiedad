@@ -13,12 +13,12 @@ export const siteConfig = {
 export const heroData = {
   headline: "Despierta Frente al Mar",
   tagline: "79 m² · Primera línea · 2 dormitorios · Cuatro Esquinas, La Serena",
-  subheadline: "Escríbeme y lo coordinamos — sin intermediarios.",
+  subheadline: "Solicita tu reserva — sin intermediarios.",
   _pricePerNight_DEPRECATED: "80.000",
   availabilityPrompt: "Consulta disponibilidad en segundos",
   image: "/images/destacadas/05-terraza-nocturna.webp",
   imageAlt: "Terraza iluminada frente al mar en La Serena",
-  ctaText: "Ver disponibilidad por WhatsApp",
+  ctaText: "Solicitud de Reserva",
 };
 
 // ─── EXPERIENCE ───────────────────────────────────────────────────────────────
@@ -56,7 +56,7 @@ export const galleryData = {
   featured: {
     title: "Vistas que se quedan contigo",
     subtitle: "Lo primero que ves al abrir la puerta.",
-    ctaText: "¿Te imaginas aquí? Escríbeme",
+    ctaText: "Solicitud de Reserva",
     images: [
       { src: "/images/destacadas/19-vista-balcon5.webp", alt: "Vista panorámica al océano desde la terraza" },
       { src: "/images/destacadas/02-cocina-sillon-ventana.webp", alt: "Espacios integrados con iluminación natural" },
@@ -71,7 +71,7 @@ export const galleryData = {
   interiors: {
     title: "Tu espacio frente al mar",
     subtitle: "Luz natural, calma y todo listo para que simplemente llegues a disfrutar.",
-    ctaText: "¿Te gusta lo que ves? Consultemos fechas",
+    ctaText: "Solicitud de Reserva",
     images: [
       { src: "/images/el-departamento/01-vista-entrada.webp", alt: "Entrada del departamento" },
       { src: "/images/el-departamento/02-entrada-departamento.webp", alt: "Entrada del departamento" },
@@ -98,7 +98,7 @@ export const galleryData = {
   amenities: {
     title: "Donde empieza tu descanso",
     subtitle: "Un lugar pensado para bajar el ritmo y sentirte cómodo desde el primer momento.",
-    ctaText: "Reserva tu estadía — sin complicaciones",
+    ctaText: "Solicitud de Reserva",
     images: [
       { src: "/images/amenidades/01-aerea-condominio.webp", alt: "Vista aérea del condominio" },
       { src: "/images/amenidades/02-terraza-dia.webp", alt: "Terraza común del edificio" },
@@ -130,8 +130,8 @@ export const specificationsData = {
 // ✅ To mark dates as occupied: add "YYYY-MM-DD" strings to blockedDates.
 export const availabilityData = {
   title: "Disponibilidad",
-  subtitle: "Consulta las fechas que te interesan — te respondo directamente.",
-  ctaText: "¿Te interesan estas fechas? Escríbeme y lo coordinamos",
+  subtitle: "Consulta las fechas que te interesan — te contactaremos a la brevedad.",
+  ctaText: "Solicitud de Reserva",
   // Format: "YYYY-MM-DD"
   // ✅ To mark dates as unavailable: add "YYYY-MM-DD" strings below.
   blockedDates: [
@@ -176,7 +176,7 @@ export const discoverData = {
 // ─── TESTIMONIALS ─────────────────────────────────────────────────────────────
 export const testimonialsData = {
   sectionTitle: "Lo que dicen quienes estuvieron aquí",
-  ctaText: "Quiero vivir esto — hablar con el anfitrión",
+  ctaText: "Solicitud de Reserva",
   items: [
     {
       name: "María José V.",
@@ -205,6 +205,6 @@ export const testimonialsData = {
 // ─── FOOTER CTA ───────────────────────────────────────────────────────────────
 export const footerCtaData = {
   headline: "¿Lista tu próxima escapada?",
-  subheadline: "Escríbeme directo. Sin formularios, sin esperas.",
-  ctaText: "Consultar disponibilidad",
+  subheadline: "Te contactaremos luego de revisar tu solicitud.",
+  ctaText: "Solicitud de Reserva",
 };
