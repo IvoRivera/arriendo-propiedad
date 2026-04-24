@@ -1,5 +1,30 @@
 # JOURNAL.md
 
+## Session: 2026-04-24 17:13
+
+### Objective
+Complete and verify Phase 6 and Phase 8 to finalize Milestone v1.1.
+
+### Accomplished
+- [x] Verified Phase 6 must-haves (Max 4 guests, Availability checks, House Rules, Anti-party scoring, Concurrency, Inventory MVP).
+- [x] Implemented Phase 8 Mobile Optimizations (prevented iOS zoom by updating inputs to `text-base` / 16px).
+- [x] Ensured `rules_accepted` compliance data is sent to Supabase.
+- [x] Verified all Phase 8 tasks and updated project state.
+
+### Verification
+- [x] Phase 6 `VERIFICATION.md` created.
+- [x] Phase 8 `VERIFICATION.md` created.
+- [x] `ROADMAP.md` and `STATE.md` reflect 100% completion of Milestone v1.1.
+
+### Paused Because
+User requested a pause. The milestone is complete.
+
+### Handoff Notes
+- The codebase is stable and the booking flow is fully robust.
+- Next steps should focus on reviewing the system for deployment or planning the next milestone.
+
+---
+
 ## Session: 2026-04-24 15:09
 
 ### Objective
