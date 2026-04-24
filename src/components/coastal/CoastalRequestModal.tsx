@@ -194,7 +194,7 @@ export const CoastalRequestModal: React.FC<CoastalRequestModalProps> = ({
     const d2 = new Date(checkOutStr);
     const nights = Math.round((d2.getTime() - d1.getTime()) / (1000 * 60 * 60 * 24));
     
-    const livePriceStr = getValue("PROPERTY_RENT_VALUE") || heroData.pricePerNight;
+    const livePriceStr = getValue("PROPERTY_RENT_VALUE") || "80000";
     const pricePerNightNum = parseInt(livePriceStr.replace(/\D/g, ''));
     const total = nights * pricePerNightNum;
     const formattedTotal = new Intl.NumberFormat('es-CL').format(total);

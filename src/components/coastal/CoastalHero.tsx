@@ -15,7 +15,7 @@ interface CoastalHeroProps {
 
 export const CoastalHero: React.FC<CoastalHeroProps> = ({ className = "", onAction }) => {
     const { getValue } = useConfig();
-    const livePrice = getValue("PROPERTY_RENT_VALUE") || heroData.pricePerNight;
+    const livePrice = getValue("PROPERTY_RENT_VALUE") || "80.000";
 
     // Helper to format price with dots (Chilean format)
     const formatPrice = (p: string) => {

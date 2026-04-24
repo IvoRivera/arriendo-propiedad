@@ -259,7 +259,7 @@ export const CoastalAvailability: React.FC<CoastalAvailabilityProps> = ({
   }
 
   const { getValue } = useConfig();
-  const livePriceStr = getValue("PROPERTY_RENT_VALUE") || heroData.pricePerNight;
+  const livePriceStr = getValue("PROPERTY_RENT_VALUE") || "80000";
 
   const hasSelection = checkIn && checkOut;
   const nights = hasSelection ? nightCount(checkIn, checkOut) : 0;

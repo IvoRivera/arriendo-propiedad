@@ -14,6 +14,8 @@ export const heroData = {
   headline: "Despierta Frente al Mar",
   tagline: "79 m² · Primera línea · 2 dormitorios · Cuatro Esquinas, La Serena",
   subheadline: "Escríbeme y lo coordinamos — sin intermediarios.",
+  _pricePerNight_DEPRECATED: "80.000",
+  availabilityPrompt: "Consulta disponibilidad en segundos",
   image: "/images/destacadas/05-terraza-nocturna.webp",
   imageAlt: "Terraza iluminada frente al mar en La Serena",
   ctaText: "Ver disponibilidad por WhatsApp",
