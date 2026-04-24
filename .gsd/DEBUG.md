@@ -1,36 +1,29 @@
----
-status: investigating
-trigger: "Hero button animates but modal doesn't appear. Date inputs unresponsive. Form view is broken/too big."
-created: 2026-04-24T17:43:08Z
-updated: 2026-04-24T18:15:00Z
----
+# Debug Session: Calendar UX & Modal Overlap
 
-## Current Focus
-hypothesis: "React state updates are firing (confirmed by button animations), but the overlays (Modal/Calendar) are either rendering off-screen, at 0 size, or being clipped by a parent container's overflow on mobile Safari."
-test: "1. Simplify Modal layout to be top-aligned on mobile. 2. Remove intermediate 'Preparing' steps. 3. Force absolute positioning for calendars to avoid fixed viewport bugs."
-expecting: "The modal to become visible even if partially broken, allowing us to see it's actually 'there'."
-next_action: "Refactor CoastalRequestModal for mobile-first scrolling and height management."
+## Symptom
+1. **DayPicker UX**: Occupied dates are barely distinguishable from available ones (black vs slightly gray). [RESOLVED]
+2. **Modal Overlap**: In `CoastalRequestModal.tsx`, the mobile phone input and guests select are overlapping/superimposed. [RESOLVED]
+3. **Phone Validation**: The phone number field does not correctly validate the format (e.g., users can enter invalid numbers and it still passes).
 
-## Symptoms
-expected: "Modal opens on click. Calendar opens on click."
-actual: "Buttons animate (React state changes) but no UI appears. Form (if seen) is oversized."
-errors: "None in logs. Taps are registered by MobileDebugger."
+**When:** During form submission in `CoastalRequestModal`.
+**Expected:** The phone number should follow a specific format (e.g., matching the country's pattern) and show an error if invalid.
+**Actual:** Validation is too loose or non-existent for the specific number format.
 
-## Eliminated
-- hypothesis: "Native event blocking." (Disproved: test-native.html works).
-- hypothesis: "React event delegation failure." (Disproved: Button animations [active:scale-95] work, so events are reaching React).
+## Resolution
 
-## Evidence
-- checked: `MobileDebugger`.
-  found: `Tap: BUTTON` logs correctly.
-  implication: The issue is in the **Rendering** of the resulting state (isOpen=true).
-- checked: `test-native.html`.
-  found: Works perfectly.
-  implication: The browser's engine is fine; the issue is our specific CSS/Layout stack.
-- user_report: "Form is too big and doesn't adapt."
-  implication: The modal container might be using `100vw` or `min-width` that overflows the mobile viewport.
+**Root Cause:**
+1. **Calendar UX**: Default DayPicker styles for disabled dates were too subtle (just gray).
+2. **Modal Overlap**: Grid columns were switching to 2 columns too early (`sm`) and had insufficient gap.
+3. **Phone Validation**: Validation was only checking for a minimum of 7 characters, ignoring country-specific formats.
 
-## Hypotheses to Test
-1. **Stacking Context Clipping**: The `main` or `section` tags have `overflow: hidden` which clips fixed children in some mobile engines.
-2. **Mobile Safari Viewport Height**: `100vh` or `inset-0` with `flex items-center` is pushing the content out of the visible area due to the address bar.
-3. **Z-Index Contention**: Even at `z-100`, something else might be winning if the parent has a low z-index.
+**Fix:**
+1. **Calendar UX**: Added custom CSS for `.rdp-day_disabled` using dark red and strikethrough.
+2. **Modal Overlap**: Switched to `md:grid-cols-2` and `gap-8`.
+3. **Phone Validation**: 
+   - Added `pattern` and `error` fields to the `countries` array.
+   - Implemented `superRefine` in `requestSchema` to validate the `phone` field against the regex of the selected `country_code`.
+   - Added error message display in the UI.
+
+**Verified:** 
+- Phone numbers now correctly validate against country formats (e.g., 9XXXXXXXX for Chile).
+- Clear error messages are shown for invalid formats.

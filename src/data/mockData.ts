@@ -7,6 +7,13 @@ export const siteConfig = {
   mapUrl: "https://maps.app.goo.gl/SfjUJLWFQcFtjJzC6",
   googleMapsEmbedSrc:
     "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3458.742468307434!2d-71.26871032394334!3d-29.90053937499645!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x9691ca5cd0e6af11%3A0xc66c1b3fbc062b14!2sAv.%20del%20Mar%203500%2C%20La%20Serena%2C%20Coquimbo!5e0!3m2!1ses-419!2scl!4v1700000000000!5m2!1ses-419!2scl",
+  houseRules: [
+    "Capacidad máxima: 4 personas (estricto).",
+    "No se permiten fiestas, eventos o ruidos molestos.",
+    "Prohibido fumar dentro del departamento y en la terraza.",
+    "No se aceptan mascotas (reglamento del edificio).",
+    "Horario de silencio: 22:00 a 08:00 hrs.",
+  ]
 };
 
 // ─── HERO ─────────────────────────────────────────────────────────────────────
@@ -127,22 +134,11 @@ export const specificationsData = {
 };
 
 // ─── AVAILABILITY CALENDAR ────────────────────────────────────────────────────
-// ✅ To mark dates as occupied: add "YYYY-MM-DD" strings to blockedDates.
+// ✅ La disponibilidad real se maneja desde Supabase. Ya no se usa mockData para esto.
 export const availabilityData = {
   title: "Disponibilidad",
   subtitle: "Consulta las fechas que te interesan — te contactaremos a la brevedad.",
   ctaText: "Solicitud de Reserva",
-  // Format: "YYYY-MM-DD"
-  // ✅ To mark dates as unavailable: add "YYYY-MM-DD" strings below.
-  blockedDates: [
-    "2026-05-01", "2026-05-02", "2026-05-03", "2026-05-04", "2026-05-05",
-    "2026-05-16", "2026-05-17", "2026-05-18",
-    "2026-06-10", "2026-06-11", "2026-06-12", "2026-06-13", "2026-06-14",
-    "2026-07-01", "2026-07-02", "2026-07-03", "2026-07-04", "2026-07-05",
-    "2026-07-06", "2026-07-07", "2026-07-08",
-    "2026-07-25", "2026-07-26", "2026-07-27",
-    "2026-08-15", "2026-08-16", "2026-08-17",
-  ],
 };
 
 // ─── DISCOVER LA SERENA ───────────────────────────────────────────────────────
@@ -201,6 +197,19 @@ export const testimonialsData = {
     },
   ],
 };
+// ─── INVENTORY BASE ───────────────────────────────────────────────────────────
+export const baseInventory = [
+  { id: "kitchen-1", category: "Cocina", name: "Refrigerador", condition: "Excelente" },
+  { id: "kitchen-2", category: "Cocina", name: "Microondas", condition: "Limpio/Operativo" },
+  { id: "kitchen-3", category: "Cocina", name: "Encimera Eléctrica", condition: "Operativa" },
+  { id: "kitchen-4", category: "Cocina", name: "Set de loza (4 pers.)", condition: "Completo" },
+  { id: "living-1", category: "Living", name: "Smart TV 55\"", condition: "Operativo con control" },
+  { id: "living-2", category: "Living", name: "Sofá principal", condition: "Sin manchas" },
+  { id: "living-3", category: "Living", name: "Ventanal terraza", condition: "Limpio/Cierra bien" },
+  { id: "bed-1", category: "Dormitorio Principal", name: "Cama Queen", condition: "Ropa blanca limpia" },
+  { id: "bed-2", category: "Dormitorio 2", name: "2 Camas Single", condition: "Ropa blanca limpia" },
+  { id: "bath-1", category: "Baño", name: "Ducha/Grifería", condition: "Sin fugas/Limpio" },
+];
 
 // ─── FOOTER CTA ───────────────────────────────────────────────────────────────
 export const footerCtaData = {
