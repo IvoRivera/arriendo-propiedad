@@ -53,7 +53,7 @@ function calculatePrice(checkIn, checkOut, basePrice) {
 ```
 
 ### 3. Snapshotting Rules
-When a reservation request is created, we must store the `total_price` and the `price_breakdown` (JSONB) in the `reservation_requests` table to freeze the price.
+When a reservation request is created, we must store the `total_price` and the `price_breakdown` (JSONB) in the `booking_requests` table to freeze the price.
 
 ### 4. Integration Points
 - **Backend Utility**: A reusable function `getPricingForRange(start, end)` to be used in API routes.
