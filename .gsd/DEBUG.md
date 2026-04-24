@@ -123,6 +123,44 @@ When accessing the site for the first time in an incognito window on mobile, the
 - Swipe correctly scrolls without opening lightbox.
 - `ChunkLoadError` resolved by framework update.
 
+# Debug Session: Next.js 16 Upgrade & Convention Migration
+
+## Symptom
+1. **Module Not Found**: `Can't resolve 'private-next-instrumentation-client'` after updating Next.js.
+2. **Deprecation Warning**: `⚠ The "middleware" file convention is deprecated. Please use "proxy" instead.`
+3. **Runtime Error**: `ChunkLoadError` occurring during dev/build.
+
+**When:** After running `npm install next@latest` to fix mobile loading issues.
+**Expected:** Application starts and runs without internal framework errors or deprecation warnings.
+**Actual:** Build fails with internal module errors and convention warnings.
+
+## Evidence
+- `package.json` was updated to `16.2.4`.
+- Console output explicitly warned about the `middleware` -> `proxy` rename.
+- `.next` cache was stale and contained references to old internal modules.
+
+## Hypotheses
+
+| # | Hypothesis | Likelihood | Status |
+|---|------------|------------|--------|
+| 1 | Stale `.next` cache is causing the `Module not found` error. | 90% | CONFIRMED |
+| 2 | Missing `proxy.ts` (new convention) is causing routing/middleware failures. | 80% | CONFIRMED |
+
+## Resolution
+
+**Root Cause:** 
+1. **Breaking Change in v16**: The `middleware.ts` convention has been officially replaced by `proxy.ts` in this project's version of Next.js.
+2. **Internal Module Refactor**: Next.js 16 refactored instrumentation modules, making existing `.next` caches incompatible.
+
+**Fix:**
+1. **Migration**: Renamed `src/middleware.ts` to `src/proxy.ts` and updated the exported function name to `proxy`.
+2. **Cache Purge**: Deleted the `.next` directory to force a fresh recompilation of all modules.
+3. **Verification**: Restarted the dev server to confirm the warnings and module errors are gone.
+
+**Verified:**
+- `proxy.ts` is correctly recognized by the framework.
+- No `Module not found` errors on startup.
+
 ## Resolution
 
 **Root Cause:**
