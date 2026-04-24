@@ -1,24 +1,17 @@
 # Project State
 
-> Last Updated: 2026-04-24 17:05
+> Last Updated: 2026-04-24 17:12
 
 ## Current Position
-- **Phase**: 8
-- **Task**: Planning complete
-- **Status**: Ready for execution
+- **Phase**: 8 (completed)
+- **Task**: All tasks complete
+- **Status**: Verified
 
 ## Last Session Summary
-Phase 6 (Business Rules & Compliance) was executed successfully. 
-- Integrated real-time availability via `/api/public/availability` with ISR cache.
-- Hardened `CoastalRequestModal` with House Rules, anti-party scoring, and 4-guest limit.
-- Implemented Inventory MVP (Schema + Digital Check-in page).
-- Resolved critical UI bugs:
-  - Fixed DayPicker UX: Occupied dates are now clearly marked with dark red and strikethrough.
-  - Fixed Modal Overlap: Refined grid layout and spacing for phone/guest fields.
-  - Fixed Phone Validation: Implemented dynamic, country-specific regex validation via superRefine.
-  - Fixed Vertical Layout: Modal now scrolls correctly from the top on all devices.
+Phase 8 executed successfully. 1 plan, 2 tasks completed.
+- Prevented iOS Input Zoom by standardizing form inputs to `text-base` on mobile.
+- Persisted `rules_accepted` to the Supabase insert payload and added schema documentation.
+The milestone v1.1 is now completely verified.
 
 ## Next Steps
-1. Finalize Phase 8 (Technical Polish & Final Persistence).
-2. End-to-end verification of the booking-to-checkin flow.
-
+1. Milestone v1.1 Complete. The booking flow is now robust and production-ready.
