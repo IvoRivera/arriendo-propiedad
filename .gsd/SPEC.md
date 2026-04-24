@@ -11,6 +11,7 @@ Optimizar la experiencia de reserva del sitio (mobile-first) alineando el flujo 
 3. **Reglas de Alojamiento**: Presentación clara de reglas, aceptación obligatoria (checkbox), y filtros anti-fiesta (ej. pedir "Motivo del viaje").
 4. **Sistema de Inventario**: Flujo de inventario pre y post estadía para proteger activos mediante confirmación del huésped al check-in y revisión al check-out.
 5. **Consideraciones Técnicas**: Optimización mobile-first (inputs grandes), estados del sistema claros (Loading, Error, Success), persistencia de datos (Supabase) y contenido editable a futuro.
+6. **Sistema de Precios Dinámicos**: Implementar precios variables por temporada y fechas especiales gestionables desde el admin.
 
 ## Non-Goals (Out of Scope)
 - **Instant Payment Integration**: Pagos continúan siendo externos/manuales en esta fase; el sistema se preparará para ellos pero no los ejecuta.
@@ -31,3 +32,5 @@ Optimizar la experiencia de reserva del sitio (mobile-first) alineando el flujo 
 - [ ] Límite de 4 huéspedes aplicado y disponibilidad visible antes de enviar.
 - [ ] Reglas aceptadas obligatoriamente y motivo de viaje capturado.
 - [ ] Sistema de confirmación de inventario funcional para el check-in.
+- [ ] Precios dinámicos por temporada se reflejan en el calendario y cálculo de reserva.
+- [ ] El precio queda congelado en la solicitud de reserva.

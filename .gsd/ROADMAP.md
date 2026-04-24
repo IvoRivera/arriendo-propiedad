@@ -52,3 +52,13 @@
 - [x] Review all forms for mobile optimizations (large inputs, simple navigation).
 - [x] Ensure all states (Loading, Error, Success, Empty) are handled.
 - [x] Connect new fields (rules accepted, inventory, trip reason) to Supabase.
+
+### Phase 9: Dynamic Pricing System
+**Status**: 🗓️ Planned
+**Objective**: Implement a dynamic pricing system manageable from the admin panel that reflects in the calendar and booking flow.
+**Tasks**:
+- [ ] Define `seasonal_pricing` SQL schema and priority logic.
+- [ ] Implement dynamic pricing calculation logic (Backend & Frontend).
+- [ ] Build Admin Panel CRUD and visual calendar for price management.
+- [ ] Integrate dynamic pricing into `CoastalAvailability` and `CoastalRequestModal`.
+- [ ] Implement price snapshotting upon reservation request submission.
