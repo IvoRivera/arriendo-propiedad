@@ -20,12 +20,12 @@ Establish the database schema for seasonal pricing and implement the core calcul
   <name>Database Schema</name>
   <files>supabase/migrations/20260424_seasonal_pricing.sql</files>
   <action>
-    Create a migration file to add the `seasonal_pricing` table and update the `reservation_requests` table to include `total_price` and `price_breakdown` (JSONB) fields.
+    Create a migration file to add the `seasonal_pricing` table and update the `booking_requests` table to include `total_price` and `price_breakdown` (JSONB) fields.
     - Include the constraints and indexes as defined in RESEARCH.md.
     - Add default values for priority.
   </action>
   <verify>npx tsx scratch/verify-schema.ts</verify>
-  <done>seasonal_pricing table created and reservation_requests table updated.</done>
+  <done>seasonal_pricing table created and booking_requests table updated.</done>
 </task>
 
 <task type="auto">

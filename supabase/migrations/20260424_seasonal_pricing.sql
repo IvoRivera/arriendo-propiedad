@@ -15,7 +15,7 @@ CREATE TABLE IF NOT EXISTS seasonal_pricing (
 -- Index for date lookups
 CREATE INDEX IF NOT EXISTS idx_seasonal_pricing_dates ON seasonal_pricing (start_date, end_date);
 
--- Update reservation_requests to include snapshots
-ALTER TABLE reservation_requests 
+-- Update booking_requests to include snapshots
+ALTER TABLE booking_requests 
 ADD COLUMN IF NOT EXISTS total_price NUMERIC,
 ADD COLUMN IF NOT EXISTS price_breakdown JSONB;

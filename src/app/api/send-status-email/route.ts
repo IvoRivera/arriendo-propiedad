@@ -31,12 +31,14 @@ export async function POST(req: Request) {
     const diffTime = Math.abs(end.getTime() - start.getTime());
     const nightsCount = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
-    const totalAmount = nightsCount * dailyPrice;
+    // Use snapshotted price if available
+    const totalAmount = body.total_price !== undefined ? Number(body.total_price) : (nightsCount * dailyPrice);
     const totalFormatted = new Intl.NumberFormat('es-CL').format(totalAmount);
-    const displayPrice = new Intl.NumberFormat('es-CL').format(dailyPrice);
-
+    
+    // If we have a snapshotted price, we don't show the "nights x daily" calculation if daily is variable
     const bankDetails = `
-          Monto a transferir: ${nightsCount} noches x $${displayPrice} = $${totalFormatted}
+          Monto a transferir: $${totalFormatted}
+          (${nightsCount} noches)
           Nombre: ${freshConfig['OWNER_BANK_NAME'] || process.env.OWNER_BANK_NAME}
           RUT: ${freshConfig['OWNER_BANK_RUT'] || process.env.OWNER_BANK_RUT}
           Banco: ${freshConfig['OWNER_BANK_NAME_ENTITY'] || process.env.OWNER_BANK_NAME_ENTITY} - ${freshConfig['OWNER_BANK_ACCOUNT_TYPE'] || process.env.OWNER_BANK_ACCOUNT_TYPE}

@@ -27,7 +27,9 @@ export async function POST(req: Request) {
     const start = new Date(check_in);
     const end = new Date(check_out);
     const nights = Math.ceil(Math.abs(end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
-    const totalPrice = nights * dailyPrice;
+    
+    // Use snapshotted total_price if provided (from the new bookings API)
+    const totalPrice = body.total_price !== undefined ? Number(body.total_price) : (nights * dailyPrice);
     const formattedTotal = new Intl.NumberFormat('es-CL').format(totalPrice);
 
     const { data, error } = await resend.emails.send({

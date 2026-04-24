@@ -303,22 +303,11 @@ export const CoastalRequestModal: React.FC<CoastalRequestModalProps> = ({
         }
       }
 
-      // 2. Anti-Fiesta Scoring (Scoring Logic)
-      const keywords = ["fiesta", "cumpleaños", "carrete", "celebración", "evento", "despedida", "juntada", "party", "reunión"];
-      const reasonLower = data.trip_reason.toLowerCase();
-      let riskScore = "Bajo";
-      
-      const hasKeywords = keywords.some(k => reasonLower.includes(k));
-      if (hasKeywords) {
-        riskScore = "Alto";
-      } else if (data.trip_reason.length < 20) {
-        riskScore = "Medio";
-      }
-
-      // 3. Insert into Supabase
-      const { error: supabaseError } = await supabasePublic
-        .from("booking_requests")
-        .insert([{
+      // 3. Call Server-Side API (Handles pricing, scoring, and security)
+      const response = await fetch('/api/public/bookings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
           full_name: data.full_name,
           email: data.email,
           phone: finalPhone,
@@ -327,12 +316,15 @@ export const CoastalRequestModal: React.FC<CoastalRequestModalProps> = ({
           check_out: data.check_out,
           trip_reason: data.trip_reason,
           referred_by: finalReferral,
-          status: "pending",
-          risk_score: riskScore,
-          rules_accepted: true
-        }]);
+        }),
+      });
 
-      if (supabaseError) throw supabaseError;
+      const result = await response.json();
+
+      if (!response.ok || !result.success) {
+        throw new Error(result.error || "Error al procesar la reserva");
+      }
+
       setIsSubmitted(true);
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "Error desconocido";
