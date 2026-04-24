@@ -24,7 +24,7 @@ Establish the database schema for seasonal pricing and implement the core calcul
     - Include the constraints and indexes as defined in RESEARCH.md.
     - Add default values for priority.
   </action>
-  <verify>Check if the table exists in Supabase (manual check or migration run simulation).</verify>
+  <verify>npx tsx scratch/verify-schema.ts</verify>
   <done>seasonal_pricing table created and reservation_requests table updated.</done>
 </task>
 
@@ -33,13 +33,13 @@ Establish the database schema for seasonal pricing and implement the core calcul
   <files>src/lib/pricing.ts</files>
   <action>
     Implement a server-side utility function `calculateBookingPrice(startDate, endDate)` that:
-    1. Fetches relevant seasonal prices from Supabase.
-    2. Fetches the base price from configuration.
+    1. Fetches relevant seasonal prices from Supabase `seasonal_pricing` table.
+    2. Fetches the base price specifically from the `system_config` table (field `PROPERTY_RENT_VALUE`).
     3. Iterates through each night and applies the highest priority/most specific price.
     4. Returns the total price and a daily breakdown.
   </action>
-  <verify>Create a temporary test script in scratch/test-pricing.ts to verify calculation for overlapping ranges.</verify>
-  <done>calculateBookingPrice correctly handles base price, seasonal overrides, and overlaps.</done>
+  <verify>npx tsx scratch/test-pricing.ts</verify>
+  <done>calculateBookingPrice correctly handles base price from system_config, seasonal overrides, and overlaps.</done>
 </task>
 
 ## Success Criteria

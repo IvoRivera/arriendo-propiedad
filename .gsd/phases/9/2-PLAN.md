@@ -24,7 +24,7 @@ Ensure that the calculated price is "frozen" and stored when a user submits a re
     2. Store the resulting `total_price` and `price_breakdown` in the database record.
     3. Use this frozen price for subsequent email notifications instead of recalculating it.
   </action>
-  <verify>Submit a test reservation and check the database record for total_price and breakdown.</verify>
+  <verify>npx tsx scratch/test-reservation-snapshot.ts</verify>
   <done>Reservations store the exact price calculated at the time of submission.</done>
 </task>
 
@@ -34,7 +34,7 @@ Ensure that the calculated price is "frozen" and stored when a user submits a re
   <action>
     Update email logic to use the `total_price` and `price_breakdown` from the reservation record instead of calculating it on the fly from the current (potentially changed) configuration.
   </action>
-  <verify>Send a status update email for an existing reservation and confirm the price matches the snapshot.</verify>
+  <verify>npx tsx scratch/test-email-snapshot.ts</verify>
   <done>Emails reflect the frozen price stored in the reservation request.</done>
 </task>
 

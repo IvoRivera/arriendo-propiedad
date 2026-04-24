@@ -22,9 +22,10 @@ Visualize the pricing schedule in a calendar format within the admin panel to ea
     - Daily prices.
     - Color-coded seasons.
     - Indicators for higher priority overrides.
+    - Fetch the `PROPERTY_RENT_VALUE` from `system_config` to display the base price for days without overrides.
   </action>
-  <verify>View the calendar and confirm it correctly represents the active seasonal ranges.</verify>
-  <done>Visual calendar provides a clear overview of pricing schedule.</done>
+  <verify>npx tsx scratch/test-admin-calendar.ts</verify>
+  <done>Visual calendar provides a clear overview of pricing schedule including the base price.</done>
 </task>
 
 ## Success Criteria

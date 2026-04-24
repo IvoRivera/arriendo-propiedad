@@ -22,9 +22,11 @@ Provide the administrator with a simple interface to create, edit, and delete se
     Create a new admin page and form to manage seasonal prices.
     - Fields: Start Date, End Date, Price per Night, Season Name, Priority.
     - Validation: Start date must be before or equal to End date. Price must be > 0.
+    - Include a label showing the current base price from `system_config` (PROPERTY_RENT_VALUE) as a reference.
+    - Wire the form to use `adminPricingAction` (from pricing-actions.ts) for submission.
   </action>
-  <verify>Access /admin/pricing and create a new seasonal range.</verify>
-  <done>Admin can create and view seasonal pricing ranges.</done>
+  <verify>npx tsx scratch/test-admin-pricing-ui.ts</verify>
+  <done>Admin can create and view seasonal pricing ranges, with form properly wired to Server Actions.</done>
 </task>
 
 <task type="auto">
@@ -33,7 +35,7 @@ Provide the administrator with a simple interface to create, edit, and delete se
   <action>
     Implement Server Actions or API routes for creating, updating, and deleting records in the `seasonal_pricing` table.
   </action>
-  <verify>Delete a test seasonal range and verify it's removed from the DB.</verify>
+  <verify>npx tsx scratch/test-pricing-crud.ts</verify>
   <done>Full CRUD operations for seasonal pricing are functional.</done>
 </task>
 
