@@ -22,3 +22,6 @@ CREATE POLICY "Public guest access" ON inventory_logs
 
 -- Update booking_requests to support anti-party scoring
 ALTER TABLE booking_requests ADD COLUMN IF NOT EXISTS risk_score TEXT DEFAULT 'Bajo';
+
+-- Update booking_requests to store rules acceptance
+ALTER TABLE booking_requests ADD COLUMN IF NOT EXISTS rules_accepted BOOLEAN DEFAULT FALSE;

@@ -311,7 +311,8 @@ export const CoastalRequestModal: React.FC<CoastalRequestModalProps> = ({
           trip_reason: data.trip_reason,
           referred_by: finalReferral,
           status: "pending",
-          risk_score: riskScore
+          risk_score: riskScore,
+          rules_accepted: true
         }]);
 
       if (supabaseError) throw supabaseError;
