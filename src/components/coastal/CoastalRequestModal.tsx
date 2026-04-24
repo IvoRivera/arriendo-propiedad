@@ -167,8 +167,15 @@ export const CoastalRequestModal: React.FC<CoastalRequestModalProps> = ({
 
   const fetchAvailability = async () => {
     setAvailabilityStatus('loading');
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000);
+
     try {
-      const res = await fetch('/api/public/availability', { cache: 'no-store' });
+      const res = await fetch(`/api/public/availability?t=${Date.now()}`, {
+        signal: controller.signal
+      });
+      clearTimeout(timeoutId);
+      
       const data = await res.json();
       if (data.success && data.data) {
         setBlockedDateStrings(data.data.blockedDates || []);
@@ -176,7 +183,9 @@ export const CoastalRequestModal: React.FC<CoastalRequestModalProps> = ({
       } else {
         setAvailabilityStatus('error');
       }
-    } catch (e) {
+    } catch (e: any) {
+      clearTimeout(timeoutId);
+      console.error('[CoastalRequestModal] fetchAvailability error:', e);
       setAvailabilityStatus('error');
     }
   };
@@ -259,7 +268,14 @@ export const CoastalRequestModal: React.FC<CoastalRequestModalProps> = ({
     try {
       // 1. Concurrency Check (Server-side re-validation)
       // We check if any of the selected dates are blocked
-      const res = await fetch('/api/public/availability', { cache: 'no-store' });
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 8000);
+
+      const res = await fetch(`/api/public/availability?t=${Date.now()}`, {
+        signal: controller.signal
+      });
+      clearTimeout(timeoutId);
+      
       const availability = await res.json();
       
       if (availability.success && availability.data) {

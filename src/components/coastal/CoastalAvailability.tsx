@@ -160,29 +160,45 @@ export const CoastalAvailability: React.FC<CoastalAvailabilityProps> = ({ onActi
   const [blockedDateStrings, setBlockedDateStrings] = useState<string[]>([]);
 
   const fetchAvailability = useCallback(async () => {
+    // Only set loading if we don't have data yet to prevent flashing on re-fetches
     setStatus('loading');
+    
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s timeout
+    
     try {
-      // Use cache: 'no-store' to ensure we get the fresh ISR data from the Next.js cache 
-      // instead of a stale browser cache.
-      const res = await fetch('/api/public/availability', { cache: 'no-store' });
+      // Use a timestamp to bust cache instead of 'no-store' which can hang in some mobile browsers
+      const res = await fetch(`/api/public/availability?t=${Date.now()}`, {
+        signal: controller.signal
+      });
+      clearTimeout(timeoutId);
+      
+      if (!res.ok) {
+        throw new Error(`Server responded with ${res.status}`);
+      }
+
       const data = await res.json();
       
       if (data.success && data.data) {
         const blocks: string[] = data.data.blockedDates || [];
         setBlockedDateStrings(blocks);
         
-        // MVP Empty Check: If there's an unusually high number of blocked dates
-        // (e.g. > 365), we can assume the season/year is fully booked.
         if (blocks.length > 365) {
           setStatus('empty');
         } else {
           setStatus('success');
         }
       } else {
+        console.error('[CoastalAvailability] API returned success:false', data);
         setStatus('error');
       }
-    } catch (e) {
-      console.error(e);
+    } catch (e: any) {
+      clearTimeout(timeoutId);
+      if (e.name === 'AbortError') {
+        console.error('[CoastalAvailability] Fetch timed out');
+      } else {
+        console.error('[CoastalAvailability] Fetch error:', e);
+      }
       setStatus('error');
     }
   }, []);
