@@ -102,6 +102,27 @@ When accessing the site for the first time in an incognito window on mobile, the
 - Lightbox provides a fully immersive, navigable experience on both mobile and desktop.
 - Navigation arrows are visible and functional on touch devices.
 
+## Regression Check & New Fixes (2026-04-24 19:03)
+
+**Issue:** The previous fix (`onScroll` timestamp) was too aggressive on mobile, preventing almost all "Taps" from opening the lightbox. Additionally, `ChunkLoadError` was occurring on Next.js 15.1.0.
+
+**Root Cause:** 
+1. **Scroll Event Sensitivity**: Tiny micro-scrolls or momentum scrolling kept the `lastTouchTime` updated, blocking the `onClick` handler.
+2. **Next.js Bug**: Version 15.1.0 has known issues with chunk loading in certain environments.
+
+**Resolution:**
+1. **Displacement-based Tap Detection**:
+   - Switched to tracking `touchstart` and `touchend` coordinates.
+   - Lightbox only opens if the finger moved less than 10px (reliable "Tap").
+   - Native `onClick` is preserved for desktop/keyboard accessibility.
+2. **Next.js Update**:
+   - Updated `next` and `eslint-config-next` to latest stable (`15.1.4+`) to resolve `ChunkLoadError`.
+
+**Verified:**
+- Tap consistently opens lightbox on mobile.
+- Swipe correctly scrolls without opening lightbox.
+- `ChunkLoadError` resolved by framework update.
+
 ## Resolution
 
 **Root Cause:**

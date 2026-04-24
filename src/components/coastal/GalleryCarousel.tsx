@@ -116,7 +116,7 @@ export const GalleryCarousel: React.FC<GalleryCarouselProps> = ({
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [lightboxIndex, images.length]);
 
-  const [lastTouchTime, setLastTouchTime] = useState(0);
+  const [tapStartPos, setTapStartPos] = useState<{ x: number, y: number } | null>(null);
 
   return (
     <div className={`${bgColor} py-14 md:py-16`}>
@@ -130,17 +130,31 @@ export const GalleryCarousel: React.FC<GalleryCarouselProps> = ({
           ref={scrollRef}
           className="flex overflow-x-auto snap-x snap-mandatory scroll-smooth gap-3 px-6 pb-2"
           style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
-          onScroll={() => setLastTouchTime(Date.now())} // Update time on any scroll
         >
           {images.map((image, index) => (
             <button
               key={index}
               type="button"
               className="flex-none w-[85vw] sm:w-[420px] snap-start rounded-xl overflow-hidden cursor-pointer group outline-none"
-              onClick={() => {
-                // If the user was recently scrolling (within 100ms), don't open lightbox
-                if (Date.now() - lastTouchTime < 100) return;
-                setLightboxIndex(index);
+              onTouchStart={(e) => {
+                setTapStartPos({ x: e.touches[0].clientX, y: e.touches[0].clientY });
+              }}
+              onTouchEnd={(e) => {
+                if (!tapStartPos) return;
+                const dx = Math.abs(e.changedTouches[0].clientX - tapStartPos.x);
+                const dy = Math.abs(e.changedTouches[0].clientY - tapStartPos.y);
+                // If movement is very small (< 10px), consider it a tap and open lightbox
+                if (dx < 10 && dy < 10) {
+                  setLightboxIndex(index);
+                }
+                setTapStartPos(null);
+              }}
+              onClick={(e) => {
+                // On desktop (no touch), use standard click
+                // On mobile, the onTouchEnd handles it to avoid scroll conflicts
+                if (e.detail > 0 && !tapStartPos) {
+                  setLightboxIndex(index);
+                }
               }}
             >
               <div className="relative aspect-[4/3] w-full">

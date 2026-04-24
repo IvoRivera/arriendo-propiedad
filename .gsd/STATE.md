@@ -13,6 +13,7 @@ We successfully completed and verified Phase 6 and Phase 8, concluding the **v1.
 - **Phase 8**: Polished the mobile experience by preventing iOS Safari auto-zoom on inputs (`text-base`) and ensured `rules_accepted` is persisted to Supabase.
 - **Inventory MVP**: Set up the `inventory_logs` schema and a digital check-in page for guests.
 - **Bug Fix**: Resolved an infinite loading issue in `CoastalAvailability` affecting incognito mobile users by replacing `cache: 'no-store'` with manual cache-busting and adding fetch timeouts.
+- **UX Improvement**: Overhauled `GalleryCarousel` to fix mobile swipe conflicts and added a fully navigable, high-fidelity lightbox with improved mobile UX.
 
 ## In-Progress Work
 None. The milestone is fully complete and verified.
