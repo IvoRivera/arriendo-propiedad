@@ -223,15 +223,31 @@ interface CoastalAvailabilityProps {
   onAction?: (dates?: { checkIn: Date; checkOut: Date }) => void;
 }
 
+import { getLiveBlockedDates } from "@/lib/availability";
+
 export const CoastalAvailability: React.FC<CoastalAvailabilityProps> = ({
   className = "",
   onAction,
 }) => {
   const [checkIn, setCheckIn] = useState<Date | undefined>();
   const [checkOut, setCheckOut] = useState<Date | undefined>();
+  const [liveBlockedDates, setLiveBlockedDates] = useState<Date[]>([]);
   const uid = useId();
 
-  const blockedDates = parseBlockedDates(availabilityData.blockedDates);
+  useEffect(() => {
+    async function fetchBlocked() {
+      const dates = await getLiveBlockedDates();
+      if (dates.length > 0) {
+        setLiveBlockedDates(dates);
+      } else {
+        // Fallback robusto a mockData si falla o está vacío
+        setLiveBlockedDates(parseBlockedDates(availabilityData.blockedDates));
+      }
+    }
+    fetchBlocked();
+  }, []);
+
+  const blockedDates = liveBlockedDates;
   const todayDate = today();
 
   const checkInDisabled: Parameters<typeof DayPicker>[0]["disabled"] = [
