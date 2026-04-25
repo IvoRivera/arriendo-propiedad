@@ -45,7 +45,7 @@
 - [ ] Server-side metadata validation and processing.
 
 ### Phase 14: Persistent Reordering
-**Status**: ⬜ Not Started
+**Status**: ✅ Complete
 **Objective**: Implement Drag & Drop UI with a robust background persistence strategy.
 
 **Tasks**:
