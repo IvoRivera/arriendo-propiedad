@@ -36,6 +36,20 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="es">
+      <head>
+        {/* Bug Guard: Previene que inyecciones Web3 de navegadores móviles crasheen la app */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              try {
+                if (typeof window !== 'undefined' && (window.ethereum === undefined || window.ethereum === null)) {
+                  window.ethereum = { selectedAdress: undefined };
+                }
+              } catch (e) {}
+            `,
+          }}
+        />
+      </head>
       <body className={`${inter.variable} ${newsreader.variable} font-sans antialiased bg-[#faf7f2] text-[#2c2416]`}>
         <ConfigProvider>
           {children}

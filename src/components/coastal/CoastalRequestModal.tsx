@@ -11,9 +11,8 @@ import "react-day-picker/style.css";
 import { es } from "date-fns/locale";
 import { format, parseISO } from "date-fns";
 
-import { supabasePublic } from "@/lib/supabase";
 import { siteConfig } from "@/data/mockData";
-import { getPriceForDate } from "@/lib/pricingClient";
+import { getPriceForDate, type SeasonalPricing } from "@/lib/pricingClient";
 
 const countries = [
   { name: "Chile", code: "+56", flag: "🇨🇱", placeholder: "9 1234 5678", pattern: /^9\d{8}$/, error: "Formato: 9 XXXX XXXX" },
@@ -132,7 +131,7 @@ export const CoastalRequestModal: React.FC<CoastalRequestModalProps> = ({
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [availabilityStatus, setAvailabilityStatus] = useState<'loading' | 'error' | 'success'>('loading');
   const [blockedDateStrings, setBlockedDateStrings] = useState<string[]>([]);
-  const [seasonalPrices, setSeasonalPrices] = useState<any[]>([]);
+  const [seasonalPrices, setSeasonalPrices] = useState<SeasonalPricing[]>([]);
   const [basePrice, setBasePrice] = useState<number>(0);
   const [calculatedPricing, setCalculatedPricing] = useState<{totalPrice: number, breakdown: any[]} | null>(null);
   const [activePicker, setActivePicker] = useState<'check_in' | 'check_out' | null>(null);
@@ -497,7 +496,7 @@ export const CoastalRequestModal: React.FC<CoastalRequestModalProps> = ({
                              locale={es}
                              components={{
                                DayButton: (props) => {
-                                 const { day, modifiers, ...buttonProps } = props;
+                                 const { day, ...buttonProps } = props as any;
                                  const { date } = day;
                                  const { price, isSeasonal } = getPriceForDate(date, seasonalPrices || [], basePrice || 0);
                                  const formatted = price >= 1000 
@@ -558,7 +557,7 @@ export const CoastalRequestModal: React.FC<CoastalRequestModalProps> = ({
                              defaultMonth={checkInValue ? parseISO(checkInValue) : undefined}
                              components={{
                                DayButton: (props) => {
-                                 const { day, modifiers, ...buttonProps } = props;
+                                 const { day, ...buttonProps } = props as any;
                                  const { date } = day;
                                  const { price, isSeasonal } = getPriceForDate(date, seasonalPrices || [], basePrice || 0);
                                  const formatted = price >= 1000 
