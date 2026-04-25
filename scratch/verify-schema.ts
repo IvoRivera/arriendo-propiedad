@@ -22,16 +22,16 @@ async function verify() {
     console.log('✅ seasonal_pricing table exists.');
   }
 
-  console.log('Checking reservation_requests columns...');
+  console.log('Checking booking_requests columns...');
   const { data: resData, error: resError } = await supabase
-    .from('reservation_requests')
+    .from('booking_requests')
     .select('total_price, price_breakdown')
     .limit(1);
 
   if (resError) {
-    console.error('Error fetching reservation_requests columns:', resError.message);
+    console.error('Error fetching booking_requests columns:', resError.message);
   } else {
-    console.log('✅ total_price and price_breakdown columns exist in reservation_requests.');
+    console.log('✅ total_price and price_breakdown columns exist in booking_requests.');
   }
 }
 

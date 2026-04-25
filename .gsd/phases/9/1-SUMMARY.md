@@ -1,10 +1,10 @@
 # Plan 9.1 Summary: Database & Core Logic
 
 ## Accomplished
-- Created database migration `supabase/migrations/20260424_seasonal_pricing.sql` to add `seasonal_pricing` table and update `reservation_requests`.
+- Created database migration `supabase/migrations/20260424_seasonal_pricing.sql` to add `seasonal_pricing` table and update `booking_requests`.
 - Implemented `src/lib/pricing.ts` with `calculateBookingPrice` logic.
 - The logic handles base price from `system_config`, seasonal overrides with priorities, and tie-breaking by specificity (shorter range).
-- Added snapshot fields `total_price` and `price_breakdown` to `reservation_requests`.
+- Added snapshot fields `total_price` and `price_breakdown` to `booking_requests`.
 
 ## Verification Results
 - Schema migration file verified manually.

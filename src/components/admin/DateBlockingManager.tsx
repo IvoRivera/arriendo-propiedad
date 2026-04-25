@@ -4,8 +4,9 @@ import React, { useState, useEffect } from "react";
 import { DayPicker, DateRange } from "react-day-picker";
 import { es } from "react-day-picker/locale";
 import "react-day-picker/style.css";
-import { Calendar, Trash2, Plus, Clock, AlertCircle } from "lucide-react";
+import { Calendar, Trash2, Plus, Clock, AlertCircle, DollarSign } from "lucide-react";
 import { supabaseAdmin } from "@/lib/supabase";
+import { getPriceForDate } from "@/lib/pricingClient";
 
 interface BlockedDate {
   id: string;
@@ -18,6 +19,8 @@ export function DateBlockingManager() {
   const [range, setRange] = useState<DateRange | undefined>();
   const [reason, setReason] = useState("");
   const [blocks, setBlocks] = useState<BlockedDate[]>([]);
+  const [seasonalPrices, setSeasonalPrices] = useState<any[]>([]);
+  const [basePrice, setBasePrice] = useState<number>(0);
   const [loading, setLoading] = useState(false);
   const [fetching, setFetching] = useState(true);
 
@@ -34,6 +37,22 @@ export function DateBlockingManager() {
       const data = await response.json();
       if (data.success) {
         setBlocks(data.data);
+      }
+
+      // Fetch seasonal prices for visualization
+      const { data: prices } = await supabaseAdmin
+        .from("seasonal_pricing")
+        .select("*");
+      setSeasonalPrices(prices || []);
+
+      // Fetch base price
+      const { data: config } = await supabaseAdmin
+        .from("system_config")
+        .select("value")
+        .eq("key", "PROPERTY_RENT_VALUE")
+        .single();
+      if (config) {
+        setBasePrice(parseInt(config.value.replace(/\D/g, '')));
       }
     } catch (error) {
       console.error("Error fetching blocks:", error);
@@ -176,7 +195,26 @@ export function DateBlockingManager() {
               head_cell: "text-[#9a8a78] rounded-md w-10 font-bold text-[10px] uppercase",
               row: "flex w-full mt-0",
               cell: "text-center text-sm p-0 relative focus-within:relative focus-within:z-20",
-              day: "h-10 w-10 p-0 font-normal aria-selected:opacity-100",
+              day: "h-12 w-10 p-0 font-normal aria-selected:opacity-100",
+            }}
+            components={{
+              DayContent: ({ date }) => {
+                const { price, isSeasonal } = getPriceForDate(date, seasonalPrices, basePrice);
+                const formatted = price >= 1000 
+                  ? new Intl.NumberFormat('es-CL').format(Math.floor(price / 1000)) + 'k'
+                  : price;
+                
+                return (
+                  <div className="flex flex-col items-center justify-center w-full h-full pt-1.5">
+                    <span className="text-[10px] font-medium leading-none">{date.getDate()}</span>
+                    {price > 0 && (
+                      <span className={`text-[7px] mt-1 leading-none font-bold tracking-tighter ${isSeasonal ? 'text-amber-600' : 'text-gray-400'}`}>
+                        ${formatted}
+                      </span>
+                    )}
+                  </div>
+                );
+              }
             }}
           />
         </div>
