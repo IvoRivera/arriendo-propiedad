@@ -1,18 +1,19 @@
 # STATE.md
 
 ## Current Position
-- **Milestone**: v1.6 — Integridad de Schema y Runtime Guards
-- **Phase**: 32
-- **Task**: Final Verification & Documentation
-- **Status**: Backend guards implemented, finalizing migration workflow
+- **Milestone**: v1.7 — SAFE REFACTOR + MOCKDATA MIGRATION (CRÍTICO)
+- **Phase**: 33
+- **Task**: Planning complete
+- **Status**: Ready to create `src/config/site-content.ts` based on audit.
 
 ## Recent Progress
-- Phases 28, 29, 30: Complete.
-- Phase 31 Complete: Secured `ImageService`. Verified schema for `images` (including `storage_path` and `priority`).
+- Milestone v1.6 (Integrity & Runtime Guards) complete and verified.
+- Initialized v1.7 with strict refactoring guidelines.
+- Audited `mockData.ts` and mapped all dependencies in `RESEARCH.md`.
 
 ## Current Context
-- All critical modules (Pricing, Availability, Bookings, Images) are protected by `SchemaGuard`.
-- Final step is documenting the migration workflow.
+- `mockData.ts` exports identified and mapped to components.
+- Hardcoded strings in Gallery and Availability also mapped for unification.
 
 ## Next Steps
-- /plan 32 — Create execution plan for Phase 32: Flujo de Verificación y Manejo de Errores.
+- /execute 33 — Create the typed site-content foundation.
