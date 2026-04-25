@@ -46,6 +46,7 @@ async function cleanupOrphans(dryRun = true) {
   for (const obj of storageObjects || []) {
     if (!dbPaths.has(obj.name)) {
       // Check age to avoid deleting current uploads
+      if (!obj.created_at) continue;
       const created = new Date(obj.created_at);
       const now = new Date();
       const ageHours = (now.getTime() - created.getTime()) / (1000 * 60 * 60);
