@@ -1,5 +1,6 @@
 import 'server-only';
 import { supabaseService } from './supabaseServer';
+import { Property } from '@/types/property';
 
 /**
  * Live configuration (Server-side ONLY)
@@ -39,24 +40,55 @@ export async function getLiveConfigServer(): Promise<Record<string, string>> {
 }
 
 /**
+ * Fetches a specific property configuration.
+ * If no ID/Slug provided, returns the first property found.
+ */
+export async function getPropertyBaseConfig(identifier?: { id?: string; slug?: string }): Promise<Property | null> {
+  try {
+    let query = supabaseService.from('properties').select('*');
+
+    if (identifier?.id) {
+      query = query.eq('id', identifier.id);
+    } else if (identifier?.slug) {
+      query = query.eq('slug', identifier.slug);
+    }
+
+    const { data, error } = await query.single();
+
+    if (error) {
+      // Fallback to first property if nothing found and no specific ID was requested
+      if (!identifier?.id && !identifier?.slug) {
+        const { data: firstData } = await supabaseService.from('properties').select('*').limit(1).single();
+        return firstData as Property;
+      }
+      return null;
+    }
+
+    return data as Property;
+  } catch (err) {
+    console.error('[SystemConfigServer] Error fetching property config:', err);
+    return null;
+  }
+}
+
+/**
  * Validates critical business values.
  * Throws error if validation fails to prevent incorrect business logic execution.
  */
-export function validatePropertyRentValue(rawValue: string | undefined): number {
-  if (!rawValue) {
-    throw new Error('CONFIG_MISSING: PROPERTY_RENT_VALUE is missing');
+export function validatePropertyRentValue(rawValue: string | number | undefined): number {
+  if (rawValue === undefined || rawValue === null) {
+    throw new Error('CONFIG_MISSING: Rent value is missing');
   }
 
-  const value = parseInt(rawValue.replace(/\D/g, ''));
+  const value = typeof rawValue === 'number' ? rawValue : parseInt(rawValue.replace(/\D/g, ''));
   
   if (isNaN(value)) {
-    throw new Error(`CONFIG_INVALID: PROPERTY_RENT_VALUE is not a number ("${rawValue}")`);
+    throw new Error(`CONFIG_INVALID: Rent value is not a number ("${rawValue}")`);
   }
 
   // Business Rule: Rent value should ideally be >= 80,000 CLP
-  // We log a warning but ALLOW execution to avoid hard-blocking legitimate business changes
   if (value < 80000) {
-    console.warn(`[SystemConfigServer] WARNING: PROPERTY_RENT_VALUE (${value}) is below the standard minimum (80,000). Proceeding anyway.`);
+    console.warn(`[SystemConfigServer] WARNING: Rent value (${value}) is below the standard minimum (80,000).`);
   }
 
   return value;
