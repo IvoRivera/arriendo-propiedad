@@ -76,6 +76,29 @@ export function ImageManager() {
     }
   };
 
+  const handleUpdate = async (id: string, payload: Partial<DbImage>) => {
+    try {
+      // If category is changing, we should put it at the end of the new category list
+      // to avoid breaking the priority order of the new category.
+      let finalPayload = { ...payload };
+      if (payload.category) {
+        const targetCategoryImages = images.filter(img => img.category === payload.category);
+        const maxPriority = targetCategoryImages.reduce((max, img) => Math.max(max, img.priority), 0);
+        finalPayload.priority = maxPriority + 1;
+      }
+
+      await ImageService.updateImage(id, finalPayload);
+      
+      // Optimistic update
+      setImages(prev => prev.map(img => img.id === id ? { ...img, ...finalPayload } as DbImage : img));
+      
+      await revalidateImages();
+    } catch (err) {
+      console.error('Error updating image:', err);
+      throw err;
+    }
+  };
+
   const handleDragEnd = async (event: DragEndEvent, categoryKey: ImageCategory) => {
     const { active, over } = event;
 
@@ -186,6 +209,7 @@ export function ImageManager() {
                         id={img.id} 
                         image={img} 
                         onDelete={handleDelete}
+                        onUpdate={handleUpdate}
                         isDeleting={deletingId === img.id}
                       />
                     ))}

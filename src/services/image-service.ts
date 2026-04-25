@@ -117,6 +117,23 @@ export class ImageService {
   }
 
   /**
+   * Updates an image record in the database.
+   * Only affects database metadata, not the physical storage.
+   */
+  static async updateImage(id: string, payload: Partial<DbImage>) {
+    const { error } = await supabaseAdmin
+      .from('images')
+      .update(payload)
+      .eq('id', id);
+
+    if (error) {
+      console.error('Error updating image:', error);
+      throw error;
+    }
+    return true;
+  }
+
+  /**
    * Updates priorities for a batch of images.
    * Note: We use upsert with onConflict 'id'. This requires passing all NOT NULL columns 
    * even if we are only updating, due to Postgres INSERT...ON CONFLICT requirements.

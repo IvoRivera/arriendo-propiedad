@@ -1,22 +1,20 @@
 "use client";
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { Trash2, GripVertical, Loader2 } from 'lucide-react';
+import { Trash2, GripVertical, Loader2, Edit2, Save, X } from 'lucide-react';
+import type { DbImage, ImageCategory } from '@/services/image-service';
 
 interface SortableImageProps {
   id: string;
-  image: {
-    id: string;
-    url: string;
-    priority: number;
-  };
+  image: DbImage;
   onDelete: (id: string) => void;
+  onUpdate: (id: string, payload: Partial<DbImage>) => Promise<void>;
   isDeleting: boolean;
 }
 
-export function SortableImage({ id, image, onDelete, isDeleting }: SortableImageProps) {
+export function SortableImage({ id, image, onDelete, onUpdate, isDeleting }: SortableImageProps) {
   const {
     attributes,
     listeners,
@@ -26,6 +24,11 @@ export function SortableImage({ id, image, onDelete, isDeleting }: SortableImage
     isDragging
   } = useSortable({ id });
 
+  const [isEditing, setIsEditing] = useState(false);
+  const [editAlt, setEditAlt] = useState(image.metadata?.alt || '');
+  const [editCategory, setEditCategory] = useState<ImageCategory>(image.category);
+  const [isUpdating, setIsUpdating] = useState(false);
+
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
@@ -33,17 +36,39 @@ export function SortableImage({ id, image, onDelete, isDeleting }: SortableImage
     opacity: isDragging ? 0.5 : 1,
   };
 
+  const handleSave = async () => {
+    setIsUpdating(true);
+    try {
+      await onUpdate(image.id, {
+        category: editCategory,
+        metadata: { ...image.metadata, alt: editAlt }
+      });
+      setIsEditing(false);
+    } catch (error) {
+      console.error('Failed to update image', error);
+      alert('Error al actualizar la imagen');
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
+  const handleCancel = () => {
+    setEditAlt(image.metadata?.alt || '');
+    setEditCategory(image.category);
+    setIsEditing(false);
+  };
+
   return (
     <div 
       ref={setNodeRef} 
       style={style} 
-      className="group relative bg-white border border-[#e2d9cc] rounded-3xl overflow-hidden shadow-sm hover:shadow-md transition-all"
+      className="group relative bg-white border border-[#e2d9cc] rounded-3xl overflow-hidden shadow-sm hover:shadow-md transition-all flex flex-col"
     >
-      <div className="aspect-[4/3] relative overflow-hidden bg-gray-100 flex items-center justify-center">
+      <div className="aspect-[4/3] relative overflow-hidden bg-gray-100 flex items-center justify-center shrink-0">
         {image?.url?.trim() ? (
           <img
             src={image.url}
-            alt="Miniatura de la propiedad"
+            alt={image.metadata?.alt || "Miniatura de la propiedad"}
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
           />
         ) : (
@@ -62,22 +87,84 @@ export function SortableImage({ id, image, onDelete, isDeleting }: SortableImage
         <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-all duration-300 pointer-events-none" />
       </div>
       
-      <div className="p-4 flex items-center justify-between">
-        <div className="flex flex-col">
-          <span className="text-[10px] font-bold text-[#9a8a78] uppercase tracking-wider">Orden: {image.priority}</span>
-        </div>
-        <button
-          onClick={() => onDelete(image.id)}
-          disabled={isDeleting}
-          className="p-2 text-[#9a8a78] hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-all"
-          title="Eliminar imagen"
-        >
-          {isDeleting ? (
-            <Loader2 className="w-5 h-5 animate-spin" />
-          ) : (
-            <Trash2 className="w-5 h-5" />
-          )}
-        </button>
+      <div className="p-4 flex flex-col gap-3 flex-1 bg-white">
+        {isEditing ? (
+          <div className="space-y-3">
+            <div className="space-y-1">
+              <label className="text-[10px] font-bold text-[#9a8a78] uppercase tracking-wider">Categoría</label>
+              <select 
+                value={editCategory}
+                onChange={(e) => setEditCategory(e.target.value as ImageCategory)}
+                className="w-full bg-[#faf7f2] border border-[#e2d9cc] rounded-lg px-2 py-1.5 text-xs text-[#2c2416] focus:outline-none focus:ring-1 focus:ring-[#6b7c4a]"
+              >
+                <option value="property">Propiedad</option>
+                <option value="amenities">Amenidades</option>
+                <option value="featured">Destacadas</option>
+                <option value="hero">Imagen Hero</option>
+              </select>
+            </div>
+            <div className="space-y-1">
+              <label className="text-[10px] font-bold text-[#9a8a78] uppercase tracking-wider">Texto Alternativo (Alt)</label>
+              <input 
+                type="text" 
+                value={editAlt}
+                onChange={(e) => setEditAlt(e.target.value)}
+                placeholder="Descripción de la imagen"
+                className="w-full bg-[#faf7f2] border border-[#e2d9cc] rounded-lg px-2 py-1.5 text-xs text-[#2c2416] focus:outline-none focus:ring-1 focus:ring-[#6b7c4a]"
+              />
+            </div>
+            <div className="flex items-center justify-end gap-2 pt-1">
+              <button 
+                onClick={handleCancel}
+                disabled={isUpdating}
+                className="p-1.5 text-[#9a8a78] hover:bg-gray-100 rounded-lg transition-colors"
+                title="Cancelar"
+              >
+                <X className="w-4 h-4" />
+              </button>
+              <button 
+                onClick={handleSave}
+                disabled={isUpdating}
+                className="p-1.5 text-[#6b7c4a] hover:bg-[#6b7c4a]/10 rounded-lg transition-colors"
+                title="Guardar"
+              >
+                {isUpdating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div className="flex items-center justify-between mt-auto">
+            <div className="flex flex-col min-w-0 pr-2">
+              <span className="text-[10px] font-bold text-[#9a8a78] uppercase tracking-wider truncate">
+                {image.metadata?.alt || "Sin descripción"}
+              </span>
+              <span className="text-[10px] font-semibold text-[#6b7c4a] opacity-70">
+                Orden: {image.priority}
+              </span>
+            </div>
+            <div className="flex items-center gap-1 shrink-0">
+              <button
+                onClick={() => setIsEditing(true)}
+                className="p-2 text-[#9a8a78] hover:text-[#6b7c4a] hover:bg-[#6b7c4a]/5 rounded-xl transition-all"
+                title="Editar imagen"
+              >
+                <Edit2 className="w-4 h-4" />
+              </button>
+              <button
+                onClick={() => onDelete(image.id)}
+                disabled={isDeleting}
+                className="p-2 text-[#9a8a78] hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-all"
+                title="Eliminar imagen"
+              >
+                {isDeleting ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <Trash2 className="w-4 h-4" />
+                )}
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
