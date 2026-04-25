@@ -1,6 +1,6 @@
 # Architecture
 
-> Updated on 2026-04-24 (Post-Milestone v1.1)
+> Updated on 2026-04-25 (Post-Milestone v1.3 — Image System Migration)
 
 ## Overview
 
@@ -10,6 +10,9 @@ A premium, trust-based rental booking platform for a boutique property in La Ser
 ┌─────────────────────────────────────────┐
 │        [Next.js App Router UI]          │
 │ (Coastal Components + Framer Motion)    │
+├─────────────────────────────────────────┤
+│        [Dynamic Image Management]        │
+│ (Supabase Storage + Admin Control)      │
 ├─────────────────────────────────────────┤
 │        [System & Pricing Layer]         │
 │ (Dynamic Seasonal Rates + Inventory)    │
@@ -22,12 +25,19 @@ A premium, trust-based rental booking platform for a boutique property in La Ser
 └─────────────────────────────────────────┘
 ```
 
-## Components
+## Core Systems
+
+### Dynamic Image Management (New in v1.3)
+- **Purpose:** Full control over visual content without code redeployment.
+- **Components:** `ImageManager`, `ImageUploader` (Admin Panel).
+- **Service Layer:** `image-service.ts` (Next.js cached fetches with tag revalidation).
+- **Fallback Logic:** Isolated `src/config/image-fallbacks.ts` for offline/DB-failure scenarios.
+- **Storage:** Supabase Storage bucket (`carousel-images`).
 
 ### Coastal UI System
 - **Purpose:** High-end, editorial-style interface for guests.
 - **Location:** `src/components/coastal/`
-- **Features:** Responsive carousels, emotional loading states, and localized form validations.
+- **Features:** Responsive carousels (`GalleryCarousel`), emotional loading states, and dynamic Hero sections.
 
 ### Dynamic Pricing System
 - **Purpose:** Manages seasonal rates and base pricing with visual calendar integration.
@@ -37,34 +47,29 @@ A premium, trust-based rental booking platform for a boutique property in La Ser
 ### Booking Request Flow
 - **Purpose:** Multi-step modal that captures stay intent, calculates dynamic pricing, and validates social recommendations.
 - **Location:** `src/components/coastal/CoastalRequestModal.tsx`
-- **Security:** Root-level Web3 Bug Guard to prevent browser-injector crashes.
-
-### Inventory Management (MVP)
-- **Purpose:** Guest-led inventory confirmation during check-in.
-- **Location:** `/guest/checkin/[id]`
 
 ## Data Flow
 
-1. **Guest Visit**: Landing page loads. `CoastalAvailability` fetches real-time date blocks and `seasonal_pricing` data.
-2. **Dynamic Calculation**: As guest selects dates, `getPriceForDate` calculates the total stay cost including seasonal spikes.
-3. **Request Submission**: Guest fills the form. Payload includes `trip_reason`, `referred_by`, and `rules_accepted`.
-4. **Validation & Notification**: API verifies date concurrency, records the request in Supabase, and dispatches a notification via Resend.
+1. **Content Fetching**: Landing page fetches images via `ImageService.getPublicImages` (cached).
+2. **Fallback Switch**: If Supabase is unreachable, components automatically switch to local `public/images/` via `image-fallbacks.ts`.
+3. **Admin Mutation**: When an image is uploaded/deleted/reordered, `revalidateTag('images-all')` is triggered to refresh the landing page cache globally.
+4. **Dynamic Calculation**: As guest selects dates, `getPriceForDate` calculates total stay cost.
 
 ## Integration Points
 
 | Service | Type | Purpose |
 |---------|------|---------|
-| Supabase | BaaS | Database, RLS Security, and Dynamic Pricing storage. |
+| Supabase | BaaS | Database, Storage, RLS Security, and Dynamic Pricing. |
 | Resend | API | Automated email notifications for new requests. |
 
 ## Technical Debt / Next Steps
 
 - [ ] **Middleware Hardening**: Move IP parsing to Edge middleware.
-- [ ] **Admin UI Refinement**: Consolidate pricing and inventory management into a unified dashboard.
-- [ ] **Type Hardening**: Re-enable ESLint and replace remaining `any` types in `CoastalRequestModal`.
+- [ ] **Admin UI Consolidation**: Unify pricing, inventory, and image management.
+- [ ] **Type Hardening**: Finalize DB types for image metadata.
 
 ## Conventions
 
 - **Hydration Safety**: Use `createPortal` for top-level modals.
-- **Defensive Scripting**: Use inline guards in `layout.tsx` for mobile wallet compatibility.
+- **Defensive Scripting**: Robust fallback patterns for all external data fetches.
 - **Naming:** Feature-based organization within `src/components/coastal`.

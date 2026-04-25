@@ -166,7 +166,11 @@ export function ImageUploader({ onUploadComplete }: ImageUploaderProps) {
               {selectedFiles.map((f) => (
                 <div key={f.id} className="flex items-center gap-3 p-3 bg-[#faf7f2] rounded-2xl border border-[#e2d9cc]/50 group relative">
                   <div className="w-12 h-12 rounded-xl overflow-hidden bg-white border border-[#e2d9cc]/30 shrink-0">
-                    <img src={f.previewUrl} alt="" className="w-full h-full object-cover" />
+                    {f.previewUrl ? (
+                      <img src={f.previewUrl} alt={`Vista previa ${f.file.name}`} className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center bg-gray-50 text-[10px]">...</div>
+                    )}
                   </div>
                   
                   <div className="flex-1 min-w-0 pr-8">

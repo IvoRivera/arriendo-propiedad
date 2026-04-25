@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { supabaseAdmin } from '@/lib/supabase';
-import { ImageService, type ImageCategory } from '@/services/image-service';
+import { ImageService, type ImageCategory, type DbImage } from '@/services/image-service';
 import { Trash2, Plus, Loader2, Image as ImageIcon, AlertCircle } from 'lucide-react';
 import { ImageUploader } from './ImageUploader';
 import { SortableImage } from './SortableImage';
@@ -20,14 +20,6 @@ import {
   rectSortingStrategy,
 } from '@dnd-kit/sortable';
 import { revalidateImages } from '@/app/actions/images';
-
-interface DbImage {
-  id: string;
-  url: string;
-  category: string;
-  priority: number;
-  storage_path: string;
-}
 
 export function ImageManager() {
   const [images, setImages] = useState<DbImage[]>([]);
@@ -112,11 +104,9 @@ export function ImageManager() {
       // Persistence
       try {
         setIsReordering(true);
-        const updates = reorderedCat.map((img, idx) => ({
-          id: img.id,
-          priority: idx + 1
-        }));
-        await ImageService.reorderImages(updates);
+        // We pass the full objects from reorderedCat to satisfy the NOT NULL constraints 
+        // required by Postgres during an INSERT...ON CONFLICT (upsert) operation.
+        await ImageService.reorderImages(reorderedCat);
         await revalidateImages();
       } catch (err) {
         console.error('Error persisting order:', err);

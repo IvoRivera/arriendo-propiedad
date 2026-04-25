@@ -1,10 +1,9 @@
 // CoastalGallery.tsx — 3 separated gallery carousels
-// Scalable: add images to mockData.ts galleryData arrays. No component changes needed.
 // data-stitch-id: gallery-section (screen: 75756b60186b4c8da17437331f094caa)
 
 import React from "react";
 import { GalleryCarousel } from "@/components/coastal/GalleryCarousel";
-import { galleryData } from "@/data/mockData";
+import { IMAGE_FALLBACKS } from "@/config/image-fallbacks";
 
 interface CoastalGalleryProps {
   readonly className?: string;
@@ -13,21 +12,22 @@ interface CoastalGalleryProps {
 }
 
 export const CoastalGallery: React.FC<CoastalGalleryProps> = ({ className = "", onAction, dynamicImages = [] }) => {
-  const { featured, interiors, amenities } = galleryData;
-
-  // Helper to merge or replace images
-  const getImages = (category: string, defaultImages: string[]) => {
-    const dynamic = dynamicImages
-      .filter(img => img.category === category)
+  // Helper to merge or replace images with local fallbacks
+  const getImages = (category: string, fallbackKey: string) => {
+    const dynamic = (dynamicImages || [])
+      .filter(img => img.category === category && img.url)
       .sort((a, b) => a.priority - b.priority)
-      .map(img => `${img.url}?v=${new Date(img.created_at).getTime()}`);
+      .map(img => ({
+        src: `${img.url}?v=${new Date(img.created_at).getTime()}`,
+        alt: img.metadata?.alt || "Vista de la propiedad"
+      }));
 
-    return dynamic.length > 0 ? dynamic : defaultImages;
+    return dynamic.length > 0 ? dynamic : IMAGE_FALLBACKS[fallbackKey] || [];
   };
 
-  const featuredImages = getImages('featured', featured.images);
-  const interiorsImages = getImages('property', interiors.images);
-  const amenitiesImages = getImages('amenities', amenities.images);
+  const featuredImages = getImages('featured', 'featured');
+  const interiorsImages = getImages('property', 'property');
+  const amenitiesImages = getImages('amenities', 'amenities');
 
   return (
     // data-stitch-id: gallery-root
@@ -35,10 +35,10 @@ export const CoastalGallery: React.FC<CoastalGalleryProps> = ({ className = "", 
 
       {/* A. DESTACADAS — emotional impact, alternating bg */}
       <GalleryCarousel
-        title={featured.title}
-        subtitle={featured.subtitle}
+        title="Vistas que se quedan contigo"
+        subtitle="Lo primero que ves al abrir la puerta."
         images={featuredImages}
-        ctaText={featured.ctaText}
+        ctaText="Solicitud de Reserva"
         onAction={onAction}
         bgColor="bg-[#f5f0e8]"
       />
@@ -46,10 +46,10 @@ export const CoastalGallery: React.FC<CoastalGalleryProps> = ({ className = "", 
       {/* B. EL DEPARTAMENTO — interior walkthrough */}
       <div className="border-t border-[#e2d9cc]">
         <GalleryCarousel
-          title={interiors.title}
-          subtitle={interiors.subtitle}
+          title="Tu espacio frente al mar"
+          subtitle="Luz natural, calma y todo listo para que simplemente llegues a disfrutar."
           images={interiorsImages}
-          ctaText={interiors.ctaText}
+          ctaText="Solicitud de Reserva"
           onAction={onAction}
           bgColor="bg-[#faf7f2]"
         />
@@ -58,10 +58,10 @@ export const CoastalGallery: React.FC<CoastalGalleryProps> = ({ className = "", 
       {/* C. AMENIDADES — building common areas */}
       <div className="border-t border-[#e2d9cc]">
         <GalleryCarousel
-          title={amenities.title}
-          subtitle={amenities.subtitle}
+          title="Donde empieza tu descanso"
+          subtitle="Un lugar pensado para bajar el ritmo y sentirte cómodo desde el primer momento."
           images={amenitiesImages}
-          ctaText={amenities.ctaText}
+          ctaText="Solicitud de Reserva"
           onAction={onAction}
           bgColor="bg-[#f5f0e8]"
         />

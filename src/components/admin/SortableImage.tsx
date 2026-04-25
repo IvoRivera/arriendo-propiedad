@@ -39,12 +39,16 @@ export function SortableImage({ id, image, onDelete, isDeleting }: SortableImage
       style={style} 
       className="group relative bg-white border border-[#e2d9cc] rounded-3xl overflow-hidden shadow-sm hover:shadow-md transition-all"
     >
-      <div className="aspect-[4/3] relative overflow-hidden bg-gray-100">
-        <img
-          src={image.url}
-          alt=""
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-        />
+      <div className="aspect-[4/3] relative overflow-hidden bg-gray-100 flex items-center justify-center">
+        {image?.url?.trim() ? (
+          <img
+            src={image.url}
+            alt="Miniatura de la propiedad"
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+          />
+        ) : (
+          <div className="text-[#9a8a78] text-[10px] italic">Sin imagen</div>
+        )}
         
         {/* Drag Handle Overlay */}
         <div 

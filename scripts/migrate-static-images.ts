@@ -26,22 +26,24 @@ interface ImageMapping {
 
 const imagesToMigrate: ImageMapping[] = [
   // FEATURED (Destacadas)
-  { src: "/images/destacadas/01-living.webp", alt: "Vista del living y terraza", category: "featured" },
-  { src: "/images/destacadas/02-cocina.webp", alt: "Cocina moderna equipada", category: "featured" },
-  { src: "/images/destacadas/03-habitacion-principal.webp", alt: "Habitacin principal", category: "featured" },
-  { src: "/images/destacadas/04-terraza-atardecer.webp", alt: "Atardecer desde la terraza", category: "featured" },
-  { src: "/images/destacadas/05-piscina.webp", alt: "Piscina del condominio", category: "featured" },
+  { src: "/images/destacadas/19-vista-balcon5.webp", alt: "Vista panorǭmica al ocǸano desde la terraza", category: "featured" },
+  { src: "/images/destacadas/02-cocina-sillon-ventana.webp", alt: "Espacios integrados con iluminacin natural", category: "featured" },
+  { src: "/images/destacadas/08-habitacion1.webp", alt: "Dormitorio principal amplio y confortable", category: "featured" },
+  { src: "/images/destacadas/03-vista-balcon.webp", alt: "Terraza privada con vista despejada", category: "featured" },
+  { src: "/images/destacadas/03-piscina-dia.webp", alt: "Piscina en la terraza con vista al mar", category: "featured" },
+  { src: "/images/destacadas/01-aerea-condominio.webp", alt: "Ubicacin privilegiada frente al mar", category: "featured" },
+  { src: "/images/destacadas/06-terraza-noche.webp", alt: "Ambiente nocturno en terraza comǧn", category: "featured" },
 
   // INTERIORS (Property)
-  { src: "/images/el-departamento/01-living-comedor.webp", alt: "Living comedor integrado", category: "property" },
-  { src: "/images/el-departamento/02-living-detalle.webp", alt: "Detalle decoracin living", category: "property" },
-  { src: "/images/el-departamento/03-comedor-cocina.webp", alt: "Vista hacia la cocina", category: "property" },
-  { src: "/images/el-departamento/04-cocina-equipada.webp", alt: "Equipamiento de cocina", category: "property" },
-  { src: "/images/el-departamento/05-habitacion-principal.webp", alt: "Dormitorio principal", category: "property" },
-  { src: "/images/el-departamento/06-habitacion-principal2.webp", alt: "Dormitorio principal, otro ǭngulo", category: "property" },
-  { src: "/images/el-departamento/07-habitacion-principal3.webp", alt: "Cama matrimonial detalle", category: "property" },
-  { src: "/images/el-departamento/08-habitacion-principal4.webp", alt: "Escritorio en habitacin principal", category: "property" },
-  { src: "/images/el-departamento/09-habitacion-principal5.webp", alt: "Vista habitacin principal", category: "property" },
+  { src: "/images/el-departamento/01-vista-entrada.webp", alt: "Entrada del departamento", category: "property" },
+  { src: "/images/el-departamento/02-entrada-departamento.webp", alt: "Entrada del departamento", category: "property" },
+  { src: "/images/el-departamento/03-living-comedor3.webp", alt: "Living comedor con vista", category: "property" },
+  { src: "/images/el-departamento/04-living-comedor4.webp", alt: "Living comedor amplio", category: "property" },
+  { src: "/images/el-departamento/05-living-comedor.webp", alt: "Living comedor amplio", category: "property" },
+  { src: "/images/el-departamento/06-living-comedor2.webp", alt: "Comedor con iluminacin natural", category: "property" },
+  { src: "/images/el-departamento/07-living-vista-balcon.webp", alt: "Vista al balcn desde el living", category: "property" },
+  { src: "/images/el-departamento/08-habitacion1.webp", alt: "Dormitorio principal", category: "property" },
+  { src: "/images/el-departamento/09-habitacion1-2.webp", alt: "Dormitorio principal, otro ǭngulo", category: "property" },
   { src: "/images/el-departamento/10-bano-suite.webp", alt: "Bao en suite", category: "property" },
   { src: "/images/el-departamento/11-bano-suite2.webp", alt: "Bao en suite, segundo ǭngulo", category: "property" },
   { src: "/images/el-departamento/12-camas-habitacion2.webp", alt: "Segunda habitacin", category: "property" },
@@ -68,6 +70,17 @@ const imagesToMigrate: ImageMapping[] = [
 
 async function migrate() {
   console.log('Starting migration...');
+
+  // Ensure bucket exists
+  const { data: buckets } = await supabase.storage.listBuckets();
+  if (!buckets?.find(b => b.id === BUCKET_NAME)) {
+    console.log(`Creating bucket: ${BUCKET_NAME}`);
+    await supabase.storage.createBucket(BUCKET_NAME, {
+      public: true,
+      allowedMimeTypes: ['image/webp', 'image/jpeg', 'image/png'],
+      fileSizeLimit: 5242880 // 5MB
+    });
+  }
 
   // Group by category to manage priority
   const categories = ['featured', 'property', 'amenities'] as const;

@@ -1,5 +1,5 @@
-// mockData.ts — Data layer for BoutiqueCoastalLanding
-// ✅ Scalable: add images by appending to the arrays below. No component changes needed.
+// mockData.ts — Static content and configuration for BoutiqueCoastalLanding
+// ✅ Note: Images are now managed via Supabase (Dynamic) with isolated local fallbacks in src/config/image-fallbacks.ts.
 
 export const siteConfig = {
   address: "Avenida del Mar 3500, Edificio Playa Serena",
@@ -54,31 +54,23 @@ export const experienceData = {
 };
 
 // ─── GALLERY ──────────────────────────────────────────────────────────────────
-// ✅ To add more images: append { src, alt } objects to any array below.
-// No component changes needed — carousels render dynamically.
+// Content (titles/subtitles) for gallery carousels.
+// Image data is handled by Supabase with local fallback.
 export const galleryData = {
-  // A. DESTACADAS — Máx. 5 fotos de impacto emocional
   featured: {
     title: "Vistas que se quedan contigo",
     subtitle: "Lo primero que ves al abrir la puerta.",
     ctaText: "Solicitud de Reserva",
-    images: [],
   },
-
-  // B. EL DEPARTAMENTO — Recorrido interior lógico
   interiors: {
     title: "Tu espacio frente al mar",
     subtitle: "Luz natural, calma y todo listo para que simplemente llegues a disfrutar.",
     ctaText: "Solicitud de Reserva",
-    images: [],
   },
-
-  // C. AMENIDADES — Espacios comunes del edificio
   amenities: {
     title: "Donde empieza tu descanso",
     subtitle: "Un lugar pensado para bajar el ritmo y sentirte cómodo desde el primer momento.",
     ctaText: "Solicitud de Reserva",
-    images: [],
   },
 };
 
@@ -94,7 +86,6 @@ export const specificationsData = {
 };
 
 // ─── AVAILABILITY CALENDAR ────────────────────────────────────────────────────
-// ✅ La disponibilidad real se maneja desde Supabase. Ya no se usa mockData para esto.
 export const availabilityData = {
   title: "Disponibilidad",
   subtitle: "Consulta las fechas que te interesan — te contactaremos a la brevedad.",
@@ -157,6 +148,7 @@ export const testimonialsData = {
     },
   ],
 };
+
 // ─── INVENTORY BASE ───────────────────────────────────────────────────────────
 export const baseInventory = [
   { id: "kitchen-1", category: "Cocina", name: "Refrigerador", condition: "Excelente" },

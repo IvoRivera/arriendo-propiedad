@@ -5,7 +5,7 @@ import React from "react";
 import Image from "next/image";
 import { Calendar } from "lucide-react";
 import { heroData } from "@/data/mockData";
-
+import { IMAGE_FALLBACKS } from "@/config/image-fallbacks";
 import { useConfig } from "@/components/providers/ConfigProvider";
 
 interface CoastalHeroProps {
@@ -29,10 +29,11 @@ export const CoastalHero: React.FC<CoastalHeroProps> = ({ className = "", onActi
 
     const displayPrice = formatPrice(livePrice);
 
-    // Get dynamic hero image
-    const heroImage = dynamicImages
-        .filter(img => img.category === 'featured')
-        .sort((a, b) => a.priority - b.priority)[0]?.url || heroData.image;
+    // Get dynamic hero image or fallback to config
+    const heroImage = (dynamicImages || [])
+        .filter(img => img.category === 'featured' && img.url)
+        .sort((a, b) => a.priority - b.priority)[0]?.url 
+        || IMAGE_FALLBACKS.hero[0].src;
     
     return (
         <section 
@@ -40,16 +41,20 @@ export const CoastalHero: React.FC<CoastalHeroProps> = ({ className = "", onActi
         >
             {/* Background image */}
             <div className="absolute inset-0 z-0 pointer-events-none">
-                <Image
-                    src={heroImage}
-                    alt={heroData.imageAlt}
-                    fill
-                    sizes="(max-width: 768px) 100vw, 100vw"
-                    priority
-                    placeholder="blur"
-                    blurDataURL={blurDataURL}
-                    className="object-cover object-center"
-                />
+                {heroImage && heroImage.trim() !== "" ? (
+                    <Image
+                        src={heroImage}
+                        alt="Vista principal del departamento frente al mar"
+                        fill
+                        sizes="(max-width: 768px) 100vw, 100vw"
+                        priority
+                        placeholder="blur"
+                        blurDataURL={blurDataURL}
+                        className="object-cover object-center"
+                    />
+                ) : (
+                    <div className="absolute inset-0 bg-[#1a1208]" />
+                )}
                 <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/30 to-black/80 md:from-[#3a2e1e]/40 md:via-transparent md:to-[#1a1208]/85" />
             </div>
 

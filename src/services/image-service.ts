@@ -118,14 +118,16 @@ export class ImageService {
 
   /**
    * Updates priorities for a batch of images.
+   * Note: We use upsert with onConflict 'id'. This requires passing all NOT NULL columns 
+   * even if we are only updating, due to Postgres INSERT...ON CONFLICT requirements.
    */
-  static async reorderImages(updates: { id: string; priority: number }[]) {
+  static async reorderImages(updates: Partial<DbImage>[]) {
     const { error } = await supabaseAdmin
       .from('images')
       .upsert(updates, { onConflict: 'id' });
 
     if (error) {
-      console.error('Error reordering images:', error);
+      console.error('Error reordering images:', error.message, error.details, error);
       throw error;
     }
     return true;
