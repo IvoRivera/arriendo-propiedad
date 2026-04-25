@@ -10,6 +10,16 @@ export interface ImageMetadata {
   [key: string]: any;
 }
 
+export interface DbImage {
+  id: string;
+  url: string;
+  category: ImageCategory;
+  priority: number;
+  metadata: ImageMetadata;
+  created_at: string;
+  storage_path: string;
+}
+
 export class ImageService {
   private static BUCKET_NAME = 'carousel-images';
 
@@ -125,7 +135,7 @@ export class ImageService {
    * Fetches all images for public consumption, cached by Next.js.
    */
   static getPublicImages = unstable_cache(
-    async () => {
+    async (): Promise<DbImage[]> => {
       const { data, error } = await supabaseAdmin
         .from('images')
         .select('*')
@@ -136,9 +146,20 @@ export class ImageService {
         console.error('Error fetching public images:', error);
         return [];
       }
-      return data;
+      return data as DbImage[];
     },
     ['public-images'],
     { tags: ['images-all'], revalidate: 3600 } // 1 hour stale fallback
   );
+
+  /**
+   * Groups images by category for easier consumption.
+   */
+  static categorizeImages(images: DbImage[]) {
+    return {
+      featured: images.filter(img => img.category === 'featured'),
+      property: images.filter(img => img.category === 'property'),
+      amenities: images.filter(img => img.category === 'amenities'),
+    };
+  }
 }
