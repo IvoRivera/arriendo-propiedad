@@ -1,33 +1,41 @@
 # ROADMAP.md
 
-> **Current Milestone**: v1.6 — Integridad de Schema y Runtime Guards
-> **Goal**: Garantizar la confiabilidad del sistema mediante la implementación de validación explícita de esquema y "guards" en tiempo de ejecución para prevenir fallos silenciosos en módulos críticos.
+> **Current Milestone**: v1.7 — SAFE REFACTOR + MOCKDATA MIGRATION (CRÍTICO)
+> **Goal**: Realizar un refactor estructural + limpieza de código, eliminando la dependencia de `mockData.ts` mediante la migración completa a fuentes de datos reales (Supabase) o configuración estática tipada (`site-content.ts`), sin alterar la UI/UX ni el sistema Coastal.
+
+## Reglas Críticas
+- **Ningún dato debe desaparecer**: Todo debe ser reubicado explícitamente.
+- **Verificación Visual Inmediata**: Cada cambio debe ser verificable en la landing al instante.
+- **Coastal UI Intacta**: Prohibido alterar estructura JSX o clases Tailwind.
 
 ## Must-Haves
-- [x] Utilidad centralizada `SchemaValidator` que consulte `information_schema`.
-- [x] Integración de validaciones en el `PricingService`.
-- [x] Runtime guards para los servicios de disponibilidad e imágenes.
-- [x] Logging estructurado para inconsistencias de esquema.
-- [x] Checklist de verificación post-migración obligatorio.
+- [ ] Mapeo exhaustivo de imports (directos e indirectos).
+- [ ] `src/config/site-content.ts` con tipado estricto.
+- [ ] Migración progresiva de `mockData.ts`.
+- [ ] `grep -r "mockData" src` vacío antes de finalizar.
+- [ ] Validación funcional total (Pricing, Images, Render).
 
-## Phases
+## Fases
 
-### Fase 28: Base de Validación de Schema
-**Status**: ✅ Complete
-**Objective**: Implementación de la capa core para verificar la existencia de tablas y columnas críticas.
+### Fase 33: Descubrimiento y Base de Site Content
+**Status**: ⬜ Not Started
+**Objective**: Mapear propiedades de `mockData` a sus destinos y crear la estructura base de `SITE_CONTENT`.
+- **Restricción**: NO mover lógica, solo datos.
 
-### Fase 29: Guards de Resiliencia en Pricing
-**Status**: ✅ Complete
-**Objective**: Seguridad en el motor de precios contra columnas faltantes o datos inconsistentes.
+### Fase 34: Migración de Contenido Estático
+**Status**: ⬜ Not Started
+**Objective**: Migrar contenido editorial (hero, amenities) manteniendo props y JSX intactos.
+- **Restricción**: Prohibido reestructurar componentes.
 
-### Fase 30: Integridad en Disponibilidad y Reservas
-**Status**: ✅ Complete
-**Objective**: Validación de esquema para la lógica de calendario y el flujo de creación de reservas.
+### Fase 35: Refactor de Datos Estructurales y Dinámicos
+**Status**: ⬜ Not Started
+**Objective**: Reemplazar datos de `mockData` con equivalentes en Supabase o servicios existentes.
+- **Regla**: No duplicar fuentes (Config + DB).
 
-### Fase 31: Guards de Imágenes y Metadatos
-**Status**: ✅ Complete
-**Objective**: Asegurar que el sistema de imágenes falle de forma controlada ante inconsistencias.
+### Fase 36: Limpieza de Componentes y Dependencias
+**Status**: ⬜ Not Started
+**Objective**: Reemplazar imports residuales y verificar ausencia de "mockData" en el código.
 
-### Fase 32: Flujo de Verificación y Manejo de Errores
-**Status**: ✅ Complete
-**Objective**: Estandarización de mensajes de error y finalización de la checklist de migración.
+### Fase 37: Verificación Final y Limpieza Técnica
+**Status**: ⬜ Not Started
+**Objective**: Eliminar `mockData.ts` y limpiar código muerto (imports, funciones, archivos duplicados).
