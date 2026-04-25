@@ -13,7 +13,7 @@
 ## Phases
 
 ### Phase 23: Multi-Property Core Schema & Base Data
-**Status**: ⬜ Not Started
+**Status**: ✅ Complete
 **Objective**: Update database schema to support multiple properties and pricing profiles.
 **Tasks**:
 - [ ] Create `properties` table.
