@@ -89,7 +89,7 @@ export const CoastalHero: React.FC<CoastalHeroProps> = ({
                     </p>
                     <div className="h-px w-8 bg-[#6b7c4a] opacity-50 my-1" />
                     <p className="text-white/60 text-[9px] uppercase tracking-[0.25em] font-bold">
-                        {(SITE_CONTENT.hero as Record<string, string>).availabilityPrompt}
+                        {SITE_CONTENT.hero.availabilityPrompt}
                     </p>
                 </div>
 

@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import { ShieldCheck, CheckCircle2, AlertCircle, Loader2, ClipboardList } from "lucide-react";
 import { supabasePublic } from "@/lib/supabase";
-import { baseInventory } from "@/data/mockData";
+import { BASE_INVENTORY } from "@/config/inventory";
 
 export default function GuestCheckInPage() {
   const { id } = useParams();
@@ -28,7 +28,7 @@ export default function GuestCheckInPage() {
             // Not found - let's simulate or handle it
             setInventoryLog({
               booking_id: id,
-              inventory_snapshot: baseInventory,
+              inventory_snapshot: BASE_INVENTORY,
               accepted_at: null
             });
           } else {

@@ -28,7 +28,7 @@
 - **Restricción**: Prohibido reestructurar componentes.
 
 ### Fase 35: Refactor de Datos Estructurales y Dinámicos
-**Status**: ⬜ Not Started
+**Status**: ✅ Complete
 **Objective**: Reemplazar datos de `mockData` con equivalentes en Supabase o servicios existentes.
 - **Regla**: No duplicar fuentes (Config + DB).
 
