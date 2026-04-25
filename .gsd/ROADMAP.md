@@ -38,4 +38,18 @@
 
 ### Fase 37: Verificación Final y Limpieza Técnica
 **Status**: ✅ Complete
-**Objective**: Eliminar `mockData.ts` y limpiar código muerto (imports, funciones, archivos duplicados).
+**Objective**: Eliminar `mockData.ts` y limpiar código muerto.
+**Verification Updates**:
+- [x] .gitignore correctamente configurado.
+- [x] No existen archivos sensibles en el repo.
+- [x] git status limpio (sin archivos inesperados).
+- [x] Proyecto clonado funciona (npm install + dev).
+
+### Fase 38: Repository Hygiene & Git Cleanup
+**Status**: ⬜ Not Started
+**Objective**: Asegurar que el repositorio solo contenga código fuente necesario, eliminando artefactos innecesarios y previniendo futuros errores.
+**Tasks**:
+- [ ] Auditoría exhaustiva de archivos no versionables.
+- [ ] Hardening de .gitignore (Next.js + Supabase).
+- [ ] Remoción de archivos trackeados por error (.next, caches, etc).
+- [ ] Verificación de seguridad (credenciales expuestas).
