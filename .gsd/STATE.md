@@ -2,8 +2,9 @@
 
 ## Current Position
 - **Milestone**: v1.6 — Integridad de Schema y Runtime Guards
-- **Phase**: Not started
-- **Status**: Milestone planned
+- **Phase**: 28
+- **Task**: Planning complete
+- **Status**: Ready for execution
 
 ## Recent Progress
 - Initialized milestone based on `SPEC.md`.
