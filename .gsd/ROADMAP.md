@@ -1,55 +1,51 @@
 # ROADMAP.md
 
-> **Current Milestone**: v1.5 — Multi-Property Adaptive Pricing Engine
-> **Goal**: Transform the pricing system into a scalable multi-property engine with global rules and per-property profiles.
+> **Current Milestone**: v1.6 — Integridad de Schema y Runtime Guards
+> **Goal**: Garantizar la confiabilidad del sistema mediante la implementación de validación explícita de esquema y "guards" en tiempo de ejecución para prevenir fallos silenciosos en módulos críticos.
 
 ## Must-Haves
-- [ ] Global Pricing Engine (Chile coastal baseline, national events, weekend logic).
-- [ ] Property Pricing Profile (location_type, luxury_tier, seasonal_sensitivity).
-- [ ] Rule Composition Engine (Base × Multipliers).
-- [ ] Top-Priority Override System (Manual date/property overrides).
-- [ ] Admin Layer (Property creation, profile assignment, impact visualization).
+- [ ] Utilidad centralizada `SchemaValidator` que consulte `information_schema`.
+- [ ] Integración de validaciones en el `PricingService`.
+- [ ] Runtime guards para los servicios de disponibilidad e imágenes.
+- [ ] Logging estructurado para inconsistencias de esquema.
+- [ ] Checklist de verificación post-migración obligatorio.
 
 ## Phases
 
-### Phase 23: Multi-Property Core Schema & Base Data
-**Status**: ✅ Complete
-**Objective**: Update database schema to support multiple properties and pricing profiles.
-**Tasks**:
-- [ ] Create `properties` table.
-- [ ] Create `pricing_profiles` table.
-- [ ] Migrate current single-property data (base price, etc.) to the new schema.
-- [ ] Update `system_config` dependencies.
-
-### Phase 24: Global Pricing Engine (Logic Layer)
+### Fase 28: Base de Validación de Schema
 **Status**: ⬜ Not Started
-**Objective**: Refactor pricing logic into a shared engine with global rules.
+**Objective**: Implementación de la capa core para verificar la existencia de tablas y columnas críticas.
 **Tasks**:
-- [ ] Implement Chilean coastal seasonal baseline.
-- [ ] Add national holidays and special events logic.
-- [ ] Implement weekend and demand multiplier logic.
+- [ ] Crear utilidad `SchemaValidator` para consultas a `information_schema.columns`.
+- [ ] Definir mapa de columnas críticas para tablas: `properties`, `price_overrides`, `images`, `bookings`.
+- [ ] Implementar middleware o guard global de inicialización (opcional/según arquitectura).
 
-### Phase 25: Property Profiles & Composition Engine
+### Fase 29: Guards de Resiliencia en Pricing
 **Status**: ⬜ Not Started
-**Objective**: Connect properties to profiles and implement the multiplier composition.
+**Objective**: Seguridad en el motor de precios contra columnas faltantes o datos inconsistentes.
 **Tasks**:
-- [ ] Implement `location_type` (coastal/urban) multipliers.
-- [ ] Implement `luxury_tier` (standard/premium) multipliers.
-- [ ] Build the composition logic: `base * location * seasonal * demand`.
+- [ ] Integrar `SchemaValidator` en `fetchPricingData`.
+- [ ] Implementar logs estructurados `[PricingAPI]` ante fallos de schema.
+- [ ] Asegurar que el motor falle explícitamente si falta `property_id` o reglas base.
 
-### Phase 26: Override System & Persistence
+### Fase 30: Integridad en Disponibilidad y Reservas
 **Status**: ⬜ Not Started
-**Objective**: Enable manual price overrides that take absolute priority.
+**Objective**: Validación de esquema para la lógica de calendario y el flujo de creación de reservas.
 **Tasks**:
-- [ ] Create `price_overrides` table.
-- [ ] Implement override detection in the pricing engine.
-- [ ] Ensure persistence in Supabase.
+- [ ] Validar integridad de tabla `bookings` y `availability` antes de cálculos.
+- [ ] Prevenir inserciones si el schema de la tabla no coincide con el modelo esperado.
 
-### Phase 27: Admin UI & Verification
+### Fase 31: Guards de Imágenes y Metadatos
 **Status**: ⬜ Not Started
-**Objective**: Build the management interface and verify the system with multiple properties.
+**Objective**: Asegurar que el sistema de imágenes falle de forma controlada ante inconsistencias.
 **Tasks**:
-- [ ] Build Property/Profile management UI.
-- [ ] Build Manual Override management UI.
-- [ ] Add "Pricing Impact Preview" dashboard.
-- [ ] Verify zero logic duplication across multiple test units.
+- [ ] Validar columnas de metadatos y categorías en la tabla `images`.
+- [ ] Implementar fallback o error explícito en el admin de imágenes si el schema está incompleto.
+
+### Fase 32: Flujo de Verificación y Manejo de Errores
+**Status**: ⬜ Not Started
+**Objective**: Estandarización de mensajes de error y finalización de la checklist de migración.
+**Tasks**:
+- [ ] Crear `MIGRATION_CHECKLIST.md` con los pasos obligatorios.
+- [ ] Unificar formato de logs de error de schema.
+- [ ] Verificación final de integridad en todo el sistema.
