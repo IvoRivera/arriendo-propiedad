@@ -1,5 +1,32 @@
 # JOURNAL.md
 
+## Session: 2026-04-24 20:45
+
+### Objective
+Implement a fully dynamic pricing system by season, resolve library compatibility issues with `react-day-picker` v9, and stabilize the booking modal for mobile.
+
+### Accomplished
+- [x] **Dynamic Pricing**: Implemented seasonal rate logic, public pricing API, and integrated price visualization in calendars.
+- [x] **Library Migration**: Fixed critical "DayContent" error by migrating to the `DayButton` component in `react-day-picker` v9 across all calendars.
+- [x] **Mobile UX Fixes**: Refactored `CoastalRequestModal` to use a non-destructive loading overlay, fixing "preparing stay" state issues and preventing form data loss.
+- [x] **Database Security**: Created SQL migration for `seasonal_pricing` RLS policies to allow public reads and authenticated management.
+- [x] **Stable State**: Committed all changes with a comprehensive Spanish git message.
+
+### Verification
+- [x] Verified code compiles and starts correctly on `localhost:3001`.
+- [x] Verified `pricingClient.ts` handles base vs seasonal pricing correctly.
+- [ ] Final verification of seasonal fetches (pending SQL execution in Supabase).
+
+### Paused Because
+User requested a pause to end the session.
+
+### Handoff Notes
+- **SQL Action Required**: Execute `supabase/migrations/20260424_seasonal_pricing_rls.sql` to resolve the current 403 errors when fetching prices.
+- The `CoastalRequestModal` is now much more robust on mobile thanks to the overlay approach.
+- `DayButton` is the correct component for future calendar customizations.
+
+---
+
 ## Session: 2026-04-24 19:25
 
 ### Objective
