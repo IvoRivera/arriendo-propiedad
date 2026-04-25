@@ -7,16 +7,23 @@ import { Calendar } from "lucide-react";
 import { heroData } from "@/data/mockData";
 import { IMAGE_FALLBACKS } from "@/config/image-fallbacks";
 import { useConfig } from "@/components/providers/ConfigProvider";
+import { Property } from "@/types/property";
 
 interface CoastalHeroProps {
     readonly className?: string;
     onAction?: () => void;
     dynamicImages?: any[];
+    property?: Property | null;
 }
 
-export const CoastalHero: React.FC<CoastalHeroProps> = ({ className = "", onAction, dynamicImages = [] }) => {
+export const CoastalHero: React.FC<CoastalHeroProps> = ({ 
+    className = "", 
+    onAction, 
+    dynamicImages = [],
+    property 
+}) => {
     const { getValue } = useConfig();
-    const livePrice = getValue("PROPERTY_RENT_VALUE") || "80.000";
+    const livePrice = property?.base_price?.toString() || getValue("PROPERTY_RENT_VALUE") || "80.000";
 
     // Helper to format price with dots (Chilean format)
     const formatPrice = (p: string) => {

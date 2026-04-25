@@ -10,12 +10,14 @@ import { CoastalSpecs } from "@/components/coastal/CoastalSpecs";
 import { CoastalLocationTestimonials } from "@/components/coastal/CoastalLocationTestimonials";
 import { CoastalFooterCta } from "@/components/coastal/CoastalFooterCta";
 import { CoastalRequestModal } from "@/components/coastal/CoastalRequestModal";
+import { Property } from "@/types/property";
 
 interface HomeClientProps {
   dynamicImages: any[];
+  property: Property | null;
 }
 
-export function HomeClient({ dynamicImages }: HomeClientProps) {
+export function HomeClient({ dynamicImages, property }: HomeClientProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedDates, setSelectedDates] = useState<{ checkIn: Date; checkOut: Date } | null>(null);
 
@@ -32,7 +34,11 @@ export function HomeClient({ dynamicImages }: HomeClientProps) {
   return (
     <main className="min-h-screen bg-[#faf7f2] relative">
       {/* 1. Hero — emotional first impression */}
-      <CoastalHero onAction={() => openModal()} dynamicImages={dynamicImages} />
+      <CoastalHero 
+        onAction={() => openModal()} 
+        dynamicImages={dynamicImages} 
+        property={property} 
+      />
 
       {/* 2. Availability — date range picker with Modal CTA */}
       <CoastalAvailability onAction={(dates) => openModal(dates)} />
