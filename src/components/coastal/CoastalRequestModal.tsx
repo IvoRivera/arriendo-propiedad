@@ -216,6 +216,9 @@ export const CoastalRequestModal: React.FC<CoastalRequestModalProps> = ({
     }
   }, [isOpen]);
 
+  const checkInValue = watch("check_in");
+  const checkOutValue = watch("check_out");
+
   useEffect(() => {
     if (checkInValue && checkOutValue && basePrice > 0) {
       const start = parseISO(checkInValue);
@@ -253,9 +256,6 @@ export const CoastalRequestModal: React.FC<CoastalRequestModalProps> = ({
       setValue("check_out", formatDate(initialDates.checkOut), { shouldValidate: true });
     }
   }, [isOpen, initialDates, setValue]);
-
-  const checkInValue = watch("check_in");
-  const checkOutValue = watch("check_out");
 
   useEffect(() => {
     if (checkInValue && checkOutValue) {
@@ -401,16 +401,17 @@ export const CoastalRequestModal: React.FC<CoastalRequestModalProps> = ({
 
         <div className="px-6 sm:px-12 pt-16 pb-12 sm:pt-20 sm:pb-16 flex-1">
           {!isSubmitted ? (
-            isPreparing ? (
-              <div className="py-20 text-center flex flex-col items-center justify-center gap-8 animate-in fade-in duration-500 min-h-[400px]">
-                <div className="w-12 h-12 border-4 border-[#e2d9cc] border-t-[#6b7c4a] rounded-full animate-spin"></div>
-                <div className="space-y-3">
-                  <h3 className="font-serif text-2xl sm:text-3xl text-[#2c2416] italic">Estamos preparando tu estadía...</h3>
-                  <p className="text-[#6b5d4f] text-sm font-light">Verificando opciones frente al mar</p>
+            <div className="w-full animate-in fade-in slide-in-from-bottom-4 duration-500 relative">
+              {isPreparing && (
+                <div className="absolute inset-0 z-50 bg-[#faf7f2] flex flex-col items-center justify-center gap-8 animate-in fade-in duration-500 rounded-[40px]">
+                  <div className="w-12 h-12 border-4 border-[#e2d9cc] border-t-[#6b7c4a] rounded-full animate-spin"></div>
+                  <div className="space-y-3 text-center px-6">
+                    <h3 className="font-serif text-2xl sm:text-3xl text-[#2c2416] italic">Estamos preparando tu estadía...</h3>
+                    <p className="text-[#6b5d4f] text-sm font-light">Verificando opciones frente al mar</p>
+                  </div>
                 </div>
-              </div>
-            ) : (
-            <div className="w-full animate-in fade-in slide-in-from-bottom-4 duration-500">
+              )}
+              
               <div className="text-center mb-10">
                 <h3 className="font-serif text-3xl sm:text-4xl text-[#2c2416] italic tracking-tight">Solicitar Estadía</h3>
                 <p className="text-[#9a8a78] text-[10px] uppercase tracking-widest mt-2 font-bold">Completa tus datos para postular</p>
@@ -495,14 +496,17 @@ export const CoastalRequestModal: React.FC<CoastalRequestModalProps> = ({
                              disabled={isDateDisabled}
                              locale={es}
                              components={{
-                               DayContent: ({ date }) => {
+                               DayButton: (props) => {
+                                 const { day, modifiers, ...buttonProps } = props;
+                                 const { date } = day;
                                  const { price, isSeasonal } = getPriceForDate(date, seasonalPrices || [], basePrice || 0);
                                  const formatted = price >= 1000 
                                    ? new Intl.NumberFormat('es-CL').format(Math.floor(price / 1000)) + 'k'
                                    : price;
                                  
                                  return (
-                                   <div className="flex flex-col items-center justify-center w-full h-full pt-1">
+                                   <button {...buttonProps}>
+                                     <div className="flex flex-col items-center justify-center w-full h-full pt-1">
                                      <span className="text-[10px] font-medium leading-none">{date.getDate()}</span>
                                      {price > 0 && (
                                        <span className={`text-[7px] mt-0.5 leading-none font-bold tracking-tighter ${isSeasonal ? 'text-[#6b7c4a]' : 'text-[#b5a99a]'}`}>
@@ -510,7 +514,8 @@ export const CoastalRequestModal: React.FC<CoastalRequestModalProps> = ({
                                        </span>
                                      )}
                                    </div>
-                                 );
+                                 </button>
+                               );
                                }
                              }}
                            />
@@ -552,14 +557,17 @@ export const CoastalRequestModal: React.FC<CoastalRequestModalProps> = ({
                              locale={es}
                              defaultMonth={checkInValue ? parseISO(checkInValue) : undefined}
                              components={{
-                               DayContent: ({ date }) => {
+                               DayButton: (props) => {
+                                 const { day, modifiers, ...buttonProps } = props;
+                                 const { date } = day;
                                  const { price, isSeasonal } = getPriceForDate(date, seasonalPrices || [], basePrice || 0);
                                  const formatted = price >= 1000 
                                    ? new Intl.NumberFormat('es-CL').format(Math.floor(price / 1000)) + 'k'
                                    : price;
                                  
                                  return (
-                                   <div className="flex flex-col items-center justify-center w-full h-full pt-1">
+                                   <button {...buttonProps}>
+                                     <div className="flex flex-col items-center justify-center w-full h-full pt-1">
                                      <span className="text-[10px] font-medium leading-none">{date.getDate()}</span>
                                      {price > 0 && (
                                        <span className={`text-[7px] mt-0.5 leading-none font-bold tracking-tighter ${isSeasonal ? 'text-[#6b7c4a]' : 'text-[#b5a99a]'}`}>
@@ -567,7 +575,8 @@ export const CoastalRequestModal: React.FC<CoastalRequestModalProps> = ({
                                        </span>
                                      )}
                                    </div>
-                                 );
+                                 </button>
+                               );
                                }
                              }}
                            />
@@ -692,7 +701,6 @@ export const CoastalRequestModal: React.FC<CoastalRequestModalProps> = ({
                 </div>
               </form>
             </div>
-            )
           ) : (
             <div className="py-20 text-center flex flex-col items-center gap-8 animate-in fade-in zoom-in-95 duration-500">
               <div className="w-24 h-24 bg-[#6b7c4a]/10 rounded-full flex items-center justify-center text-[#6b7c4a] mb-2 shadow-inner">

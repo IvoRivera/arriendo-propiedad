@@ -198,21 +198,24 @@ export function DateBlockingManager() {
               day: "h-12 w-10 p-0 font-normal aria-selected:opacity-100",
             }}
             components={{
-              DayContent: ({ date }) => {
-                const { price, isSeasonal } = getPriceForDate(date, seasonalPrices, basePrice);
+              DayButton: (props) => {
+                const { day, modifiers, ...buttonProps } = props;
+                const { price, isSeasonal } = getPriceForDate(day.date, seasonalPrices, basePrice);
                 const formatted = price >= 1000 
                   ? new Intl.NumberFormat('es-CL').format(Math.floor(price / 1000)) + 'k'
                   : price;
                 
                 return (
-                  <div className="flex flex-col items-center justify-center w-full h-full pt-1.5">
-                    <span className="text-[10px] font-medium leading-none">{date.getDate()}</span>
-                    {price > 0 && (
-                      <span className={`text-[7px] mt-1 leading-none font-bold tracking-tighter ${isSeasonal ? 'text-amber-600' : 'text-gray-400'}`}>
-                        ${formatted}
-                      </span>
-                    )}
-                  </div>
+                  <button {...buttonProps}>
+                    <div className="flex flex-col items-center justify-center w-full h-full pt-1.5">
+                      <span className="text-[10px] font-medium leading-none">{day.date.getDate()}</span>
+                      {price > 0 && (
+                        <span className={`text-[7px] mt-1 leading-none font-bold tracking-tighter ${isSeasonal ? 'text-amber-600' : 'text-gray-400'}`}>
+                          ${formatted}
+                        </span>
+                      )}
+                    </div>
+                  </button>
                 );
               }
             }}

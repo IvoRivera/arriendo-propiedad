@@ -66,6 +66,8 @@ const DateInput: React.FC<DateInputProps> = ({
   id,
   defaultMonth,
   disabled = false,
+  seasonalPrices,
+  basePrice,
 }) => {
   const [open, setOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -145,21 +147,24 @@ const DateInput: React.FC<DateInputProps> = ({
             defaultMonth={defaultMonth || selected || new Date()}
             initialFocus
             components={{
-              DayContent: ({ date }) => {
-                const { price, isSeasonal } = getPriceForDate(date, seasonalPrices || [], basePrice || 0);
+              DayButton: (props) => {
+                const { day, modifiers, ...buttonProps } = props;
+                const { price, isSeasonal } = getPriceForDate(day.date, seasonalPrices || [], basePrice || 0);
                 const formatted = price >= 1000 
                   ? new Intl.NumberFormat('es-CL').format(Math.floor(price / 1000)) + 'k'
                   : price;
                 
                 return (
-                  <div className="flex flex-col items-center justify-center w-full h-full pt-1">
-                    <span className="text-[10px] font-medium leading-none">{date.getDate()}</span>
-                    {price > 0 && (
-                      <span className={`text-[7px] mt-0.5 leading-none font-bold tracking-tighter ${isSeasonal ? 'text-[#6b7c4a]' : 'text-[#b5a99a]'}`}>
-                        ${formatted}
-                      </span>
-                    )}
-                  </div>
+                  <button {...buttonProps}>
+                    <div className="flex flex-col items-center justify-center w-full h-full pt-1">
+                      <span className="text-[10px] font-medium leading-none">{day.date.getDate()}</span>
+                      {price > 0 && (
+                        <span className={`text-[7px] mt-0.5 leading-none font-bold tracking-tighter ${isSeasonal ? 'text-[#6b7c4a]' : 'text-[#b5a99a]'}`}>
+                          ${formatted}
+                        </span>
+                      )}
+                    </div>
+                  </button>
                 );
               }
             }}
