@@ -4,10 +4,11 @@ import React, { useEffect, useState } from "react";
 import type { User as SupabaseUser } from "@supabase/supabase-js";
 import { supabaseAdmin } from "@/lib/supabase";
 import { useRouter } from "next/navigation";
-import { XCircle, Calendar, LogOut, RefreshCw, Archive, ArchiveRestore, Eye, Filter, User, AlertCircle, Settings, Inbox as InboxIcon, DollarSign } from "lucide-react";
+import { XCircle, Calendar, LogOut, RefreshCw, Archive, ArchiveRestore, Eye, Filter, User, AlertCircle, Settings, Inbox as InboxIcon, DollarSign, Image as ImageIcon } from "lucide-react";
 import { SystemConfigPanel } from "@/components/admin/SystemConfigPanel";
 import { DateBlockingManager } from "@/components/admin/DateBlockingManager";
 import { PricingManager } from "@/components/admin/PricingManager";
+import { ImageManager } from "@/components/admin/ImageManager";
 import { initConfig } from "@/lib/systemConfig";
 
 interface BookingRequest {
@@ -33,7 +34,7 @@ export default function AdminPage() {
   const [archivedIds, setArchivedIds] = useState<string[]>([]);
   const [showArchived, setShowArchived] = useState(false);
   const [showExceptions, setShowExceptions] = useState(false);
-  const [activeView, setActiveView] = useState<'inbox' | 'config' | 'availability' | 'pricing'>('inbox');
+  const [activeView, setActiveView] = useState<'inbox' | 'config' | 'availability' | 'pricing' | 'images'>('inbox');
   const router = useRouter();
 
   // Load archived IDs from localStorage on mount
@@ -204,7 +205,7 @@ export default function AdminPage() {
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
           <div className="space-y-2">
             <h1 className="font-serif text-4xl text-[#2c2416] italic leading-none">
-              {activeView === 'inbox' ? 'Inbox de Solicitudes' : activeView === 'config' ? 'Configuración' : activeView === 'availability' ? 'Calendario y Bloqueos' : 'Gestión de Precios'}
+              {activeView === 'inbox' ? 'Inbox de Solicitudes' : activeView === 'config' ? 'Configuración' : activeView === 'availability' ? 'Calendario y Bloqueos' : activeView === 'pricing' ? 'Gestión de Precios' : 'Galería de Imágenes'}
             </h1>
             <p className="text-[#6b5d4f] text-sm font-light flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-[#6b7c4a] animate-pulse" />
@@ -224,6 +225,9 @@ export default function AdminPage() {
             </button>
             <button onClick={() => setActiveView('pricing')} className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-widest transition-all whitespace-nowrap ${activeView === 'pricing' ? 'bg-[#6b7c4a] text-white shadow-md' : 'text-[#9a8a78] hover:text-[#2c2416]'}`}>
               <DollarSign className="w-4 h-4" /> Precios
+            </button>
+            <button onClick={() => setActiveView('images')} className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-widest transition-all whitespace-nowrap ${activeView === 'images' ? 'bg-[#6b7c4a] text-white shadow-md' : 'text-[#9a8a78] hover:text-[#2c2416]'}`}>
+              <ImageIcon className="w-4 h-4" /> Imágenes
             </button>
           </div>
 
@@ -353,6 +357,11 @@ export default function AdminPage() {
         {activeView === 'pricing' && (
           <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
             <PricingManager />
+          </div>
+        )}
+        {activeView === 'images' && (
+          <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <ImageManager />
           </div>
         )}
       </div>
