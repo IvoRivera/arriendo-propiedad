@@ -3,7 +3,7 @@
 
 import React from "react";
 import { Waves, Sofa, ShieldCheck } from "lucide-react";
-import { experienceData } from "@/data/mockData";
+import { SITE_CONTENT } from "@/config/site-content";
 
 interface CoastalExperienceProps {
   readonly className?: string;
@@ -27,17 +27,17 @@ export const CoastalExperience: React.FC<CoastalExperienceProps> = ({ className 
             className="text-3xl md:text-4xl font-serif font-normal text-[#2c2416] mb-4"
             style={{ fontFamily: "'Newsreader', 'Georgia', serif" }}
           >
-            {experienceData.sectionTitle}
+            {SITE_CONTENT.experience.sectionTitle}
           </h2>
           <p className="text-[#6b5d4f] text-sm md:text-base font-light leading-relaxed max-w-md mx-auto">
-            {experienceData.sectionSubtitle}
+            {SITE_CONTENT.experience.sectionSubtitle}
           </p>
         </div>
 
         {/* 3-column grid with dividers — matches Stitch layout */}
         {/* data-stitch-id: experience-grid */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-0 md:divide-x divide-[#d4c9b8]">
-          {experienceData.features.map((feature, index) => (
+          {SITE_CONTENT.experience.features.map((feature, index) => (
             // data-stitch-id: experience-card
             <div
               key={index}

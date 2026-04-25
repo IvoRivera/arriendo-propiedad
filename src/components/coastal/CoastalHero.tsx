@@ -4,7 +4,7 @@
 import React from "react";
 import Image from "next/image";
 import { Calendar } from "lucide-react";
-import { heroData } from "@/data/mockData";
+import { SITE_CONTENT } from "@/config/site-content";
 import { IMAGE_FALLBACKS } from "@/config/image-fallbacks";
 import { useConfig } from "@/components/providers/ConfigProvider";
 import { Property } from "@/types/property";
@@ -73,14 +73,14 @@ export const CoastalHero: React.FC<CoastalHeroProps> = ({
             {/* Content block */}
             <div className="relative z-30 max-w-2xl">
                 <p className="text-white/80 text-[10px] md:text-xs tracking-[0.3em] uppercase font-bold mb-5 drop-shadow-md">
-                    {heroData.tagline}
+                    {SITE_CONTENT.hero.tagline}
                 </p>
 
                 <h1
                     className="text-4xl md:text-5xl lg:text-7xl font-serif font-normal text-white leading-tight tracking-tight mb-6 drop-shadow-2xl"
                     style={{ fontFamily: "var(--font-newsreader), serif" }}
                 >
-                    {heroData.headline}
+                    {SITE_CONTENT.hero.headline}
                 </h1>
 
                 <div className="flex flex-col items-center gap-3 mb-10">
@@ -89,7 +89,7 @@ export const CoastalHero: React.FC<CoastalHeroProps> = ({
                     </p>
                     <div className="h-px w-8 bg-[#6b7c4a] opacity-50 my-1" />
                     <p className="text-white/60 text-[9px] uppercase tracking-[0.25em] font-bold">
-                        {(heroData as Record<string, string>).availabilityPrompt}
+                        {(SITE_CONTENT.hero as Record<string, string>).availabilityPrompt}
                     </p>
                 </div>
 
@@ -100,12 +100,12 @@ export const CoastalHero: React.FC<CoastalHeroProps> = ({
                     }}
                     className="bg-[#6b7c4a] hover:bg-[#5a6a3d] text-white font-bold text-[11px] md:text-xs uppercase tracking-[0.2em] px-10 py-4.5 rounded-full transition-all duration-300 hover:shadow-2xl hover:-translate-y-0.5 active:scale-95 cursor-pointer inline-flex items-center gap-3 group relative z-50"
                 >
-                    <span>{getValue("hero_cta_text") || heroData.ctaText}</span>
+                    <span>{getValue("hero_cta_text") || SITE_CONTENT.hero.ctaText}</span>
                     <Calendar className="w-4 h-4" fill="currentColor" />
                 </button>
 
                 <p className="text-white/60 text-xs tracking-wide font-light mt-6">
-                    {heroData.subheadline}
+                    {SITE_CONTENT.hero.subheadline}
                 </p>
             </div>
         </section>

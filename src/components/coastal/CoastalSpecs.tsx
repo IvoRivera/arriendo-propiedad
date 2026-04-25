@@ -3,7 +3,7 @@
 
 import React from "react";
 import { Maximize2, BedDouble, Sun, Car } from "lucide-react";
-import { specificationsData } from "@/data/mockData";
+import { SITE_CONTENT } from "@/config/site-content";
 
 interface CoastalSpecsProps {
   readonly className?: string;
@@ -27,13 +27,13 @@ export const CoastalSpecs: React.FC<CoastalSpecsProps> = ({ className = "" }) =>
           className="text-3xl md:text-4xl font-serif font-normal text-[#2c2416] text-center mb-12"
           style={{ fontFamily: "'Newsreader', 'Georgia', serif" }}
         >
-          {specificationsData.sectionTitle}
+          {SITE_CONTENT.specs.sectionTitle}
         </h2>
 
         {/* 4-column specs row */}
         {/* data-stitch-id: specs-grid */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-4">
-          {specificationsData.items.map((item, index) => (
+          {SITE_CONTENT.specs.items.map((item, index) => (
             // data-stitch-id: specs-item
             <div key={index} className="flex flex-col items-center text-center gap-3">
               <div className="text-[#6b7c4a]">
