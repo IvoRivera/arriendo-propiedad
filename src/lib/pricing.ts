@@ -1,5 +1,5 @@
 import { supabaseService } from './supabaseServer';
-import { getLiveConfigServer, validatePropertyRentValue } from './systemConfigServer';
+import { getPropertyBaseConfig, validatePropertyRentValue } from './systemConfigServer';
 import { eachDayOfInterval, format, parseISO } from 'date-fns';
 
 export interface PriceBreakdownItem {
@@ -18,20 +18,22 @@ export interface PricingResult {
 /**
  * Calculates the total price for a booking range.
  * Logic:
- * 1. Fetch base price from system_config (PROPERTY_RENT_VALUE).
- * 2. Fetch seasonal prices from seasonal_pricing table for the given range.
- * 3. For each night:
- *    - Find all seasonal prices that overlap with this night.
- *    - Apply the one with highest priority.
- *    - If priorities are equal, apply the one with the shortest range (most specific).
- *    - If no seasonal price matches, use the base price.
+ * 1. Fetch property record (base price, multipliers, etc.)
+ * 2. Fetch seasonal prices from seasonal_pricing table (property-specific or global).
+ * 3. Fetch manual overrides from price_overrides table (Highest Priority).
+ * 4. For each night:
+ *    - Check for manual override.
+ *    - If no override, apply seasonal price (highest priority).
+ *    - Fallback to property base price.
  */
-export async function calculateBookingPrice(startDate: string, endDate: string): Promise<PricingResult> {
+export async function calculateBookingPrice(
+  startDate: string, 
+  endDate: string, 
+  propertyId?: string
+): Promise<PricingResult> {
   const start = parseISO(startDate);
   const end = parseISO(endDate);
   
-  // Get nights (dates between start and end, excluding the end date)
-  // For a 1-night stay (e.g., 2024-01-01 to 2024-01-02), we calculate for 2024-01-01.
   let days: Date[] = [];
   try {
     days = eachDayOfInterval({ start, end });
@@ -40,49 +42,63 @@ export async function calculateBookingPrice(startDate: string, endDate: string):
     return { totalPrice: 0, breakdown: [], nightsCount: 0 };
   }
   
-  const nights = days.slice(0, -1); // Remove the last day (check-out day)
+  const nights = days.slice(0, -1);
+  if (nights.length === 0) return { totalPrice: 0, breakdown: [], nightsCount: 0 };
 
-  if (nights.length === 0) {
-    return { totalPrice: 0, breakdown: [], nightsCount: 0 };
-  }
-
-  // 1. Fetch base price
-  const config = await getLiveConfigServer();
-  let basePrice = 80000; // Default fallback
-  try {
-    basePrice = validatePropertyRentValue(config['PROPERTY_RENT_VALUE']);
-  } catch (err) {
-    console.warn('[Pricing] Could not fetch base price, using default:', err);
-  }
+  // 1. Fetch property base price
+  const property = await getPropertyBaseConfig(propertyId ? { id: propertyId } : undefined);
+  const basePrice = validatePropertyRentValue(property?.base_price ?? 80000);
 
   // 2. Fetch seasonal prices for the range
-  // We query for anything that overlaps the interval [start, end]
-  const { data: seasonalPrices, error } = await supabaseService
+  let seasonalQuery = supabaseService
     .from('seasonal_pricing')
     .select('*')
     .lte('start_date', format(end, 'yyyy-MM-dd'))
     .gte('end_date', format(start, 'yyyy-MM-dd'));
-
-  if (error) {
-    console.error('[Pricing] Error fetching seasonal pricing:', error.message);
+  
+  if (property?.id) {
+    // Fetch rules for this property OR global rules (property_id is null)
+    seasonalQuery = seasonalQuery.or(`property_id.eq.${property.id},property_id.is.null`);
+  } else {
+    seasonalQuery = seasonalQuery.is('property_id', null);
   }
+
+  const { data: seasonalPrices } = await seasonalQuery;
+
+  // 3. Fetch manual overrides (Highest Priority Layer)
+  const { data: overrides } = await supabaseService
+    .from('price_overrides')
+    .select('*')
+    .eq('property_id', property?.id)
+    .gte('date', format(start, 'yyyy-MM-dd'))
+    .lte('date', format(end, 'yyyy-MM-dd'));
 
   let totalPrice = 0;
   const breakdown: PriceBreakdownItem[] = [];
 
-  // 3. Calculate price per night
+  // 4. Calculate price per night
   for (const night of nights) {
     const nightStr = format(night, 'yyyy-MM-dd');
     
-    // Find matching seasonal prices for this night
+    // 4a. Check Overrides first
+    const override = overrides?.find(o => o.date === nightStr);
+    if (override) {
+      const price = Number(override.price);
+      totalPrice += price;
+      breakdown.push({
+        date: nightStr,
+        price,
+        seasonName: 'Manual Override',
+        priority: 999
+      });
+      continue;
+    }
+
+    // 4b. Find matching seasonal prices
     const matches = (seasonalPrices || [])
       .filter(sp => nightStr >= sp.start_date && nightStr <= sp.end_date)
       .sort((a, b) => {
-        // Priority first (descending)
-        if (b.priority !== a.priority) {
-          return b.priority - a.priority;
-        }
-        // Specificity tie-breaker (shortest range wins)
+        if (b.priority !== a.priority) return b.priority - a.priority;
         const rangeA = new Date(a.end_date).getTime() - new Date(a.start_date).getTime();
         const rangeB = new Date(b.end_date).getTime() - new Date(b.start_date).getTime();
         return rangeA - rangeB;
