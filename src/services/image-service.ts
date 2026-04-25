@@ -1,5 +1,6 @@
 import { supabaseAdmin } from '@/lib/supabase';
 import { unstable_cache } from 'next/cache';
+import { validateSchema } from '@/lib/schemaValidator';
 
 export type ImageCategory = 'property' | 'amenities' | 'featured' | 'hero';
 
@@ -33,6 +34,13 @@ export class ImageService {
     priority: number = 0,
     metadata: ImageMetadata = {}
   ) {
+    // [SchemaGuard] Early Integrity Check
+    const schema = await validateSchema();
+    if (!schema.success) {
+      const missing = schema.missing.map(m => `${m.table}.${m.column}`).join(', ');
+      throw new Error(`[SchemaGuard] [ImageService] Inconsistencia detectada. Faltan: ${missing}`);
+    }
+
     const fileExt = file.name.split('.').pop();
     const fileName = `${Math.random().toString(36).substring(2)}_${Date.now()}.${fileExt}`;
     const filePath = `${category}/${fileName}`;
@@ -155,6 +163,13 @@ export class ImageService {
    */
   static getPublicImages = unstable_cache(
     async (): Promise<DbImage[]> => {
+      // [SchemaGuard] Early Integrity Check
+      const schema = await validateSchema();
+      if (!schema.success) {
+        const missing = schema.missing.map(m => `${m.table}.${m.column}`).join(', ');
+        throw new Error(`[SchemaGuard] [ImageService] Inconsistencia detectada. Faltan: ${missing}`);
+      }
+
       const { data, error } = await supabaseAdmin
         .from('images')
         .select('*')

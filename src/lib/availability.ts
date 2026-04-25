@@ -1,4 +1,5 @@
 import { supabasePublic } from './supabase';
+import { validateSchema } from './schemaValidator';
 
 /**
  * Availability Service
@@ -11,6 +12,13 @@ export interface BlockedDateRange {
 }
 
 export async function getLiveBlockedDates(): Promise<Date[]> {
+  // [SchemaGuard] Early Integrity Check
+  const schema = await validateSchema();
+  if (!schema.success) {
+    const missing = schema.missing.map(m => `${m.table}.${m.column}`).join(', ');
+    throw new Error(`[SchemaGuard] [AvailabilityAPI] Inconsistencia detectada. Faltan: ${missing}`);
+  }
+
   const blockedDates: Date[] = [];
 
   try {

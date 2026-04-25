@@ -1,6 +1,6 @@
 import { Resend } from 'resend';
 import { NextResponse } from 'next/server';
-import { getLiveConfigServer } from '@/lib/systemConfigServer';
+import { getLiveConfigServer, getPropertyBaseConfig } from '@/lib/systemConfigServer';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -18,10 +18,14 @@ export async function POST(req: Request) {
       referred_by
     } = body;
     
-    // Fetch system configuration directly from Supabase (Live mode)
-    const freshConfig = await getLiveConfigServer();
+    // Fetch configuration
+    const [freshConfig, property] = await Promise.all([
+      getLiveConfigServer(),
+      getPropertyBaseConfig()
+    ]);
+
     const ownerEmail = freshConfig['OWNER_EMAIL'] || process.env.OWNER_EMAIL || '';
-    const dailyPrice = Number(freshConfig['PROPERTY_RENT_VALUE'] || 0);
+    const dailyPrice = property?.base_price ?? 0;
 
     // Stay summary calculation
     const start = new Date(check_in);

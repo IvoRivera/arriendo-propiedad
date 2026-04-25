@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { supabaseService } from '@/lib/supabaseServer';
 import { calculateBookingPrice } from '@/lib/pricing';
+import { validateSchema } from '@/lib/schemaValidator';
 import * as z from 'zod';
 
 const bookingSchema = z.object({
@@ -16,6 +17,13 @@ const bookingSchema = z.object({
 
 export async function POST(req: Request) {
   try {
+    // [SchemaGuard] Early Integrity Check
+    const schema = await validateSchema();
+    if (!schema.success) {
+      const missing = schema.missing.map(m => `${m.table}.${m.column}`).join(', ');
+      throw new Error(`[SchemaGuard] [BookingsAPI] Inconsistencia detectada. Faltan: ${missing}`);
+    }
+
     const body = await req.json();
     
     // 1. Validation

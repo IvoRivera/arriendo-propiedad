@@ -2,18 +2,17 @@
 
 ## Current Position
 - **Milestone**: v1.6 — Integridad de Schema y Runtime Guards
-- **Phase**: 29
-- **Task**: Planning complete
-- **Status**: Ready for implementation of Pricing Guards
+- **Phase**: 32
+- **Task**: Final Verification & Documentation
+- **Status**: Backend guards implemented, finalizing migration workflow
 
 ## Recent Progress
-- Initialized milestone based on `SPEC.md`.
-- Phase 28 Complete: Implemented `SchemaValidator` and `verify_schema` RPC with interactive verification.
+- Phases 28, 29, 30: Complete.
+- Phase 31 Complete: Secured `ImageService`. Verified schema for `images` (including `storage_path` and `priority`).
 
 ## Current Context
-- Database mapping confirmed for all critical tables.
-- Table `booking_requests` identified as the correct name.
-- Columns for pricing and overrides verified.
+- All critical modules (Pricing, Availability, Bookings, Images) are protected by `SchemaGuard`.
+- Final step is documenting the migration workflow.
 
 ## Next Steps
-- /plan 29 — Create execution plan for Phase 29: Guards de Resiliencia en Pricing.
+- /plan 32 — Create execution plan for Phase 32: Flujo de Verificación y Manejo de Errores.

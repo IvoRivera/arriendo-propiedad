@@ -2,6 +2,8 @@ import { supabaseService } from './supabaseServer';
 import { getPropertyBaseConfig, validatePropertyRentValue } from './systemConfigServer';
 import { eachDayOfInterval, format, parseISO } from 'date-fns';
 
+import { validateSchema } from './schemaValidator';
+
 export interface PriceBreakdownItem {
   date: string;
   price: number;
@@ -31,6 +33,13 @@ export async function calculateBookingPrice(
   endDate: string, 
   propertyId?: string
 ): Promise<PricingResult> {
+  // [SchemaGuard] Early Integrity Check
+  const schema = await validateSchema();
+  if (!schema.success) {
+    const missing = schema.missing.map(m => `${m.table}.${m.column}`).join(', ');
+    throw new Error(`[SchemaGuard] [PricingAPI] Inconsistencia detectada en base de datos. Faltan columnas: ${missing}`);
+  }
+
   const start = parseISO(startDate);
   const end = parseISO(endDate);
   

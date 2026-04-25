@@ -1,9 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseService } from '@/lib/supabaseServer';
 import { getPropertyBaseConfig, validatePropertyRentValue } from '@/lib/systemConfigServer';
+import { validateSchema } from '@/lib/schemaValidator';
 
 export async function GET(request: NextRequest) {
   try {
+    // [SchemaGuard] Early Integrity Check
+    const schema = await validateSchema();
+    if (!schema.success) {
+      const missing = schema.missing.map(m => `${m.table}.${m.column}`).join(', ');
+      throw new Error(`[SchemaGuard] [PricingAPI] Inconsistencia detectada. Faltan: ${missing}`);
+    }
+
     const searchParams = request.nextUrl.searchParams;
     const propertyId = searchParams.get('propertyId') || undefined;
     const propertySlug = searchParams.get('propertySlug') || undefined;
@@ -48,6 +56,14 @@ export async function GET(request: NextRequest) {
     });
   } catch (err: any) {
     console.error('[PublicPricingAPI] Error:', err);
+    
+    if (err.message.includes('[SchemaGuard]')) {
+      return NextResponse.json(
+        { success: false, error: err.message },
+        { status: 400 }
+      );
+    }
+
     return NextResponse.json(
       { success: false, error: 'Internal Server Error' },
       { status: 500 }

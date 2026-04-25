@@ -1,6 +1,6 @@
 import { Resend } from 'resend';
 import { NextResponse } from 'next/server';
-import { getLiveConfigServer, validatePropertyRentValue } from '@/lib/systemConfigServer';
+import { getLiveConfigServer, validatePropertyRentValue, getPropertyBaseConfig } from '@/lib/systemConfigServer';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -15,11 +15,12 @@ export async function POST(req: Request) {
       check_out
     } = body;
 
-    // Fetch system configuration securely (Service Role + Server Only)
+    // Fetch system and property configuration
     const freshConfig = await getLiveConfigServer();
+    const property = await getPropertyBaseConfig();
     
     // Validate critical values
-    const dailyPrice = validatePropertyRentValue(freshConfig['PROPERTY_RENT_VALUE']);
+    const dailyPrice = validatePropertyRentValue(property?.base_price);
 
     const ownerName = freshConfig['OWNER_NAME'] || process.env.OWNER_NAME || 'Anfitrión';
     const whatsappLink = freshConfig['OWNER_WHATSAPP_LINK'] || process.env.OWNER_WHATSAPP_LINK || '';
