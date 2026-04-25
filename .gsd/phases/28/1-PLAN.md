@@ -17,14 +17,14 @@ Implement the core infrastructure for schema validation using a PostgreSQL funct
 ## Tasks
 
 <task type="checkpoint:human-verify">
-  <name>Create PostgreSQL RPC Function</name>
+  <name>Create Corrected PostgreSQL RPC Function</name>
   <files>None (Database SQL Editor)</files>
   <action>
-    Run the following SQL in the Supabase SQL Editor to create the verification function:
+    Ensure the RPC function in Supabase uses unique output names to avoid ambiguity:
 
     ```sql
     CREATE OR REPLACE FUNCTION verify_schema(p_queries jsonb)
-    RETURNS TABLE(table_name text, column_name text, exists boolean) AS $$
+    RETURNS TABLE(out_table text, out_column text, exists_flag boolean) AS $$
     BEGIN
       RETURN QUERY
       SELECT 
@@ -41,10 +41,9 @@ Implement the core infrastructure for schema validation using a PostgreSQL funct
     END;
     $$ LANGUAGE plpgsql SECURITY DEFINER;
     ```
-    This function allows the service-role client to check column existence without exposing the entire `information_schema` to the public.
   </action>
-  <verify>Call the RPC from the SQL editor to test: `select * from verify_schema('[{"t": "properties", "c": "property_id"}]'::jsonb);`</verify>
-  <done>The function is created and returns a result indicating if the column exists.</done>
+  <verify>Test with: `SELECT * FROM verify_schema('[{"t": "properties", "c": "id"}]'::jsonb);`</verify>
+  <done>The function returns `out_table`, `out_column`, and `exists_flag` correctly.</done>
 </task>
 
 <task type="auto">
@@ -53,12 +52,12 @@ Implement the core infrastructure for schema validation using a PostgreSQL funct
   <action>
     Create `src/lib/schemaValidator.ts` that:
     1. Imports `supabaseService` from `src/lib/supabaseServer.ts`.
-    2. Implements a function `validateSchema(checks: { table: string, column: string }[])` that calls the `verify_schema` RPC.
-    3. Handles errors and returns a detailed report of missing columns.
-    4. Includes a constant `CRITICAL_COLUMNS` defining the essential columns for `properties`, `price_overrides`, `images`, and `bookings`.
+    2. Implements `validateSchema(checks: { table: string, column: string }[])`.
+    3. Handles the response mapping (out_table -> table, etc.).
+    4. Includes the confirmed `CRITICAL_SCHEMA` mapping.
   </action>
-  <verify>Check file existence and run basic syntax check.</verify>
-  <done>`src/lib/schemaValidator.ts` exists and implements the RPC call logic.</done>
+  <verify>Check file existence and exported functions.</verify>
+  <done>`src/lib/schemaValidator.ts` implements the RPC call logic with correct column names.</done>
 </task>
 
 ## Success Criteria

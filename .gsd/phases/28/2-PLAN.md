@@ -16,18 +16,18 @@ Establish the definitive list of critical columns and verify that the validator 
 ## Tasks
 
 <task type="auto">
-  <name>Define Critical Schema Mapping</name>
+  <name>Define Validated Schema Mapping</name>
   <files>src/lib/schemaValidator.ts</files>
   <action>
-    Update `src/lib/schemaValidator.ts` to include the full list of critical columns based on `SPEC.md`:
-    - `properties`: `id`, `name`, `location_type`, `luxury_tier`
-    - `price_overrides`: `id`, `property_id`, `start_date`, `end_date`, `price`
+    Update `src/lib/schemaValidator.ts` with the schema verified interactively:
+    - `properties`: `id`, `name`, `location_type`, `luxury_tier`, `base_price`
+    - `price_overrides`: `id`, `property_id`, `date`, `price`
     - `images`: `id`, `url`, `property_id`, `category`, `metadata`
-    - `bookings`: `id`, `property_id`, `check_in`, `check_out`
-    - `seasonal_pricing`: `id`, `property_id`, `base_price`
+    - `booking_requests`: `id`, `property_id`, `check_in`, `check_out`
+    - `seasonal_pricing`: `id`, `property_id`, `start_date`, `end_date`, `price_per_night`
   </action>
-  <verify>Verify the `CRITICAL_COLUMNS` object contains these keys.</verify>
-  <done>The mapping is complete and reflects the system's core dependencies.</done>
+  <verify>Verify the `CRITICAL_SCHEMA` object matches these names.</verify>
+  <done>The mapping is accurate to the real database state.</done>
 </task>
 
 <task type="auto">
