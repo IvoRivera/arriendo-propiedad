@@ -9,10 +9,25 @@ import { galleryData } from "@/data/mockData";
 interface CoastalGalleryProps {
   readonly className?: string;
   onAction?: () => void;
+  dynamicImages?: any[];
 }
 
-export const CoastalGallery: React.FC<CoastalGalleryProps> = ({ className = "", onAction }) => {
+export const CoastalGallery: React.FC<CoastalGalleryProps> = ({ className = "", onAction, dynamicImages = [] }) => {
   const { featured, interiors, amenities } = galleryData;
+
+  // Helper to merge or replace images
+  const getImages = (category: string, defaultImages: string[]) => {
+    const dynamic = dynamicImages
+      .filter(img => img.category === category)
+      .sort((a, b) => a.priority - b.priority)
+      .map(img => `${img.url}?v=${new Date(img.created_at).getTime()}`);
+
+    return dynamic.length > 0 ? dynamic : defaultImages;
+  };
+
+  const featuredImages = getImages('featured', featured.images);
+  const interiorsImages = getImages('property', interiors.images);
+  const amenitiesImages = getImages('amenities', amenities.images);
 
   return (
     // data-stitch-id: gallery-root
@@ -22,7 +37,7 @@ export const CoastalGallery: React.FC<CoastalGalleryProps> = ({ className = "", 
       <GalleryCarousel
         title={featured.title}
         subtitle={featured.subtitle}
-        images={featured.images}
+        images={featuredImages}
         ctaText={featured.ctaText}
         onAction={onAction}
         bgColor="bg-[#f5f0e8]"
@@ -33,7 +48,7 @@ export const CoastalGallery: React.FC<CoastalGalleryProps> = ({ className = "", 
         <GalleryCarousel
           title={interiors.title}
           subtitle={interiors.subtitle}
-          images={interiors.images}
+          images={interiorsImages}
           ctaText={interiors.ctaText}
           onAction={onAction}
           bgColor="bg-[#faf7f2]"
@@ -45,7 +60,7 @@ export const CoastalGallery: React.FC<CoastalGalleryProps> = ({ className = "", 
         <GalleryCarousel
           title={amenities.title}
           subtitle={amenities.subtitle}
-          images={amenities.images}
+          images={amenitiesImages}
           ctaText={amenities.ctaText}
           onAction={onAction}
           bgColor="bg-[#f5f0e8]"

@@ -1,4 +1,5 @@
 import { supabaseAdmin } from '@/lib/supabase';
+import { unstable_cache } from 'next/cache';
 
 export type ImageCategory = 'property' | 'amenities' | 'featured';
 
@@ -119,4 +120,25 @@ export class ImageService {
     }
     return true;
   }
+
+  /**
+   * Fetches all images for public consumption, cached by Next.js.
+   */
+  static getPublicImages = unstable_cache(
+    async () => {
+      const { data, error } = await supabaseAdmin
+        .from('images')
+        .select('*')
+        .order('category', { ascending: true })
+        .order('priority', { ascending: true });
+
+      if (error) {
+        console.error('Error fetching public images:', error);
+        return [];
+      }
+      return data;
+    },
+    ['public-images'],
+    { tags: ['images-all'], revalidate: 3600 } // 1 hour stale fallback
+  );
 }

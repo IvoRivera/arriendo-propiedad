@@ -4,6 +4,7 @@ import React, { useState, useRef } from 'react';
 import { Upload, X, CheckCircle2, AlertCircle, Loader2, Image as ImageIcon, Settings2 } from 'lucide-react';
 import imageCompression from 'browser-image-compression';
 import { ImageService, type ImageCategory } from '@/services/image-service';
+import { revalidateImages } from '@/app/actions/images';
 
 interface FileWithStatus {
   file: File;
@@ -82,6 +83,7 @@ export function ImageUploader({ onUploadComplete }: ImageUploaderProps) {
     }
 
     setIsUploading(false);
+    await revalidateImages();
     if (onUploadComplete) onUploadComplete();
   };
 

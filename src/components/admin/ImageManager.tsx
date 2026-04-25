@@ -19,6 +19,7 @@ import {
   SortableContext,
   rectSortingStrategy,
 } from '@dnd-kit/sortable';
+import { revalidateImages } from '@/app/actions/images';
 
 interface DbImage {
   id: string;
@@ -74,6 +75,7 @@ export function ImageManager() {
       setDeletingId(id);
       await ImageService.deleteImage(id);
       setImages(prev => prev.filter(img => img.id !== id));
+      await revalidateImages();
     } catch (err) {
       console.error('Error deleting image:', err);
       alert('Error al eliminar la imagen.');
@@ -115,6 +117,7 @@ export function ImageManager() {
           priority: idx + 1
         }));
         await ImageService.reorderImages(updates);
+        await revalidateImages();
       } catch (err) {
         console.error('Error persisting order:', err);
         alert('No se pudo guardar el nuevo orden.');

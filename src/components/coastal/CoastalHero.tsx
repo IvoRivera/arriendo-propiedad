@@ -11,9 +11,10 @@ import { useConfig } from "@/components/providers/ConfigProvider";
 interface CoastalHeroProps {
     readonly className?: string;
     onAction?: () => void;
+    dynamicImages?: any[];
 }
 
-export const CoastalHero: React.FC<CoastalHeroProps> = ({ className = "", onAction }) => {
+export const CoastalHero: React.FC<CoastalHeroProps> = ({ className = "", onAction, dynamicImages = [] }) => {
     const { getValue } = useConfig();
     const livePrice = getValue("PROPERTY_RENT_VALUE") || "80.000";
 
@@ -27,6 +28,11 @@ export const CoastalHero: React.FC<CoastalHeroProps> = ({ className = "", onActi
     const blurDataURL = "data:image/webp;base64,UklGRmAAAABXRUJQVlA4IFQAAADwAQCdASoKAAoAAUAmJaQAAuXc7XwAAP75R+V0C665R+V0C665R+V0C665R+V0C665R+V0C665R+V0C665R+V0C665R+V0C665R+V0C665AAA=";
 
     const displayPrice = formatPrice(livePrice);
+
+    // Get dynamic hero image
+    const heroImage = dynamicImages
+        .filter(img => img.category === 'featured')
+        .sort((a, b) => a.priority - b.priority)[0]?.url || heroData.image;
     
     return (
         <section 
@@ -35,7 +41,7 @@ export const CoastalHero: React.FC<CoastalHeroProps> = ({ className = "", onActi
             {/* Background image */}
             <div className="absolute inset-0 z-0 pointer-events-none">
                 <Image
-                    src={heroData.image}
+                    src={heroImage}
                     alt={heroData.imageAlt}
                     fill
                     sizes="(max-width: 768px) 100vw, 100vw"
