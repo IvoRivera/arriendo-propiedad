@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { supabaseAdmin } from '@/lib/supabase';
 import { ImageService, type ImageCategory } from '@/services/image-service';
 import { Trash2, Plus, Loader2, Image as ImageIcon, AlertCircle } from 'lucide-react';
+import { ImageUploader } from './ImageUploader';
 
 interface DbImage {
   id: string;
@@ -82,19 +83,8 @@ export function ImageManager() {
         </div>
       )}
 
-      {/* Upload Placeholder Section */}
-      <div className="bg-white border border-[#e2d9cc] border-dashed rounded-[32px] p-8 text-center">
-        <div className="w-16 h-16 bg-[#faf7f2] rounded-full flex items-center justify-center mx-auto mb-4 border border-[#e2d9cc]/30">
-          <Plus className="w-8 h-8 text-[#6b7c4a]" />
-        </div>
-        <h3 className="text-xl font-serif italic text-[#2c2416] mb-2">Subir nuevas imágenes</h3>
-        <p className="text-[#6b5d4f] text-sm mb-6 max-w-sm mx-auto">
-          Próximamente podrás arrastrar tus archivos aquí para actualizar el contenido visual.
-        </p>
-        <button disabled className="px-6 py-2.5 bg-[#6b7c4a]/50 text-white rounded-full text-xs font-bold uppercase tracking-widest cursor-not-allowed">
-          Nueva Carga (Próximamente)
-        </button>
-      </div>
+      {/* Upload Section */}
+      <ImageUploader onUploadComplete={fetchImages} />
 
       {/* Gallery Sections by Category */}
       {categories.map(cat => {
