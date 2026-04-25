@@ -1,46 +1,15 @@
 # Project State
 
-> Last Updated: 2026-04-25 09:00
-**Status**: Active (resumed 2026-04-25 09:00)
+> Last Updated: 2026-04-25 09:51
+**Status**: Active (Milestone v1.3)
 
 ## Current Position
-- **Phase**: 15 (completed)
-- **Task**: All tasks complete
-- **Status**: Verified
-
-## Last Session Summary
-Milestone v1.2 executed successfully. All phases (11-15) completed and verified. The administration now has full autonomous control over visual content.
+- **Milestone**: v1.3 — Image System Migration (Static → Database Driven)
+- **Phase**: Not started
+- **Status**: Milestone planned
 
 ## Next Steps
-1. Archive Milestone v1.2
-2. Plan next milestone
+1. /plan 16 — Map static assets and prepare migration script.
 
-## Last Session Summary
-Phase 13 executed successfully. 2 plans, 5 tasks completed. Multi-file upload with optional WebP compression is functional.
-
-## Next Steps
-1. Proceed to Phase 14 (Persistent Reordering)
-
-## Last Session Summary
-Phase 12 executed successfully. 2 plans, 4 tasks completed. Admin gallery and deletion logic are functional.
-
-## Next Steps
-1. Proceed to Phase 13 (Flexible Upload System)
-
-## Last Session Summary
-Phase 11 executed successfully. 2 plans, 4 tasks completed. Infrastructure for images is ready.
-
-## Next Steps
-1. Proceed to Phase 12 (Admin Dashboard & CRUD Security)
-
-## Last Milestone Summary (v1.1)
-Completed the Booking Experience & Inventory Optimization milestone. Stabilized the project on Next.js 15.1.7 and React 19, implemented dynamic seasonal pricing, and hardened mobile interactivity with a Web3 bug guard.
-
-## In-Progress Work
-- **Branch**: `main` (Stabilization branch `chore/next-stabilization` should be merged if not already)
-- **Technical Debt**: Re-enable ESLint in `next.config.ts` and fix remaining `any` types.
-
-## Next Steps
-1. /new-milestone — Define goals for v1.2.
-2. Hardening: Re-enable ESLint and fix non-breaking type warnings.
-3. Merge: Finalize any pending PRs from the stabilization phase.
+## Last Milestone Summary (v1.2)
+Implemented dynamic image management in the admin panel, including multi-file upload with compression, persistent reordering with drag-and-drop, and server-side caching for public consumption.

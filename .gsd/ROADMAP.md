@@ -1,63 +1,33 @@
 # ROADMAP.md
 
-> **Current Milestone**: v1.2 — Dynamic Admin Image Management
-> **Goal**: Full autonomy for the administrator to manage visual content without technical intervention.
-
-## Current Position
-- **Milestone**: v1.2 — Dynamic Admin Image Management (completed)
-- **Phase**: 15 (completed)
-- **Status**: Verified
+> **Current Milestone**: v1.3 — Image System Migration (Static → Database Driven)
+> **Goal**: Full migration of the image system from static assets to Supabase, removing all dependencies on local public assets and mockData for visual content.
 
 ## Must-Haves
-- [ ] DB ↔ Storage consistency (Cleanup logic for orphan files).
-- [ ] Secure upload/delete with Admin roles and destructive action validation.
-- [ ] Configurable image processing (optional compression).
-- [ ] Persistent reordering with conflict resolution.
-- [ ] Public-facing integration with caching/revalidation strategy.
+- [ ] Complete data migration of existing static images to Supabase.
+- [ ] Zero dependency on `public/images/` for gallery categories.
+- [ ] `mockData.ts` cleaned of all image references.
+- [ ] Consistent ordering and metadata preservation from the current layout.
+- [ ] Robust fallback and error handling for DB fetches.
 
 ## Phases
 
-### Phase 11: Infrastructure & Consistency Strategy
-**Status**: ✅ Complete
-**Objective**: Set up Supabase Storage and DB schema with consistency logic for failure handling.
+### Phase 16: Static Asset Mapping & Migration Script
+**Status**: ⬜ Not Started
+**Objective**: Map existing local images to database entries and create a migration script for automated upload.
 
-**Tasks**:
-- [ ] Create Supabase Storage buckets and RLS policies.
-- [ ] Define `images` table schema (category, priority, metadata).
-- [ ] Implement consistency layer (Cleanup service for Storage-DB mismatches).
+### Phase 17: Migration Execution & Storage Sync
+**Status**: ⬜ Not Started
+**Objective**: Execute the migration script to upload assets to Supabase Storage and sync the `images` table.
 
-### Phase 12: Admin Dashboard & CRUD Security
-**Status**: ✅ Complete
-**Objective**: Build secure image management UI with role-based validation.
+### Phase 18: Backend Data Layer Hardening
+**Status**: ⬜ Not Started
+**Objective**: Refactor the service layer to remove mock data fallbacks and ensure strict typing for image objects.
 
-**Tasks**:
-- [ ] Implement Admin role validation for all image endpoints.
-- [ ] Build Image Gallery view with deletion confirmation.
-- [ ] Add server-side validation for destructive operations.
+### Phase 19: Full Frontend Decoupling
+**Status**: ⬜ Not Started
+**Objective**: Refactor `CoastalGallery` and `CoastalHero` to consume data exclusively from Supabase, removing local asset references.
 
-### Phase 13: Flexible Upload System
-**Status**: ✅ Complete
-**Objective**: Implement multi-file upload with optional client-side optimization.
-
-**Tasks**:
-- [ ] Build multi-file picker with progress tracking.
-- [ ] Implement toggleable client-side compression.
-- [ ] Server-side metadata validation and processing.
-
-### Phase 14: Persistent Reordering
-**Status**: ✅ Complete
-**Objective**: Implement Drag & Drop UI with a robust background persistence strategy.
-
-**Tasks**:
-- [ ] Integrate Drag & Drop library (e.g., dnd-kit).
-- [ ] Implement Optimistic UI updates with background sync.
-- [ ] Handle order conflicts (gap-based indexing or similar).
-
-### Phase 15: Public Integration & Performance
-**Status**: ✅ Complete
-**Objective**: Connect public carousels with dynamic data and caching strategies.
-
-**Tasks**:
-- [ ] Refactor carousels to consume dynamic image API.
-- [ ] Implement Next.js revalidation (tags/time-based).
-- [ ] Optimize image delivery (Next/Image + CDN headers).
+### Phase 20: Asset Removal & Final Audit
+**Status**: ⬜ Not Started
+**Objective**: Delete migrated local assets from `/public/images/` and perform a final performance audit.
