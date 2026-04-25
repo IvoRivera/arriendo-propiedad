@@ -5,6 +5,20 @@ import { supabaseAdmin } from '@/lib/supabase';
 import { ImageService, type ImageCategory } from '@/services/image-service';
 import { Trash2, Plus, Loader2, Image as ImageIcon, AlertCircle } from 'lucide-react';
 import { ImageUploader } from './ImageUploader';
+import { SortableImage } from './SortableImage';
+import {
+  DndContext, 
+  closestCenter,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from '@dnd-kit/core';
+import {
+  arrayMove,
+  SortableContext,
+  rectSortingStrategy,
+} from '@dnd-kit/sortable';
 
 interface DbImage {
   id: string;
@@ -19,6 +33,15 @@ export function ImageManager() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [isReordering, setIsReordering] = useState(false);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8,
+      },
+    })
+  );
 
   useEffect(() => {
     fetchImages();
@@ -59,6 +82,48 @@ export function ImageManager() {
     }
   };
 
+  const handleDragEnd = async (event: DragEndEvent, categoryKey: ImageCategory) => {
+    const { active, over } = event;
+
+    if (over && active.id !== over.id) {
+      const catImages = images.filter(img => img.category === categoryKey);
+      const oldIndex = catImages.findIndex(img => img.id === active.id);
+      const newIndex = catImages.findIndex(img => img.id === over.id);
+
+      const reorderedCat = arrayMove(catImages, oldIndex, newIndex).map((img, idx) => ({
+        ...img,
+        priority: idx + 1
+      }));
+      
+      // We need to maintain the full list order. 
+      const finalImages: DbImage[] = [];
+      categories.forEach(cat => {
+        if (cat.key === categoryKey) {
+          finalImages.push(...reorderedCat);
+        } else {
+          finalImages.push(...images.filter(img => img.category === cat.key));
+        }
+      });
+
+      setImages(finalImages);
+
+      // Persistence
+      try {
+        setIsReordering(true);
+        const updates = reorderedCat.map((img, idx) => ({
+          id: img.id,
+          priority: idx + 1
+        }));
+        await ImageService.reorderImages(updates);
+      } catch (err) {
+        console.error('Error persisting order:', err);
+        alert('No se pudo guardar el nuevo orden.');
+        fetchImages(); // Revert
+      } finally {
+        setIsReordering(false);
+      }
+    }
+  };
   const categories: { key: ImageCategory; label: string }[] = [
     { key: 'property', label: 'Propiedad' },
     { key: 'amenities', label: 'Amenidades' },
@@ -104,38 +169,28 @@ export function ImageManager() {
                 <p className="text-[#9a8a78] text-sm italic">No hay imágenes en esta categoría.</p>
               </div>
             ) : (
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                {catImages.map(img => (
-                  <div key={img.id} className="group relative bg-white border border-[#e2d9cc] rounded-3xl overflow-hidden shadow-sm hover:shadow-md transition-all">
-                    <div className="aspect-[4/3] relative overflow-hidden bg-gray-100">
-                      <img
-                        src={img.url}
-                        alt=""
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+              <DndContext
+                sensors={sensors}
+                collisionDetection={closestCenter}
+                onDragEnd={(event) => handleDragEnd(event, cat.key)}
+              >
+                <SortableContext
+                  items={catImages.map(img => img.id)}
+                  strategy={rectSortingStrategy}
+                >
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                    {catImages.map(img => (
+                      <SortableImage 
+                        key={img.id} 
+                        id={img.id} 
+                        image={img} 
+                        onDelete={handleDelete}
+                        isDeleting={deletingId === img.id}
                       />
-                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-300" />
-                    </div>
-                    
-                    <div className="p-4 flex items-center justify-between">
-                      <div className="flex flex-col">
-                        <span className="text-[10px] font-bold text-[#9a8a78] uppercase tracking-wider">Orden: {img.priority}</span>
-                      </div>
-                      <button
-                        onClick={() => handleDelete(img.id)}
-                        disabled={deletingId === img.id}
-                        className="p-2 text-[#9a8a78] hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-all"
-                        title="Eliminar imagen"
-                      >
-                        {deletingId === img.id ? (
-                          <Loader2 className="w-5 h-5 animate-spin" />
-                        ) : (
-                          <Trash2 className="w-5 h-5" />
-                        )}
-                      </button>
-                    </div>
+                    ))}
                   </div>
-                ))}
-              </div>
+                </SortableContext>
+              </DndContext>
             )}
           </div>
         );

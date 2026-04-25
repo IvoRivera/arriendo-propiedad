@@ -104,4 +104,19 @@ export class ImageService {
 
     return true;
   }
+
+  /**
+   * Updates priorities for a batch of images.
+   */
+  static async reorderImages(updates: { id: string; priority: number }[]) {
+    const { error } = await supabaseAdmin
+      .from('images')
+      .upsert(updates, { onConflict: 'id' });
+
+    if (error) {
+      console.error('Error reordering images:', error);
+      throw error;
+    }
+    return true;
+  }
 }
