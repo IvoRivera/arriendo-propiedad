@@ -8,7 +8,7 @@ import { XCircle, Calendar, LogOut, RefreshCw, Archive, ArchiveRestore, Eye, Fil
 import { SystemConfigPanel } from "@/components/admin/SystemConfigPanel";
 import { DateBlockingManager } from "@/components/admin/DateBlockingManager";
 import { PricingManager } from "@/components/admin/PricingManager";
-import { ImageManager } from "@/components/admin/ImageManager";
+import { ImageManager } from "../../components/admin/ImageManager";
 import { initConfig } from "@/lib/systemConfig";
 
 interface BookingRequest {
