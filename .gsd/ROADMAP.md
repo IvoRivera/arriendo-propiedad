@@ -4,9 +4,9 @@
 > **Goal**: Full autonomy for the administrator to manage visual content without technical intervention.
 
 ## Current Position
-- **Milestone**: v1.2 — Dynamic Admin Image Management
-- **Phase**: Not started
-- **Status**: Milestone planned
+- **Milestone**: v1.2 — Dynamic Admin Image Management (completed)
+- **Phase**: 15 (completed)
+- **Status**: Verified
 
 ## Must-Haves
 - [ ] DB ↔ Storage consistency (Cleanup logic for orphan files).
@@ -54,7 +54,7 @@
 - [ ] Handle order conflicts (gap-based indexing or similar).
 
 ### Phase 15: Public Integration & Performance
-**Status**: ⬜ Not Started
+**Status**: ✅ Complete
 **Objective**: Connect public carousels with dynamic data and caching strategies.
 
 **Tasks**:
