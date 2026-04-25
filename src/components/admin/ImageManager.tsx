@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { supabaseAdmin } from '@/lib/supabase';
 import { ImageService, type ImageCategory, type DbImage } from '@/services/image-service';
-import { Trash2, Plus, Loader2, Image as ImageIcon, AlertCircle } from 'lucide-react';
+import { Trash2, Plus, Loader2, Image as ImageIcon, AlertCircle, Info } from 'lucide-react';
 import { ImageUploader } from './ImageUploader';
 import { SortableImage } from './SortableImage';
 import {
@@ -89,35 +89,35 @@ export function ImageManager() {
         priority: idx + 1
       }));
       
-      // We need to maintain the full list order. 
       const finalImages: DbImage[] = [];
-      categories.forEach(cat => {
-        if (cat.key === categoryKey) {
+      const categoryKeys: ImageCategory[] = ['hero', 'property', 'amenities', 'featured'];
+      
+      categoryKeys.forEach(key => {
+        if (key === categoryKey) {
           finalImages.push(...reorderedCat);
         } else {
-          finalImages.push(...images.filter(img => img.category === cat.key));
+          finalImages.push(...images.filter(img => img.category === key));
         }
       });
 
       setImages(finalImages);
 
-      // Persistence
       try {
         setIsReordering(true);
-        // We pass the full objects from reorderedCat to satisfy the NOT NULL constraints 
-        // required by Postgres during an INSERT...ON CONFLICT (upsert) operation.
         await ImageService.reorderImages(reorderedCat);
         await revalidateImages();
       } catch (err) {
         console.error('Error persisting order:', err);
         alert('No se pudo guardar el nuevo orden.');
-        fetchImages(); // Revert
+        fetchImages(); 
       } finally {
         setIsReordering(false);
       }
     }
   };
-  const categories: { key: ImageCategory; label: string }[] = [
+
+  const categories: { key: ImageCategory; label: string; isSingleton?: boolean }[] = [
+    { key: 'hero', label: 'Imagen Hero', isSingleton: true },
     { key: 'property', label: 'Propiedad' },
     { key: 'amenities', label: 'Amenidades' },
     { key: 'featured', label: 'Destacadas' }
@@ -147,15 +147,23 @@ export function ImageManager() {
       {/* Gallery Sections by Category */}
       {categories.map(cat => {
         const catImages = images.filter(img => img.category === cat.key);
+        
         return (
           <div key={cat.key} className="space-y-6">
             <div className="flex items-center gap-4">
               <h2 className="font-serif text-2xl text-[#2c2416] italic">{cat.label}</h2>
               <div className="h-px flex-1 bg-[#e2d9cc]/50" />
               <span className="text-[10px] font-bold uppercase tracking-wider text-[#9a8a78] bg-white border border-[#e2d9cc] px-3 py-1 rounded-full">
-                {catImages.length} fotos
+                {catImages.length} {catImages.length === 1 ? 'foto' : 'fotos'}
               </span>
             </div>
+
+            {cat.isSingleton && catImages.length > 1 && (
+              <div className="bg-amber-50 border border-amber-100 text-amber-700 p-4 rounded-2xl text-xs flex items-center gap-3">
+                <Info className="w-4 h-4 shrink-0" />
+                Se han detectado varias imágenes Hero. El sitio solo mostrará la primera en la lista de prioridades.
+              </div>
+            )}
 
             {catImages.length === 0 ? (
               <div className="bg-[#faf7f2]/50 border border-dashed border-[#e2d9cc] rounded-3xl py-12 text-center">
@@ -171,7 +179,7 @@ export function ImageManager() {
                   items={catImages.map(img => img.id)}
                   strategy={rectSortingStrategy}
                 >
-                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                  <div className={`grid gap-6 ${cat.isSingleton ? 'grid-cols-1 sm:grid-cols-2 max-w-2xl' : 'grid-cols-2 md:grid-cols-3 lg:grid-cols-4'}`}>
                     {catImages.map(img => (
                       <SortableImage 
                         key={img.id} 

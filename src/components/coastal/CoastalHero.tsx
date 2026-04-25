@@ -29,11 +29,12 @@ export const CoastalHero: React.FC<CoastalHeroProps> = ({ className = "", onActi
 
     const displayPrice = formatPrice(livePrice);
 
-    // Get dynamic hero image or fallback to config
+    // Get dynamic hero image from dedicated 'hero' category
+    // Ref: Separation of Hero background from Gallery carousels
     const heroImage = (dynamicImages || [])
-        .filter(img => img.category === 'featured' && img.url)
+        .filter(img => img.category === 'hero' && img.url)
         .sort((a, b) => a.priority - b.priority)[0]?.url 
-        || IMAGE_FALLBACKS.hero[0].src;
+        || IMAGE_FALLBACKS.hero?.[0]?.src;
     
     return (
         <section 
@@ -53,7 +54,11 @@ export const CoastalHero: React.FC<CoastalHeroProps> = ({ className = "", onActi
                         className="object-cover object-center"
                     />
                 ) : (
-                    <div className="absolute inset-0 bg-[#1a1208]" />
+                    /* Fallback background when no hero image is defined */
+                    <div className="absolute inset-0 bg-[#2c2416] bg-opacity-90 flex items-center justify-center overflow-hidden">
+                        <div className="absolute inset-0 bg-gradient-to-br from-[#3a2e1e] to-[#1a1208] opacity-50" />
+                        {/* Abstract subtle pattern or blur effect could go here */}
+                    </div>
                 )}
                 <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/30 to-black/80 md:from-[#3a2e1e]/40 md:via-transparent md:to-[#1a1208]/85" />
             </div>

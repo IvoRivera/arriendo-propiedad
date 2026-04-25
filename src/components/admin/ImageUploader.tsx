@@ -112,6 +112,7 @@ export function ImageUploader({ onUploadComplete }: ImageUploaderProps) {
                 <option value="property">Propiedad</option>
                 <option value="amenities">Amenidades</option>
                 <option value="featured">Destacadas</option>
+                <option value="hero">Imagen Hero</option>
               </select>
             </div>
 

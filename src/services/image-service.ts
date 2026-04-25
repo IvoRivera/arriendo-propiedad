@@ -1,7 +1,7 @@
 import { supabaseAdmin } from '@/lib/supabase';
 import { unstable_cache } from 'next/cache';
 
-export type ImageCategory = 'property' | 'amenities' | 'featured';
+export type ImageCategory = 'property' | 'amenities' | 'featured' | 'hero';
 
 export interface ImageMetadata {
   alt?: string;
@@ -159,6 +159,7 @@ export class ImageService {
    */
   static categorizeImages(images: DbImage[]) {
     return {
+      hero: images.filter(img => img.category === 'hero'),
       featured: images.filter(img => img.category === 'featured'),
       property: images.filter(img => img.category === 'property'),
       amenities: images.filter(img => img.category === 'amenities'),
