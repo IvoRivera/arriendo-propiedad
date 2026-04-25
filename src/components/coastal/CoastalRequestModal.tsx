@@ -13,6 +13,7 @@ import { format, parseISO } from "date-fns";
 
 import { supabasePublic } from "@/lib/supabase";
 import { siteConfig } from "@/data/mockData";
+import { getPriceForDate } from "@/lib/pricingClient";
 
 const countries = [
   { name: "Chile", code: "+56", flag: "🇨🇱", placeholder: "9 1234 5678", pattern: /^9\d{8}$/, error: "Formato: 9 XXXX XXXX" },
@@ -131,6 +132,9 @@ export const CoastalRequestModal: React.FC<CoastalRequestModalProps> = ({
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [availabilityStatus, setAvailabilityStatus] = useState<'loading' | 'error' | 'success'>('loading');
   const [blockedDateStrings, setBlockedDateStrings] = useState<string[]>([]);
+  const [seasonalPrices, setSeasonalPrices] = useState<any[]>([]);
+  const [basePrice, setBasePrice] = useState<number>(0);
+  const [calculatedPricing, setCalculatedPricing] = useState<{totalPrice: number, breakdown: any[]} | null>(null);
   const [activePicker, setActivePicker] = useState<'check_in' | 'check_out' | null>(null);
 
   const {
@@ -194,8 +198,48 @@ export const CoastalRequestModal: React.FC<CoastalRequestModalProps> = ({
   useEffect(() => {
     if (isOpen) {
       fetchAvailability();
+      
+      // Fetch pricing data
+      const fetchPricing = async () => {
+        try {
+          const res = await fetch('/api/public/pricing');
+          const data = await res.json();
+          if (data.success) {
+            setSeasonalPrices(data.data.seasonalPrices);
+            setBasePrice(data.data.basePrice);
+          }
+        } catch (e) {
+          console.error('Error fetching pricing:', e);
+        }
+      };
+      fetchPricing();
     }
   }, [isOpen]);
+
+  useEffect(() => {
+    if (checkInValue && checkOutValue && basePrice > 0) {
+      const start = parseISO(checkInValue);
+      const end = parseISO(checkOutValue);
+      const nightsCount = Math.round((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
+      
+      if (nightsCount > 0) {
+        let total = 0;
+        const breakdown = [];
+        const curr = new Date(start);
+        for (let i = 0; i < nightsCount; i++) {
+          const { price, seasonName } = getPriceForDate(curr, seasonalPrices, basePrice);
+          total += price;
+          breakdown.push({ date: format(curr, 'yyyy-MM-dd'), price, seasonName });
+          curr.setDate(curr.getDate() + 1);
+        }
+        setCalculatedPricing({ totalPrice: total, breakdown });
+      } else {
+        setCalculatedPricing(null);
+      }
+    } else {
+      setCalculatedPricing(null);
+    }
+  }, [checkInValue, checkOutValue, seasonalPrices, basePrice]);
 
   useEffect(() => {
     if (isOpen && initialDates) {
@@ -448,47 +492,85 @@ export const CoastalRequestModal: React.FC<CoastalRequestModalProps> = ({
                                 setActivePicker(null);
                               }
                             }}
-                            disabled={isDateDisabled}
-                            locale={es}
-                          />
-                        </div>
-                      )}
-                    </div>
-                    {errors.check_in && <p className="text-[10px] text-red-500 ml-1">{errors.check_in.message}</p>}
-                  </div>
-
-                  <div className="space-y-2">
-                    <label className="text-[10px] uppercase tracking-widest text-[#9a8a78] font-bold ml-1">Fecha Salida</label>
-                    <div className="relative">
-                      <button 
-                        type="button"
-                        onClick={() => setActivePicker(activePicker === 'check_out' ? null : 'check_out')}
-                        className="w-full bg-white border border-[#e2d9cc] rounded-xl px-4 py-3.5 text-base sm:text-sm text-left outline-none focus:border-[#6b7c4a] shadow-sm flex items-center justify-between"
-                      >
-                        <span className={checkOutValue ? "text-[#2c2416]" : "text-[#b5a99a]"}>
-                          {checkOutValue ? format(parseISO(checkOutValue), "PPP", { locale: es }) : "Seleccionar fecha"}
-                        </span>
-                        <CalendarDays className="w-4 h-4 text-[#9a8a78]" />
-                      </button>
-                      {activePicker === 'check_out' && (
-                        <div className="absolute top-full right-0 mt-2 z-[50] bg-white border border-[#e2d9cc] rounded-2xl shadow-2xl p-4 animate-in fade-in zoom-in-95 duration-200">
-                          <style>{calendarStyles}</style>
-                          <DayPicker
-                            mode="single"
-                            selected={checkOutValue ? parseISO(checkOutValue) : undefined}
-                            onSelect={(date) => {
-                              if (date) {
-                                const year = date.getFullYear();
-                                const month = String(date.getMonth() + 1).padStart(2, '0');
-                                const day = String(date.getDate()).padStart(2, '0');
-                                setValue("check_out", `${year}-${month}-${day}`, { shouldValidate: true });
-                                setActivePicker(null);
-                              }
-                            }}
-                            disabled={isCheckOutDisabled}
-                            locale={es}
-                            defaultMonth={checkInValue ? parseISO(checkInValue) : undefined}
-                          />
+                             disabled={isDateDisabled}
+                             locale={es}
+                             components={{
+                               DayContent: ({ date }) => {
+                                 const { price, isSeasonal } = getPriceForDate(date, seasonalPrices || [], basePrice || 0);
+                                 const formatted = price >= 1000 
+                                   ? new Intl.NumberFormat('es-CL').format(Math.floor(price / 1000)) + 'k'
+                                   : price;
+                                 
+                                 return (
+                                   <div className="flex flex-col items-center justify-center w-full h-full pt-1">
+                                     <span className="text-[10px] font-medium leading-none">{date.getDate()}</span>
+                                     {price > 0 && (
+                                       <span className={`text-[7px] mt-0.5 leading-none font-bold tracking-tighter ${isSeasonal ? 'text-[#6b7c4a]' : 'text-[#b5a99a]'}`}>
+                                         ${formatted}
+                                       </span>
+                                     )}
+                                   </div>
+                                 );
+                               }
+                             }}
+                           />
+                         </div>
+                       )}
+                     </div>
+                     {errors.check_in && <p className="text-[10px] text-red-500 ml-1">{errors.check_in.message}</p>}
+                   </div>
+ 
+                   <div className="space-y-2">
+                     <label className="text-[10px] uppercase tracking-widest text-[#9a8a78] font-bold ml-1">Fecha Salida</label>
+                     <div className="relative">
+                       <button 
+                         type="button"
+                         onClick={() => setActivePicker(activePicker === 'check_out' ? null : 'check_out')}
+                         className="w-full bg-white border border-[#e2d9cc] rounded-xl px-4 py-3.5 text-base sm:text-sm text-left outline-none focus:border-[#6b7c4a] shadow-sm flex items-center justify-between"
+                       >
+                         <span className={checkOutValue ? "text-[#2c2416]" : "text-[#b5a99a]"}>
+                           {checkOutValue ? format(parseISO(checkOutValue), "PPP", { locale: es }) : "Seleccionar fecha"}
+                         </span>
+                         <CalendarDays className="w-4 h-4 text-[#9a8a78]" />
+                       </button>
+                       {activePicker === 'check_out' && (
+                         <div className="absolute top-full right-0 mt-2 z-[50] bg-white border border-[#e2d9cc] rounded-2xl shadow-2xl p-4 animate-in fade-in zoom-in-95 duration-200">
+                           <style>{calendarStyles}</style>
+                           <DayPicker
+                             mode="single"
+                             selected={checkOutValue ? parseISO(checkOutValue) : undefined}
+                             onSelect={(date) => {
+                               if (date) {
+                                 const year = date.getFullYear();
+                                 const month = String(date.getMonth() + 1).padStart(2, '0');
+                                 const day = String(date.getDate()).padStart(2, '0');
+                                 setValue("check_out", `${year}-${month}-${day}`, { shouldValidate: true });
+                                 setActivePicker(null);
+                               }
+                             }}
+                             disabled={isCheckOutDisabled}
+                             locale={es}
+                             defaultMonth={checkInValue ? parseISO(checkInValue) : undefined}
+                             components={{
+                               DayContent: ({ date }) => {
+                                 const { price, isSeasonal } = getPriceForDate(date, seasonalPrices || [], basePrice || 0);
+                                 const formatted = price >= 1000 
+                                   ? new Intl.NumberFormat('es-CL').format(Math.floor(price / 1000)) + 'k'
+                                   : price;
+                                 
+                                 return (
+                                   <div className="flex flex-col items-center justify-center w-full h-full pt-1">
+                                     <span className="text-[10px] font-medium leading-none">{date.getDate()}</span>
+                                     {price > 0 && (
+                                       <span className={`text-[7px] mt-0.5 leading-none font-bold tracking-tighter ${isSeasonal ? 'text-[#6b7c4a]' : 'text-[#b5a99a]'}`}>
+                                         ${formatted}
+                                       </span>
+                                     )}
+                                   </div>
+                                 );
+                               }
+                             }}
+                           />
                         </div>
                       )}
                     </div>
@@ -518,6 +600,50 @@ export const CoastalRequestModal: React.FC<CoastalRequestModalProps> = ({
                     </select>
                   </div>
                 </div>
+
+                {calculatedPricing && (
+                  <div className="bg-white border border-[#e2d9cc] rounded-3xl p-8 space-y-6 shadow-sm animate-in fade-in slide-in-from-bottom-2 duration-500">
+                    <div className="flex items-center justify-between border-b border-[#e2d9cc]/30 pb-4">
+                      <div>
+                        <h4 className="text-[10px] uppercase tracking-[0.25em] font-bold text-[#2c2416]">Resumen de Estancia</h4>
+                        <p className="text-[9px] text-[#9a8a78] uppercase tracking-widest mt-0.5">Valores finales por noche</p>
+                      </div>
+                      <span className="bg-[#6b7c4a]/10 text-[#6b7c4a] px-3 py-1 rounded-full text-[9px] font-bold uppercase tracking-widest border border-[#6b7c4a]/20">
+                        {calculatedPricing.breakdown.length} noches
+                      </span>
+                    </div>
+                    
+                    <div className="space-y-3 max-h-[160px] overflow-y-auto pr-4 custom-scrollbar">
+                      {calculatedPricing.breakdown.map((day, idx) => (
+                        <div key={idx} className="flex justify-between items-center group">
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs text-[#6b5d4f] font-light">
+                              {format(parseISO(day.date), "eee d MMM", { locale: es })}
+                            </span>
+                            {day.seasonName && (
+                              <span className="text-[8px] bg-amber-50 text-amber-700 px-1.5 py-0.5 rounded-md font-bold uppercase tracking-tighter border border-amber-100/50">
+                                {day.seasonName}
+                              </span>
+                            )}
+                          </div>
+                          <span className="text-sm font-serif italic text-[#2c2416] group-hover:text-[#6b7c4a] transition-colors">
+                            ${new Intl.NumberFormat('es-CL').format(day.price)}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                    
+                    <div className="flex justify-between items-end pt-5 border-t border-[#6b7c4a]/10">
+                      <div className="space-y-0.5">
+                        <span className="block text-[9px] uppercase tracking-widest text-[#9a8a78] font-bold">Total Estimado</span>
+                        <span className="text-xs text-[#6b5d4f] font-light italic">Sujeto a confirmación</span>
+                      </div>
+                      <span className="text-3xl font-serif italic text-[#6b7c4a] leading-none tracking-tight">
+                        ${new Intl.NumberFormat('es-CL').format(calculatedPricing.totalPrice)}
+                      </span>
+                    </div>
+                  </div>
+                )}
 
                 <div className="space-y-4 bg-white/50 border border-[#e2d9cc] rounded-2xl p-6 shadow-sm">
                   <div className="flex items-center gap-2 mb-2">

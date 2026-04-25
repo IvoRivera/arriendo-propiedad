@@ -7,6 +7,7 @@ import { DayPicker } from "react-day-picker";
 import "react-day-picker/style.css";
 import { ChevronDown, X, RefreshCw, CalendarDays, AlertCircle } from "lucide-react";
 
+import { getPriceForDate } from "@/lib/pricingClient";
 // import { useConfig } from "@/components/providers/ConfigProvider";
 
 // Custom styles for the calendar
@@ -51,6 +52,8 @@ interface DateInputProps {
   id: string;
   defaultMonth?: Date;
   disabled?: boolean;
+  seasonalPrices?: any[];
+  basePrice?: number;
 }
 
 const DateInput: React.FC<DateInputProps> = ({
@@ -141,6 +144,25 @@ const DateInput: React.FC<DateInputProps> = ({
             locale={es}
             defaultMonth={defaultMonth || selected || new Date()}
             initialFocus
+            components={{
+              DayContent: ({ date }) => {
+                const { price, isSeasonal } = getPriceForDate(date, seasonalPrices || [], basePrice || 0);
+                const formatted = price >= 1000 
+                  ? new Intl.NumberFormat('es-CL').format(Math.floor(price / 1000)) + 'k'
+                  : price;
+                
+                return (
+                  <div className="flex flex-col items-center justify-center w-full h-full pt-1">
+                    <span className="text-[10px] font-medium leading-none">{date.getDate()}</span>
+                    {price > 0 && (
+                      <span className={`text-[7px] mt-0.5 leading-none font-bold tracking-tighter ${isSeasonal ? 'text-[#6b7c4a]' : 'text-[#b5a99a]'}`}>
+                        ${formatted}
+                      </span>
+                    )}
+                  </div>
+                );
+              }
+            }}
           />
         </div>
       )}
@@ -158,6 +180,9 @@ export const CoastalAvailability: React.FC<CoastalAvailabilityProps> = ({ onActi
   
   const [status, setStatus] = useState<'loading' | 'error' | 'success' | 'empty'>('loading');
   const [blockedDateStrings, setBlockedDateStrings] = useState<string[]>([]);
+  const [seasonalPrices, setSeasonalPrices] = useState<any[]>([]);
+  const [basePrice, setBasePrice] = useState<number>(0);
+  const [calculatedPricing, setCalculatedPricing] = useState<{totalPrice: number, breakdown: any[]} | null>(null);
 
   const fetchAvailability = useCallback(async () => {
     // Only set loading if we don't have data yet to prevent flashing on re-fetches
@@ -205,7 +230,47 @@ export const CoastalAvailability: React.FC<CoastalAvailabilityProps> = ({ onActi
 
   useEffect(() => {
     fetchAvailability();
+    
+    // Fetch pricing data
+    const fetchPricing = async () => {
+      try {
+        const res = await fetch('/api/public/pricing');
+        const data = await res.json();
+        if (data.success) {
+          setSeasonalPrices(data.data.seasonalPrices);
+          setBasePrice(data.data.basePrice);
+        }
+      } catch (e) {
+        console.error('Error fetching pricing:', e);
+      }
+    };
+    fetchPricing();
   }, [fetchAvailability]);
+
+  useEffect(() => {
+    if (checkIn && checkOut && basePrice > 0) {
+      const start = new Date(checkIn);
+      const end = new Date(checkOut);
+      const nightsCount = Math.round((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
+      
+      if (nightsCount > 0) {
+        let total = 0;
+        const breakdown = [];
+        const curr = new Date(start);
+        for (let i = 0; i < nightsCount; i++) {
+          const { price, seasonName } = getPriceForDate(curr, seasonalPrices, basePrice);
+          total += price;
+          breakdown.push({ date: format(curr, 'yyyy-MM-dd'), price, seasonName });
+          curr.setDate(curr.getDate() + 1);
+        }
+        setCalculatedPricing({ totalPrice: total, breakdown });
+      } else {
+        setCalculatedPricing(null);
+      }
+    } else {
+      setCalculatedPricing(null);
+    }
+  }, [checkIn, checkOut, seasonalPrices, basePrice]);
 
   const handleAction = () => {
     if (checkIn && checkOut) {
@@ -317,6 +382,8 @@ export const CoastalAvailability: React.FC<CoastalAvailabilityProps> = ({ onActi
               onClear={() => { setCheckIn(undefined); setCheckOut(undefined); }}
               disabledDays={isCheckInDisabled}
               disabled={status !== 'success'}
+              seasonalPrices={seasonalPrices}
+              basePrice={basePrice}
             />
             
             <DateInput
@@ -329,6 +396,8 @@ export const CoastalAvailability: React.FC<CoastalAvailabilityProps> = ({ onActi
               disabledDays={isCheckOutDisabled}
               defaultMonth={checkIn}
               disabled={status !== 'success'}
+              seasonalPrices={seasonalPrices}
+              basePrice={basePrice}
             />
 
             <button
@@ -342,10 +411,20 @@ export const CoastalAvailability: React.FC<CoastalAvailabilityProps> = ({ onActi
         </div>
 
         {nights > 0 && status === 'success' && (
-          <div className="mt-4 text-center animate-in fade-in slide-in-from-top-1">
-            <p className="text-[10px] uppercase tracking-[0.2em] text-[#6b7c4a] font-bold">
-              {nights} {nights === 1 ? "noche" : "noches"} seleccionadas
-            </p>
+          <div className="mt-6 text-center animate-in fade-in slide-in-from-top-2 duration-500">
+            <div className="inline-flex flex-col items-center gap-1">
+              <p className="text-[10px] uppercase tracking-[0.25em] text-[#6b7c4a] font-bold">
+                Resumen de Estancia
+              </p>
+              <div className="flex items-baseline gap-2">
+                <span className="text-3xl font-serif italic text-[#2c2416]">
+                  ${calculatedPricing ? new Intl.NumberFormat('es-CL').format(calculatedPricing.totalPrice) : '...'}
+                </span>
+                <span className="text-xs text-[#9a8a78] font-light">
+                  Total por {nights} {nights === 1 ? "noche" : "noches"}
+                </span>
+              </div>
+            </div>
           </div>
         )}
       </div>
