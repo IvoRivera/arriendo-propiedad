@@ -23,7 +23,7 @@
 - **Restricción**: NO mover lógica, solo datos.
 
 ### Fase 34: Migración de Contenido Estático
-**Status**: ⬜ Not Started
+**Status**: ✅ Complete
 **Objective**: Migrar contenido editorial (hero, amenities) manteniendo props y JSX intactos.
 - **Restricción**: Prohibido reestructurar componentes.
 
