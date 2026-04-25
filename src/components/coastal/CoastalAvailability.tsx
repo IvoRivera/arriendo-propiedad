@@ -8,6 +8,7 @@ import "react-day-picker/style.css";
 import { ChevronDown, X, RefreshCw, CalendarDays, AlertCircle } from "lucide-react";
 
 import { getPriceForDate } from "@/lib/pricingClient";
+import { SITE_CONTENT } from "@/config/site-content";
 // import { useConfig } from "@/components/providers/ConfigProvider";
 
 // Custom styles for the calendar
@@ -336,7 +337,7 @@ export const CoastalAvailability: React.FC<CoastalAvailabilityProps> = ({ onActi
             <div className="flex flex-col items-center gap-3 bg-white/80 px-6 py-4 rounded-2xl shadow-sm border border-[#e2d9cc]/50">
               <CalendarDays className="w-6 h-6 text-[#6b7c4a] animate-pulse" />
               <span className="text-[10px] uppercase tracking-[0.2em] font-bold text-[#6b7c4a] animate-pulse">
-                Cargando Disponibilidad...
+                Cargando {SITE_CONTENT.availability.title}...
               </span>
               <button 
                 onClick={(e) => { e.stopPropagation(); fetchAvailability(); }}
@@ -380,8 +381,8 @@ export const CoastalAvailability: React.FC<CoastalAvailabilityProps> = ({ onActi
           <div className="flex flex-col md:flex-row gap-2.5">
             <DateInput
               id="checkin"
-              label="Llegada"
-              hint="Fecha de entrada"
+              label={SITE_CONTENT.availability.labels.checkIn}
+              hint={SITE_CONTENT.availability.labels.checkInHint}
               selected={checkIn}
               onSelect={setCheckIn}
               onClear={() => { setCheckIn(undefined); setCheckOut(undefined); }}
@@ -393,8 +394,8 @@ export const CoastalAvailability: React.FC<CoastalAvailabilityProps> = ({ onActi
             
             <DateInput
               id="checkout"
-              label="Salida"
-              hint="Fecha de salida"
+              label={SITE_CONTENT.availability.labels.checkOut}
+              hint={SITE_CONTENT.availability.labels.checkOutHint}
               selected={checkOut}
               onSelect={setCheckOut}
               onClear={() => setCheckOut(undefined)}
@@ -410,7 +411,7 @@ export const CoastalAvailability: React.FC<CoastalAvailabilityProps> = ({ onActi
               disabled={!checkIn || !checkOut || status !== 'success'}
               className="md:w-auto w-full bg-[#6b7c4a] hover:bg-[#5a6a3d] disabled:bg-[#d4c9b8] text-white px-10 py-4.5 md:py-0 rounded-2xl md:rounded-xl font-bold text-[11px] uppercase tracking-[0.2em] transition-all shadow-lg active:scale-95 disabled:grayscale"
             >
-              Solicitud de Reserva
+              {SITE_CONTENT.availability.ctaText}
             </button>
           </div>
         </div>
@@ -419,14 +420,14 @@ export const CoastalAvailability: React.FC<CoastalAvailabilityProps> = ({ onActi
           <div className="mt-6 text-center animate-in fade-in slide-in-from-top-2 duration-500">
             <div className="inline-flex flex-col items-center gap-1">
               <p className="text-[10px] uppercase tracking-[0.25em] text-[#6b7c4a] font-bold">
-                Resumen de Estancia
+                {SITE_CONTENT.availability.labels.summary}
               </p>
               <div className="flex items-baseline gap-2">
                 <span className="text-3xl font-serif italic text-[#2c2416]">
                   ${calculatedPricing ? new Intl.NumberFormat('es-CL').format(calculatedPricing.totalPrice) : '...'}
                 </span>
                 <span className="text-xs text-[#9a8a78] font-light">
-                  Total por {nights} {nights === 1 ? "noche" : "noches"}
+                  Total por {nights} {nights === 1 ? SITE_CONTENT.availability.labels.night : SITE_CONTENT.availability.labels.nights}
                 </span>
               </div>
             </div>

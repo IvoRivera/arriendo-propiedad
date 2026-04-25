@@ -4,6 +4,7 @@
 import React from "react";
 import { GalleryCarousel } from "@/components/coastal/GalleryCarousel";
 import { IMAGE_FALLBACKS } from "@/config/image-fallbacks";
+import { SITE_CONTENT } from "@/config/site-content";
 
 interface CoastalGalleryProps {
   readonly className?: string;
@@ -35,10 +36,10 @@ export const CoastalGallery: React.FC<CoastalGalleryProps> = ({ className = "", 
 
       {/* A. DESTACADAS — emotional impact, alternating bg */}
       <GalleryCarousel
-        title="Vistas que se quedan contigo"
-        subtitle="Lo primero que ves al abrir la puerta."
+        title={SITE_CONTENT.gallery.featured.title}
+        subtitle={SITE_CONTENT.gallery.featured.subtitle}
         images={featuredImages}
-        ctaText="Solicitud de Reserva"
+        ctaText={SITE_CONTENT.gallery.featured.ctaText}
         onAction={onAction}
         bgColor="bg-[#f5f0e8]"
       />
@@ -46,10 +47,10 @@ export const CoastalGallery: React.FC<CoastalGalleryProps> = ({ className = "", 
       {/* B. EL DEPARTAMENTO — interior walkthrough */}
       <div className="border-t border-[#e2d9cc]">
         <GalleryCarousel
-          title="Tu espacio frente al mar"
-          subtitle="Luz natural, calma y todo listo para que simplemente llegues a disfrutar."
+          title={SITE_CONTENT.gallery.interiors.title}
+          subtitle={SITE_CONTENT.gallery.interiors.subtitle}
           images={interiorsImages}
-          ctaText="Solicitud de Reserva"
+          ctaText={SITE_CONTENT.gallery.interiors.ctaText}
           onAction={onAction}
           bgColor="bg-[#faf7f2]"
         />
@@ -58,10 +59,10 @@ export const CoastalGallery: React.FC<CoastalGalleryProps> = ({ className = "", 
       {/* C. AMENIDADES — building common areas */}
       <div className="border-t border-[#e2d9cc]">
         <GalleryCarousel
-          title="Donde empieza tu descanso"
-          subtitle="Un lugar pensado para bajar el ritmo y sentirte cómodo desde el primer momento."
+          title={SITE_CONTENT.gallery.amenities.title}
+          subtitle={SITE_CONTENT.gallery.amenities.subtitle}
           images={amenitiesImages}
-          ctaText="Solicitud de Reserva"
+          ctaText={SITE_CONTENT.gallery.amenities.ctaText}
           onAction={onAction}
           bgColor="bg-[#f5f0e8]"
         />

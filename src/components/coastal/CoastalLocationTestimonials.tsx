@@ -5,7 +5,7 @@
 
 import React, { useRef } from "react";
 import { Star, MapPin, MessageCircle } from "lucide-react";
-import { siteConfig, testimonialsData } from "@/data/mockData";
+import { SITE_CONTENT } from "@/config/site-content";
 
 interface CoastalLocationTestimonialsProps {
   readonly className?: string;
@@ -34,7 +34,7 @@ export const CoastalLocationTestimonials: React.FC<CoastalLocationTestimonialsPr
             className="w-full h-56 rounded-xl overflow-hidden border border-[#d4c9b8] mb-5 bg-[#f0ebe0] relative flex items-center justify-center"
           >
             <iframe
-              src={siteConfig.googleMapsEmbedSrc}
+              src={SITE_CONTENT.site.googleMapsEmbedSrc}
               width="100%"
               height="100%"
               style={{ border: 0 }}
@@ -49,9 +49,9 @@ export const CoastalLocationTestimonials: React.FC<CoastalLocationTestimonialsPr
             <MapPin className="w-4 h-4 mt-0.5 text-[#6b7c4a] flex-shrink-0" />
             <div>
               <p className="font-medium text-[#2c2416]">Edificio Playa Serena</p>
-              <p className="font-light">{siteConfig.address}</p>
+              <p className="font-light">{SITE_CONTENT.site.address}</p>
               <a
-                href={siteConfig.mapUrl}
+                href={SITE_CONTENT.site.mapUrl}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-[#6b7c4a] hover:underline text-xs mt-1 inline-block"
@@ -69,11 +69,11 @@ export const CoastalLocationTestimonials: React.FC<CoastalLocationTestimonialsPr
             className="text-2xl md:text-3xl font-serif font-normal text-[#2c2416] mb-6"
             style={{ fontFamily: "var(--font-newsreader), 'Georgia', serif" }}
           >
-            {testimonialsData.sectionTitle}
+            {SITE_CONTENT.testimonials.sectionTitle}
           </h2>
 
           <div className="flex flex-col gap-4 mb-8">
-            {testimonialsData.items.map((item, index) => (
+            {SITE_CONTENT.testimonials.items.map((item, index) => (
               // data-stitch-id: testimonial-card
               <div key={index} className="bg-[#f5f0e8] rounded-xl p-5 border border-[#e2d9cc]">
                 <div className="flex items-center gap-3 mb-3">
@@ -106,7 +106,7 @@ export const CoastalLocationTestimonials: React.FC<CoastalLocationTestimonialsPr
             className="inline-flex items-center gap-2.5 bg-[#6b7c4a] hover:bg-[#5a6a3d] text-white font-medium text-sm px-7 py-3.5 rounded-full transition-all duration-300 hover:shadow-md w-full justify-center md:w-auto cursor-pointer"
           >
             <MessageCircle className="w-4 h-4" fill="currentColor" />
-            <span>{testimonialsData.ctaText}</span>
+            <span>{SITE_CONTENT.testimonials.ctaText}</span>
           </button>
         </div>
 

@@ -11,7 +11,7 @@ import "react-day-picker/style.css";
 import { es } from "date-fns/locale";
 import { format, parseISO } from "date-fns";
 
-import { siteConfig } from "@/data/mockData";
+import { SITE_CONTENT } from "@/config/site-content";
 import { getPriceForDate, type SeasonalPricing } from "@/lib/pricingClient";
 
 const countries = [
@@ -659,7 +659,7 @@ export const CoastalRequestModal: React.FC<CoastalRequestModalProps> = ({
                     <h4 className="text-xs uppercase tracking-widest font-bold text-[#2c2416]">Reglas de la Casa</h4>
                   </div>
                   <ul className="space-y-2.5">
-                    {siteConfig.houseRules.map((rule, idx) => (
+                    {SITE_CONTENT.site.houseRules.map((rule, idx) => (
                       <li key={idx} className="flex gap-3 text-xs text-[#6b5d4f] leading-relaxed">
                         <span className="text-[#6b7c4a] mt-0.5">•</span>
                         {rule}

@@ -2,7 +2,7 @@
 // 4 scannable blocks in 2×2 grid. No images needed — emoji + text keeps it light.
 
 import React from "react";
-import { discoverData } from "@/data/mockData";
+import { SITE_CONTENT } from "@/config/site-content";
 
 interface CoastalDiscoverProps {
   readonly className?: string;
@@ -18,14 +18,14 @@ export const CoastalDiscover: React.FC<CoastalDiscoverProps> = ({ className = ""
             className="text-2xl md:text-3xl font-serif font-normal text-[#2c2416] mb-2"
             style={{ fontFamily: "var(--font-newsreader), 'Georgia', serif" }}
           >
-            {discoverData.sectionTitle}
+            {SITE_CONTENT.discover.sectionTitle}
           </h2>
-          <p className="text-[#8a7a6a] text-sm font-light">{discoverData.sectionSubtitle}</p>
+          <p className="text-[#8a7a6a] text-sm font-light">{SITE_CONTENT.discover.sectionSubtitle}</p>
         </div>
 
         {/* 2×2 grid of experience blocks */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-          {discoverData.items.map((item, index) => (
+          {SITE_CONTENT.discover.items.map((item, index) => (
             <div
               key={index}
               className="bg-[#faf7f2] rounded-xl p-6 border border-[#e2d9cc] hover:border-[#c8b89a] transition-colors duration-200"
