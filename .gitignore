@@ -2,9 +2,9 @@
 
 # Agentic Tools / Claude Code
 .agents/
-!.agents/skills/  # Mantén esto si tus "skills" son código fuente manual, ignóralo si es caché.
-AGENTS.md         # Opcional: Ignóralo si es solo log de sesión local.
-skills-lock.json  # Ídem, suele ser metadata de sesión.
+!.agents/skills/
+AGENTS.md
+skills-lock.json
 
 # dependencies
 /node_modules
@@ -22,15 +22,14 @@ skills-lock.json  # Ídem, suele ser metadata de sesión.
 /.stitch
 
 # next.js
-/.next/
-/out/
+.next/
+out/
+build/
 
-# production
-/build
-
-# misc
+# OS
 .DS_Store
-*.pem
+Thumbs.db
+desktop.ini
 
 # debug
 npm-debug.log*
@@ -38,8 +37,13 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# env files (can opt-in for committing if needed)
-.env*
+# env files
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env*.local
 
 # vercel
 .vercel
@@ -47,3 +51,12 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# temp
+tmp/
+*.tmp
+
+# SQL / Dumps
+*.sql
+*.bak
+!supabase/migrations/*.sql
