@@ -1,23 +1,22 @@
 ## Gap Closure Mode
-All identified gaps addressed.
+Addressing gaps from Milestone v1.4.1: **Image System & Category Editing Enhancement**.
 
 ## Current Position
-- **Phase**: Phase 21 — Hero Image Decoupling (Gap Closure)
-- **Task**: Completed implementation and verification
-- **Status**: Complete at 2026-04-25 11:20
+- **Phase**: Phase 22 — Image Metadata Editing & Category Switching (Gap Closure)
+- **Task**: Planning implementation
+- **Status**: In Progress at 2026-04-25 11:33
 
 ## Last Session Summary
-- Decoupled Hero image from "Featured" gallery category.
-- Implemented dedicated "Imagen Hero" section in Admin panel.
-- Refactored `CoastalHero` to use the `hero` category with a neutral fallback.
-- Migrated current top featured image to the `hero` category.
+- Decoupled Hero image from gallery.
+- Identified new gap: Lack of direct category/metadata editing in Admin panel.
+- Created Phase 22 plan.
 
 ## In-Progress Work
-- None.
+- Designing the `updateImage` method and UI integration.
 
 ## Blockers
 - None.
 
 ## Next Steps
-1. User to verify the new Hero management in the live site.
-2. Proceed to new milestones or features.
+1. Implement `ImageService.updateImage`.
+2. Add category switcher UI to `SortableImage`.
