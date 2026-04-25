@@ -1,11 +1,12 @@
 # Project State
 
-> Last Updated: 2026-04-24 21:26
+> Last Updated: 2026-04-25 09:00
+**Status**: Active (resumed 2026-04-25 09:00)
 
 ## Current Position
-- **Phase**: Milestone v1.1 Complete
-- **Task**: Waiting for new milestone planning
-- **Status**: Milestone v1.1 Archived
+- **Milestone**: v1.2 — Dynamic Admin Image Management
+- **Phase**: Not started
+- **Status**: Milestone planned
 
 ## Last Milestone Summary (v1.1)
 Completed the Booking Experience & Inventory Optimization milestone. Stabilized the project on Next.js 15.1.7 and React 19, implemented dynamic seasonal pricing, and hardened mobile interactivity with a Web3 bug guard.
