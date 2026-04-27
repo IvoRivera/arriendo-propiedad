@@ -1,7 +1,7 @@
 import { Resend } from 'resend';
 import { NextResponse } from 'next/server';
 import { getLiveConfigServer, getPropertyBaseConfig } from '@/lib/systemConfigServer';
-import { calculateNights } from '@/lib/dateUtils';
+import { getPricing } from '@/lib/pricing';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -26,13 +26,20 @@ export async function POST(req: Request) {
     ]);
 
     const ownerEmail = freshConfig['OWNER_EMAIL'] || process.env.OWNER_EMAIL || '';
-    const dailyPrice = property?.base_price ?? 0;
+    
+    // Use central pricing engine
+    const pricing = await getPricing({
+      checkIn: check_in,
+      checkOut: check_out,
+      property: property
+    });
 
-    const nights = calculateNights(check_in, check_out);
+    const nights = pricing.nightsCount;
     
     // Use snapshotted total_price if provided (from the new bookings API)
-    const totalPrice = body.total_price !== undefined ? Number(body.total_price) : (nights * dailyPrice);
+    const totalPrice = body.total_price !== undefined ? Number(body.total_price) : pricing.totalPrice;
     const formattedTotal = new Intl.NumberFormat('es-CL').format(totalPrice);
+    const dailyPrice = pricing.nightlyPrice;
 
     const { data, error } = await resend.emails.send({
       from: 'ArriendoLS <onboarding@resend.dev>',

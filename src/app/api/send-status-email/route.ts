@@ -1,7 +1,7 @@
 import { Resend } from 'resend';
 import { NextResponse } from 'next/server';
-import { getLiveConfigServer, validatePropertyRentValue, getPropertyBaseConfig } from '@/lib/systemConfigServer';
-import { calculateNights } from '@/lib/dateUtils';
+import { getLiveConfigServer, getPropertyBaseConfig } from '@/lib/systemConfigServer';
+import { getPricing } from '@/lib/pricing';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -20,19 +20,28 @@ export async function POST(req: Request) {
     const freshConfig = await getLiveConfigServer();
     const property = await getPropertyBaseConfig();
 
-    // Validate critical values
-    const dailyPrice = validatePropertyRentValue(property?.base_price);
-
     const ownerName = freshConfig['OWNER_NAME'] || process.env.OWNER_NAME || 'Anfitrión';
     const whatsappLink = freshConfig['OWNER_WHATSAPP_LINK'] || process.env.OWNER_WHATSAPP_LINK || '';
     const ownerEmail = freshConfig['OWNER_EMAIL'] || process.env.OWNER_EMAIL || '';
 
-    // Calculation logic
-    const nightsCount = calculateNights(check_in, check_out);
+    // Use central pricing engine
+    const pricing = await getPricing({
+      checkIn: check_in,
+      checkOut: check_out,
+      property: property
+    });
 
-    // Use snapshotted price if available
-    const totalAmount = body.total_price !== undefined ? Number(body.total_price) : (nightsCount * dailyPrice);
+    console.log("PRICING DEBUG:", {
+      nightlyPrice: pricing.nightlyPrice,
+      total: pricing.totalPrice,
+      nights: pricing.nightsCount,
+      propertyId: property?.id
+    });
+
+    // Use snapshotted price if available, otherwise use calculated total
+    const totalAmount = body.total_price !== undefined ? Number(body.total_price) : pricing.totalPrice;
     const totalFormatted = new Intl.NumberFormat('es-CL').format(totalAmount);
+    const nightsCount = pricing.nightsCount;
 
     // If we have a snapshotted price, we don't show the "nights x daily" calculation if daily is variable
     const bankDetails = `

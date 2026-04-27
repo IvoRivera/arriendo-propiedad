@@ -15,23 +15,31 @@ export interface PricingResult {
   totalPrice: number;
   breakdown: PriceBreakdownItem[];
   nightsCount: number;
+  nightlyPrice: number;
+}
+
+/**
+ * Main pricing function (Alias for backward compatibility and simplified usage)
+ */
+export async function getPricing(params: {
+  checkIn: string;
+  checkOut: string;
+  guests?: number;
+  propertyId?: string;
+  property?: any; // Allow passing pre-fetched property
+}): Promise<PricingResult> {
+  const result = await calculateBookingPrice(params.checkIn, params.checkOut, params.propertyId, params.property);
+  return result;
 }
 
 /**
  * Calculates the total price for a booking range.
- * Logic:
- * 1. Fetch property record (base price, multipliers, etc.)
- * 2. Fetch seasonal prices from seasonal_pricing table (property-specific or global).
- * 3. Fetch manual overrides from price_overrides table (Highest Priority).
- * 4. For each night:
- *    - Check for manual override.
- *    - If no override, apply seasonal price (highest priority).
- *    - Fallback to property base price.
  */
 export async function calculateBookingPrice(
   startDate: string, 
   endDate: string, 
-  propertyId?: string
+  propertyId?: string,
+  preFetchedProperty?: any
 ): Promise<PricingResult> {
   // [SchemaGuard] Early Integrity Check
   const schema = await validateSchema();
@@ -48,14 +56,14 @@ export async function calculateBookingPrice(
     days = eachDayOfInterval({ start, end });
   } catch (err) {
     console.error('[Pricing] Invalid date interval:', { startDate, endDate });
-    return { totalPrice: 0, breakdown: [], nightsCount: 0 };
+    return { totalPrice: 0, breakdown: [], nightsCount: 0, nightlyPrice: 0 };
   }
   
   const nights = days.slice(0, -1);
-  if (nights.length === 0) return { totalPrice: 0, breakdown: [], nightsCount: 0 };
+  if (nights.length === 0) return { totalPrice: 0, breakdown: [], nightsCount: 0, nightlyPrice: 0 };
 
-  // 1. Fetch property base price
-  const property = await getPropertyBaseConfig(propertyId ? { id: propertyId } : undefined);
+  // 1. Fetch property base price or use pre-fetched
+  const property = preFetchedProperty || await getPropertyBaseConfig(propertyId ? { id: propertyId } : undefined);
   const basePrice = validatePropertyRentValue(property?.base_price ?? 80000);
 
   // 2. Fetch seasonal prices for the range
@@ -128,6 +136,7 @@ export async function calculateBookingPrice(
   return {
     totalPrice,
     breakdown,
-    nightsCount: nights.length
+    nightsCount: nights.length,
+    nightlyPrice: totalPrice / nights.length
   };
 }

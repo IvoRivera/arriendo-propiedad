@@ -6,7 +6,7 @@ export default function Details() {
     { label: "Superficie Útil", value: "62.94 m²", icon: Maximize },
     { label: "Terraza", value: "16.06 m²", icon: Maximize },
     { label: "Dormitorios", value: "2", icon: BedDouble },
-    { label: "Baños", value: "1", icon: Bath },
+    { label: "Baños", value: "2", icon: Bath },
     { label: "Estacionamiento", value: "1 Privado", icon: Car },
     { label: "Valor por noche", value: "$100k - $180k CLP", icon: Banknote },
   ];
@@ -18,9 +18,9 @@ export default function Details() {
           {/* Decorative background glow */}
           <div className="absolute -top-24 -right-24 w-64 h-64 bg-blue-500/10 rounded-full blur-3xl pointer-events-none"></div>
           <div className="absolute -bottom-24 -left-24 w-64 h-64 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none"></div>
-          
+
           <h2 className="text-3xl font-bold mb-10 text-center relative z-10">Especificaciones</h2>
-          
+
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8 relative z-10">
             {specs.map((spec, i) => {
               const Icon = spec.icon;
