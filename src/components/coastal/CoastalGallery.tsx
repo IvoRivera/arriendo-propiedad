@@ -1,10 +1,13 @@
-// CoastalGallery.tsx — 3 separated gallery carousels
-// data-stitch-id: gallery-section (screen: 75756b60186b4c8da17437331f094caa)
+"use client";
 
-import React from "react";
-import { GalleryCarousel } from "@/components/coastal/GalleryCarousel";
+import React, { useState } from "react";
+import Image from "next/image";
+import { EditorialGallery } from "@/components/coastal/EditorialGallery";
+import { Lightbox } from "@/components/coastal/Lightbox";
 import { IMAGE_FALLBACKS } from "@/config/image-fallbacks";
 import { SITE_CONTENT } from "@/config/site-content";
+import { ChevronRight } from "lucide-react";
+import { AnimatePresence } from "framer-motion";
 
 interface CoastalGalleryProps {
   readonly className?: string;
@@ -13,6 +16,8 @@ interface CoastalGalleryProps {
 }
 
 export const CoastalGallery: React.FC<CoastalGalleryProps> = ({ className = "", onAction, dynamicImages = [] }) => {
+  const [openGallery, setOpenGallery] = useState<'interiors' | 'amenities' | null>(null);
+
   // Helper to merge or replace images with local fallbacks
   const getImages = (category: string, fallbackKey: string) => {
     const dynamic = (dynamicImages || [])
@@ -34,40 +39,86 @@ export const CoastalGallery: React.FC<CoastalGalleryProps> = ({ className = "", 
     // data-stitch-id: gallery-root
     <section className={`border-t border-[#e2d9cc] ${className}`}>
 
-      {/* A. DESTACADAS — emotional impact, alternating bg */}
-      <GalleryCarousel
+      {/* A. DESTACADAS — emotional impact, static editorial grid */}
+      <EditorialGallery
         title={SITE_CONTENT.gallery.featured.title}
         subtitle={SITE_CONTENT.gallery.featured.subtitle}
         images={featuredImages}
-        ctaText={SITE_CONTENT.gallery.featured.ctaText}
-        onAction={onAction}
         bgColor="bg-[#f5f0e8]"
       />
 
-      {/* B. EL DEPARTAMENTO — interior walkthrough */}
-      <div className="border-t border-[#e2d9cc]">
-        <GalleryCarousel
-          title={SITE_CONTENT.gallery.interiors.title}
-          subtitle={SITE_CONTENT.gallery.interiors.subtitle}
-          images={interiorsImages}
-          ctaText={SITE_CONTENT.gallery.interiors.ctaText}
-          onAction={onAction}
-          bgColor="bg-[#faf7f2]"
-        />
+      {/* B. SECONDARY EXPLORATION — Minimalist editorial cards */}
+      <div className="bg-[#f5f0e8] px-6 pb-20 md:pb-32">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 max-w-6xl mx-auto">
+          
+          {/* Card: Interiors */}
+          <button
+            onClick={() => setOpenGallery('interiors')}
+            className="flex items-center gap-6 p-6 md:p-8 rounded-[2rem] bg-[#faf7f2] hover:bg-white transition-all duration-700 group border border-[#e2d9cc]/30 text-left"
+          >
+            <div className="w-20 h-20 md:w-24 md:h-24 relative overflow-hidden rounded-2xl flex-shrink-0">
+              <Image 
+                src={interiorsImages[0]?.src || ""} 
+                alt="Interiores" 
+                fill 
+                className="object-cover group-hover:scale-110 transition-transform duration-700" 
+              />
+            </div>
+            <div className="flex-1">
+              <span className="text-[10px] font-mono uppercase tracking-[0.4em] text-[#8a7a6a] mb-2 block opacity-60">Recorrido</span>
+              <h3 className="text-xl md:text-2xl font-serif italic text-[#2c2416] leading-tight">
+                Recorrer el departamento
+              </h3>
+            </div>
+            <div className="w-10 h-10 rounded-full border border-[#e2d9cc] flex items-center justify-center group-hover:bg-[#00628f] group-hover:border-[#00628f] transition-all duration-500">
+              <ChevronRight className="w-4 h-4 text-[#8a7a6a] group-hover:text-white transition-colors" />
+            </div>
+          </button>
+
+          {/* Card: Amenities */}
+          <button
+            onClick={() => setOpenGallery('amenities')}
+            className="flex items-center gap-6 p-6 md:p-8 rounded-[2rem] bg-[#faf7f2] hover:bg-white transition-all duration-700 group border border-[#e2d9cc]/30 text-left"
+          >
+            <div className="w-20 h-20 md:w-24 md:h-24 relative overflow-hidden rounded-2xl flex-shrink-0">
+              <Image 
+                src={amenitiesImages[0]?.src || ""} 
+                alt="Amenidades" 
+                fill 
+                className="object-cover group-hover:scale-110 transition-transform duration-700" 
+              />
+            </div>
+            <div className="flex-1">
+              <span className="text-[10px] font-mono uppercase tracking-[0.4em] text-[#8a7a6a] mb-2 block opacity-60">Espacios Comunes</span>
+              <h3 className="text-xl md:text-2xl font-serif italic text-[#2c2416] leading-tight">
+                Explorar amenidades
+              </h3>
+            </div>
+            <div className="w-10 h-10 rounded-full border border-[#e2d9cc] flex items-center justify-center group-hover:bg-[#00628f] group-hover:border-[#00628f] transition-all duration-500">
+              <ChevronRight className="w-4 h-4 text-[#8a7a6a] group-hover:text-white transition-colors" />
+            </div>
+          </button>
+
+        </div>
       </div>
 
-      {/* C. AMENIDADES — building common areas */}
-      <div className="border-t border-[#e2d9cc]">
-        <GalleryCarousel
-          title={SITE_CONTENT.gallery.amenities.title}
-          subtitle={SITE_CONTENT.gallery.amenities.subtitle}
-          images={amenitiesImages}
-          ctaText={SITE_CONTENT.gallery.amenities.ctaText}
-          onAction={onAction}
-          bgColor="bg-[#f5f0e8]"
-        />
-      </div>
-
+      {/* Lightbox Overlays — Fullscreen immersion */}
+      <AnimatePresence mode="wait">
+        {openGallery === 'interiors' && (
+          <Lightbox 
+            key="interiors-lightbox"
+            images={interiorsImages} 
+            onClose={() => setOpenGallery(null)} 
+          />
+        )}
+        {openGallery === 'amenities' && (
+          <Lightbox 
+            key="amenities-lightbox"
+            images={amenitiesImages} 
+            onClose={() => setOpenGallery(null)} 
+          />
+        )}
+      </AnimatePresence>
     </section>
   );
 };

@@ -100,14 +100,6 @@ export const CoastalLocationTestimonials: React.FC<CoastalLocationTestimonialsPr
             ))}
           </div>
 
-          {/* Post-testimonials CTA — trust-based */}
-          <button
-            onClick={onAction}
-            className="inline-flex items-center gap-2.5 bg-gradient-to-br from-[#00628f] to-[#007cb3] text-white font-semibold tracking-[-0.01em] px-8 py-3 rounded-full transition-all duration-200 hover:brightness-110 w-full justify-center md:w-auto cursor-pointer"
-          >
-            <MessageCircle className="w-4 h-4" fill="currentColor" />
-            <span>{SITE_CONTENT.testimonials.ctaText}</span>
-          </button>
         </div>
 
       </div>

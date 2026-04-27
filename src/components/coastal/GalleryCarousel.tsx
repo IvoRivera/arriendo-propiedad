@@ -2,7 +2,8 @@
 
 import React, { useRef, useState, useCallback, useEffect } from "react";
 import Image from "next/image";
-import { X, ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import { Lightbox } from "./Lightbox";
 
 export interface CarouselImage {
   readonly src: string;
@@ -64,62 +65,6 @@ export const GalleryCarousel: React.FC<GalleryCarouselProps> = ({
     const newIdx = Math.min(validImages.length - 1, activeIndex + 1);
     scrollTo(newIdx);
   }, [activeIndex, validImages.length, scrollTo]);
-
-  const lightboxPrev = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    setLightboxIndex((i) => (i !== null ? (i - 1 + validImages.length) % validImages.length : null));
-  };
-
-  const lightboxNext = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    setLightboxIndex((i) => (i !== null ? (i + 1) % validImages.length : null));
-  };
-
-  const [touchStart, setTouchStart] = useState<{ x: number, y: number } | null>(null);
-  const [touchEnd, setTouchEnd] = useState<{ x: number, y: number } | null>(null);
-
-  const minSwipeDistance = 50;
-
-  const onTouchStart = (e: React.TouchEvent) => {
-    setTouchEnd(null);
-    setTouchStart({ x: e.targetTouches[0].clientX, y: e.targetTouches[0].clientY });
-  };
-
-  const onTouchMove = (e: React.TouchEvent) => {
-    setTouchEnd({ x: e.targetTouches[0].clientX, y: e.targetTouches[0].clientY });
-  };
-
-  const onTouchEnd = () => {
-    if (!touchStart || !touchEnd || !validImages.length) return;
-    const distanceX = touchStart.x - touchEnd.x;
-    const distanceY = touchStart.y - touchEnd.y;
-    
-    if (Math.abs(distanceY) > Math.abs(distanceX) && Math.abs(distanceY) > minSwipeDistance) {
-      setLightboxIndex(null);
-      return;
-    }
-
-    const isLeftSwipe = distanceX > minSwipeDistance;
-    const isRightSwipe = distanceX < -minSwipeDistance;
-
-    if (isLeftSwipe) {
-      setLightboxIndex((i) => (i !== null ? (i + 1) % validImages.length : null));
-    } else if (isRightSwipe) {
-      setLightboxIndex((i) => (i !== null ? (i - 1 + validImages.length) % validImages.length : null));
-    }
-  };
-
-  // Keyboard navigation for lightbox
-  useEffect(() => {
-    if (lightboxIndex === null || !validImages.length) return;
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "ArrowLeft") setLightboxIndex((i) => (i !== null ? (i - 1 + validImages.length) % validImages.length : null));
-      if (e.key === "ArrowRight") setLightboxIndex((i) => (i !== null ? (i + 1) % validImages.length : null));
-      if (e.key === "Escape") setLightboxIndex(null);
-    };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [lightboxIndex, validImages.length]);
 
   const [tapStartPos, setTapStartPos] = useState<{ x: number, y: number } | null>(null);
 
@@ -210,70 +155,12 @@ export const GalleryCarousel: React.FC<GalleryCarouselProps> = ({
         )}
       </div>
 
-      {lightboxIndex !== null && validImages[lightboxIndex] && (
-        <div 
-          className="fixed inset-0 z-[99998] flex flex-col items-center justify-center bg-black/95 backdrop-blur-2xl animate-in fade-in duration-300" 
-          onClick={() => setLightboxIndex(null)}
-          onTouchStart={onTouchStart}
-          onTouchMove={onTouchMove}
-          onTouchEnd={onTouchEnd}
-        >
-          {/* Top Bar */}
-          <div className="absolute top-0 left-0 right-0 p-6 flex justify-between items-center z-[100]">
-            <span className="text-white/70 text-[10px] font-mono uppercase tracking-[0.4em] bg-white/10 px-3 py-1 rounded-full backdrop-blur-md">
-              {lightboxIndex + 1} / {validImages.length}
-            </span>
-            <button 
-              className="text-white hover:text-white bg-white/10 hover:bg-white/20 p-3 rounded-full transition-all cursor-pointer z-[100] backdrop-blur-md border border-white/10" 
-              onClick={(e) => { e.stopPropagation(); setLightboxIndex(null); }}
-              aria-label="Cerrar galería"
-            >
-              <X className="w-6 h-6 sm:w-8 sm:h-8" strokeWidth={2} />
-            </button>
-          </div>
-
-          {/* Navigation Buttons */}
-          <button 
-            className="absolute left-2 sm:left-6 text-white/40 hover:text-white p-4 z-50 transition-all cursor-pointer group active:scale-95" 
-            onClick={lightboxPrev}
-            aria-label="Imagen anterior"
-          >
-            <ChevronLeft className="w-10 h-10 sm:w-16 sm:h-16 group-hover:scale-110 transition-transform" strokeWidth={1.5} />
-          </button>
-
-          {/* Image Container */}
-          <div 
-            className="relative w-full h-full flex items-center justify-center p-4 sm:p-20" 
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="relative w-full h-full max-w-6xl flex items-center justify-center select-none shadow-2xl">
-              {validImages[lightboxIndex]?.src?.trim() && (
-                <Image 
-                  src={validImages[lightboxIndex].src} 
-                  alt={validImages[lightboxIndex].alt || "Vista ampliada"} 
-                  fill 
-                  className="object-contain pointer-events-none drop-shadow-2xl" 
-                  priority
-                />
-              )}
-            </div>
-          </div>
-
-          <button 
-            className="absolute right-2 sm:right-6 text-white/40 hover:text-white p-4 z-50 transition-all cursor-pointer group active:scale-95" 
-            onClick={lightboxNext}
-            aria-label="Siguiente imagen"
-          >
-            <ChevronRight className="w-10 h-10 sm:w-16 sm:h-16 group-hover:scale-110 transition-transform" strokeWidth={1.5} />
-          </button>
-
-          {/* Bottom Caption */}
-          <div className="absolute bottom-10 left-0 right-0 text-center px-6 pointer-events-none">
-            <p className="text-white/90 text-sm sm:text-base font-light italic max-w-xl mx-auto drop-shadow-md">
-              {validImages[lightboxIndex].alt || "Sin descripción"}
-            </p>
-          </div>
-        </div>
+      {lightboxIndex !== null && (
+        <Lightbox 
+          images={validImages} 
+          initialIndex={lightboxIndex} 
+          onClose={() => setLightboxIndex(null)} 
+        />
       )}
     </div>
   );

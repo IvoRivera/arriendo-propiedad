@@ -13,7 +13,7 @@ import { format, parseISO } from "date-fns";
 
 import { SITE_CONTENT } from "@/config/site-content";
 import { getPriceForDate, type SeasonalPricing } from "@/lib/pricingClient";
-import { isValidStay, calculateNights } from "@/lib/dateUtils";
+import { isValidStay, calculateNights, isRangeBlocked } from "@/lib/dateUtils";
 
 const countries = [
   { name: "Chile", code: "+56", flag: "🇨🇱", placeholder: "9 1234 5678", pattern: /^9\d{8}$/, error: "Formato: 9 XXXX XXXX" },
@@ -102,7 +102,7 @@ const requestSchema = z.object({
   if (data.check_in && data.check_out) {
     const start = parseISO(data.check_in);
     const end = parseISO(data.check_out);
-    
+
     if (end <= start) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
@@ -116,6 +116,8 @@ const requestSchema = z.object({
         path: ["check_out"],
       });
     }
+    // Note: Overlap validation is handled in onSubmit and UI feedback 
+    // because blockedDateStrings is dynamic state.
   }
 });
 
@@ -127,10 +129,10 @@ interface CoastalRequestModalProps {
   initialDates?: { checkIn: Date; checkOut: Date } | null;
 }
 
-export const CoastalRequestModal: React.FC<CoastalRequestModalProps> = ({ 
-  isOpen, 
+export const CoastalRequestModal: React.FC<CoastalRequestModalProps> = ({
+  isOpen,
   onClose,
-  initialDates 
+  initialDates
 }) => {
   const [mounted, setMounted] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
@@ -142,8 +144,46 @@ export const CoastalRequestModal: React.FC<CoastalRequestModalProps> = ({
   const [blockedDateStrings, setBlockedDateStrings] = useState<string[]>([]);
   const [seasonalPrices, setSeasonalPrices] = useState<SeasonalPricing[]>([]);
   const [basePrice, setBasePrice] = useState<number>(0);
-  const [calculatedPricing, setCalculatedPricing] = useState<{totalPrice: number, breakdown: any[]} | null>(null);
+  const [calculatedPricing, setCalculatedPricing] = useState<{ totalPrice: number, breakdown: any[] } | null>(null);
   const [activePicker, setActivePicker] = useState<'check_in' | 'check_out' | null>(null);
+
+  // 1. Centralized Cleanup & Lifecycle Control
+  useEffect(() => {
+    // Force close calendar if modal closes, user submits, or initial dates change
+    if (!isOpen || isSubmitted) {
+      setActivePicker(null);
+    }
+  }, [isOpen, isSubmitted, initialDates]);
+
+  // Handle Escape key and outside clicks for the calendar
+  useEffect(() => {
+    if (!activePicker) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setActivePicker(null);
+    };
+
+    const handleClickOutside = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      // If click is outside the calendar portal and not on the trigger button
+      if (!target.closest('.calendar-portal-content') && !target.closest('.picker-trigger')) {
+        setActivePicker(null);
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+    document.addEventListener("mousedown", handleClickOutside);
+    
+    // Lock body scroll when calendar is open
+    const originalStyle = window.getComputedStyle(document.body).overflow;
+    document.body.style.overflow = 'hidden';
+    
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.body.style.overflow = originalStyle;
+    };
+  }, [activePicker]);
 
   const {
     register,
@@ -188,7 +228,7 @@ export const CoastalRequestModal: React.FC<CoastalRequestModalProps> = ({
         signal: controller.signal
       });
       clearTimeout(timeoutId);
-      
+
       const data = await res.json();
       if (data.success && data.data) {
         setBlockedDateStrings(data.data.blockedDates || []);
@@ -206,7 +246,7 @@ export const CoastalRequestModal: React.FC<CoastalRequestModalProps> = ({
   useEffect(() => {
     if (isOpen) {
       fetchAvailability();
-      
+
       // Fetch pricing data
       const fetchPricing = async () => {
         try {
@@ -232,8 +272,15 @@ export const CoastalRequestModal: React.FC<CoastalRequestModalProps> = ({
       const start = parseISO(checkInValue);
       const end = parseISO(checkOutValue);
       const nightsCount = calculateNights(start, end);
-      
+
       if (nightsCount > 0) {
+        // Check for overlaps
+        const isBlocked = isRangeBlocked(start, end, blockedDateStrings);
+        if (isBlocked) {
+          setCalculatedPricing(null);
+          return;
+        }
+
         let total = 0;
         const breakdown = [];
         const curr = new Date(start);
@@ -292,7 +339,7 @@ export const CoastalRequestModal: React.FC<CoastalRequestModalProps> = ({
     const minCheckout = new Date(checkInDate);
     minCheckout.setDate(minCheckout.getDate() + 2);
     if (date < minCheckout) return true;
-    
+
     // Check range logic
     const current = new Date(checkInDate);
     current.setDate(current.getDate() + 1);
@@ -304,7 +351,7 @@ export const CoastalRequestModal: React.FC<CoastalRequestModalProps> = ({
       if (blockedDateStrings.includes(dateStr)) return true;
       current.setDate(current.getDate() + 1);
     }
-    
+
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const day = String(date.getDate()).padStart(2, '0');
@@ -316,7 +363,7 @@ export const CoastalRequestModal: React.FC<CoastalRequestModalProps> = ({
     if (isSubmitting) return;
     setIsSubmitting(true);
     setSubmitError(null);
-    
+
     const finalPhone = normalizePhone(data.country_code, data.phone);
     const finalReferral = `${data.referred_by_name} (${data.referred_by_relation})`;
 
@@ -337,12 +384,12 @@ export const CoastalRequestModal: React.FC<CoastalRequestModalProps> = ({
         signal: controller.signal
       });
       clearTimeout(timeoutId);
-      
+
       const availability = await res.json();
-      
+
       if (availability.success && availability.data) {
         const currentBlocks = availability.data.blockedDates || [];
-        
+
         // Generate range of dates to check
         const start = parseISO(data.check_in);
         const end = parseISO(data.check_out);
@@ -401,16 +448,16 @@ export const CoastalRequestModal: React.FC<CoastalRequestModalProps> = ({
   const modalContent = (
     <div className="fixed inset-0 z-[9999999] flex items-start justify-center bg-black/70 backdrop-blur-md overflow-y-auto overscroll-none py-6 sm:py-12 px-0 sm:px-6">
       {/* Background overlay click to close */}
-      <div 
-        onClick={onClose} 
-        className="fixed inset-0 cursor-default" 
+      <div
+        onClick={onClose}
+        className="fixed inset-0 cursor-default"
         aria-hidden="true"
       />
-      
+
       {/* Modal Card */}
       <div className="relative w-full max-w-2xl bg-[#faf7f2] sm:rounded-[40px] shadow-2xl min-h-full sm:min-h-0 flex flex-col z-10 animate-in fade-in slide-in-from-bottom-4 duration-300">
-        <button 
-          onClick={onClose} 
+        <button
+          onClick={onClose}
           className="absolute top-4 right-4 sm:top-8 sm:right-8 text-[#6b5d4f] hover:text-[#2c2416] transition-colors p-3 z-20 rounded-full hover:bg-black/5"
         >
           <X className="w-6 h-6" />
@@ -428,19 +475,19 @@ export const CoastalRequestModal: React.FC<CoastalRequestModalProps> = ({
                   </div>
                 </div>
               )}
-              
+
               <div className="text-center mb-10">
                 <h3 className="font-serif text-3xl sm:text-4xl text-[#2c2416] italic tracking-tight">Solicitar Estadía</h3>
                 <p className="text-[#9a8a78] text-[10px] uppercase tracking-widest mt-2 font-bold">Completa tus datos para postular</p>
               </div>
-              
+
               <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
                 {submitError && (
                   <div className="bg-red-50 text-red-600 text-xs p-4 rounded-xl border border-red-100">
                     {submitError}
                   </div>
                 )}
-                
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                   <div className="space-y-2">
                     <label className="text-[10px] uppercase tracking-widest text-[#9a8a78] font-bold ml-1">Nombre Completo</label>
@@ -488,149 +535,134 @@ export const CoastalRequestModal: React.FC<CoastalRequestModalProps> = ({
                       Mínimo de estadía: 2 noches
                     </span>
                   </div>
+                  
+                  {/* Calendar Portal Root - Isolated from Form Layout */}
+                  {activePicker && mounted && createPortal(
+                    <div className="fixed inset-0 z-[10000000] flex items-center justify-center p-4 bg-black/20 backdrop-blur-[2px] calendar-portal-content animate-in fade-in duration-200">
+                      <div 
+                        className="bg-white border border-[#e2d9cc] rounded-[32px] shadow-2xl p-6 sm:p-8 relative animate-in zoom-in-95 duration-200 max-w-sm w-full"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <button 
+                          onClick={() => setActivePicker(null)}
+                          className="absolute top-4 right-4 p-2 text-[#9a8a78] hover:text-[#2c2416] transition-colors"
+                        >
+                          <X className="w-5 h-5" />
+                        </button>
+
+                        <div className="mb-6 text-center">
+                          <h4 className="font-serif text-xl italic text-[#2c2416]">
+                            {activePicker === 'check_in' ? 'Fecha de Llegada' : 'Fecha de Salida'}
+                          </h4>
+                          <p className="text-[10px] uppercase tracking-widest text-[#9a8a78] mt-1">
+                            Selecciona una fecha disponible
+                          </p>
+                        </div>
+
+                        <style>{calendarStyles}</style>
+                        <DayPicker
+                          mode="single"
+                          selected={activePicker === 'check_in' 
+                            ? (checkInValue ? parseISO(checkInValue) : undefined)
+                            : (checkOutValue ? parseISO(checkOutValue) : undefined)
+                          }
+                          onSelect={(date) => {
+                            if (!date) return;
+                            
+                            const year = date.getFullYear();
+                            const month = String(date.getMonth() + 1).padStart(2, '0');
+                            const day = String(date.getDate()).padStart(2, '0');
+                            const dateStr = `${year}-${month}-${day}`;
+
+                            if (activePicker === 'check_in') {
+                              setValue("check_in", dateStr, { shouldValidate: true });
+                              
+                              // Auto-suggest checkout if not set or invalid
+                              const suggested = new Date(date);
+                              suggested.setDate(suggested.getDate() + 2);
+                              const sDateStr = `${suggested.getFullYear()}-${String(suggested.getMonth() + 1).padStart(2, '0')}-${String(suggested.getDate()).padStart(2, '0')}`;
+                              
+                              if (!checkOutValue || parseISO(checkOutValue) < suggested) {
+                                setValue("check_out", sDateStr, { shouldValidate: true });
+                              }
+                            } else {
+                              setValue("check_out", dateStr, { shouldValidate: true });
+                            }
+                            
+                            setActivePicker(null);
+                          }}
+                          disabled={activePicker === 'check_in' ? isDateDisabled : isCheckOutDisabled}
+                          locale={es}
+                          defaultMonth={activePicker === 'check_out' && checkInValue ? parseISO(checkInValue) : undefined}
+                          footer={activePicker === 'check_out' && (
+                            <p className="text-[10px] text-center text-[#9a8a78] mt-4 italic font-medium">
+                              Estancia mínima de 2 noches
+                            </p>
+                          )}
+                          components={{
+                            DayButton: (props) => {
+                              const { day, ...buttonProps } = props as any;
+                              const { date } = day;
+                              const { price, isSeasonal } = getPriceForDate(date, seasonalPrices || [], basePrice || 0);
+                              const formatted = price >= 1000
+                                ? new Intl.NumberFormat('es-CL').format(Math.floor(price / 1000)) + 'k'
+                                : price;
+
+                              return (
+                                <button {...buttonProps}>
+                                  <div className="flex flex-col items-center justify-center w-full h-full pt-1">
+                                    <span className="text-[10px] font-medium leading-none">{date.getDate()}</span>
+                                    {price > 0 && (
+                                      <span className={`text-[7px] mt-0.5 leading-none font-bold tracking-tighter ${isSeasonal ? 'text-[#00628f]' : 'text-[#b5a99a]'}`}>
+                                        ${formatted}
+                                      </span>
+                                    )}
+                                  </div>
+                                </button>
+                              );
+                            }
+                          }}
+                        />
+                      </div>
+                    </div>,
+                    document.body
+                  )}
+
                   <div className="space-y-2">
                     <label className="text-[10px] uppercase tracking-widest text-[#9a8a78] font-bold ml-1">Fecha Llegada</label>
                     <div className="relative">
-                      <button 
+                      <button
                         type="button"
                         onClick={() => setActivePicker(activePicker === 'check_in' ? null : 'check_in')}
-                        className="w-full bg-white border border-[#e2d9cc] rounded-xl px-4 py-3.5 text-base sm:text-sm text-left outline-none focus:border-[#00628f] shadow-sm flex items-center justify-between"
+                        className="picker-trigger w-full bg-white border border-[#e2d9cc] rounded-xl px-4 py-3.5 text-base sm:text-sm text-left outline-none focus:border-[#00628f] shadow-sm flex items-center justify-between transition-all hover:border-[#00628f]/50"
                       >
                         <span className={checkInValue ? "text-[#2c2416]" : "text-[#b5a99a]"}>
                           {checkInValue ? format(parseISO(checkInValue), "PPP", { locale: es }) : "Seleccionar fecha"}
                         </span>
                         <CalendarDays className="w-4 h-4 text-[#9a8a78]" />
                       </button>
-                      {activePicker === 'check_in' && (
-                        <div className="absolute top-full left-0 mt-2 z-[50] bg-white border border-[#e2d9cc] rounded-2xl shadow-2xl p-4 animate-in fade-in zoom-in-95 duration-200">
-                          <style>{calendarStyles}</style>
-                          <DayPicker
-                            mode="single"
-                            selected={checkInValue ? parseISO(checkInValue) : undefined}
-                            onSelect={(date) => {
-                              if (date) {
-                                const year = date.getFullYear();
-                                const month = String(date.getMonth() + 1).padStart(2, '0');
-                                const day = String(date.getDate()).padStart(2, '0');
-                                const dateStr = `${year}-${month}-${day}`;
-                                setValue("check_in", dateStr, { shouldValidate: true });
-                                
-                                // Auto-suggest checkout
-                                const suggested = new Date(date);
-                                suggested.setDate(suggested.getDate() + 2);
-                                
-                                const sYear = suggested.getFullYear();
-                                const sMonth = String(suggested.getMonth() + 1).padStart(2, '0');
-                                const sDay = String(suggested.getDate()).padStart(2, '0');
-                                const sDateStr = `${sYear}-${sMonth}-${sDay}`;
+                    </div>
+                    {errors.check_in && <p className="text-[10px] text-red-500 ml-1">{errors.check_in.message}</p>}
+                  </div>
 
-                                if (!checkOutValue || parseISO(checkOutValue) < suggested) {
-                                  // Check blocks (simple check)
-                                  const dayAfter = new Date(date);
-                                  dayAfter.setDate(dayAfter.getDate() + 1);
-                                  const daStr = `${dayAfter.getFullYear()}-${String(dayAfter.getMonth() + 1).padStart(2, '0')}-${String(dayAfter.getDate()).padStart(2, '0')}`;
-                                  
-                                  const isBlocked = blockedDateStrings.includes(daStr) || blockedDateStrings.includes(sDateStr);
-                                  if (!isBlocked) {
-                                    setValue("check_out", sDateStr, { shouldValidate: true });
-                                  }
-                                }
-                                
-                                setActivePicker(null);
-                              }
-                            }}
-                             disabled={isDateDisabled}
-                             locale={es}
-                             components={{
-                               DayButton: (props) => {
-                                 const { day, ...buttonProps } = props as any;
-                                 const { date } = day;
-                                 const { price, isSeasonal } = getPriceForDate(date, seasonalPrices || [], basePrice || 0);
-                                 const formatted = price >= 1000 
-                                   ? new Intl.NumberFormat('es-CL').format(Math.floor(price / 1000)) + 'k'
-                                   : price;
-                                 
-                                 return (
-                                   <button {...buttonProps}>
-                                     <div className="flex flex-col items-center justify-center w-full h-full pt-1">
-                                     <span className="text-[10px] font-medium leading-none">{date.getDate()}</span>
-                                     {price > 0 && (
-                                       <span className={`text-[7px] mt-0.5 leading-none font-bold tracking-tighter ${isSeasonal ? 'text-[#00628f]' : 'text-[#b5a99a]'}`}>
-                                         ${formatted}
-                                       </span>
-                                     )}
-                                   </div>
-                                 </button>
-                               );
-                               }
-                             }}
-                           />
-                         </div>
-                       )}
-                     </div>
-                     {errors.check_in && <p className="text-[10px] text-red-500 ml-1">{errors.check_in.message}</p>}
-                   </div>
- 
-                   <div className="space-y-2">
-                     <label className="text-[10px] uppercase tracking-widest text-[#9a8a78] font-bold ml-1">Fecha Salida</label>
-                     <div className="relative">
-                       <button 
-                         type="button"
-                         onClick={() => setActivePicker(activePicker === 'check_out' ? null : 'check_out')}
-                         className="w-full bg-white border border-[#e2d9cc] rounded-xl px-4 py-3.5 text-base sm:text-sm text-left outline-none focus:border-[#00628f] shadow-sm flex items-center justify-between"
-                       >
-                         <span className={checkOutValue ? "text-[#2c2416]" : "text-[#b5a99a]"}>
-                           {checkOutValue ? format(parseISO(checkOutValue), "PPP", { locale: es }) : "Seleccionar fecha"}
-                         </span>
-                         <CalendarDays className="w-4 h-4 text-[#9a8a78]" />
-                       </button>
-                       {activePicker === 'check_out' && (
-                         <div className="absolute top-full right-0 mt-2 z-[50] bg-white border border-[#e2d9cc] rounded-2xl shadow-2xl p-4 animate-in fade-in zoom-in-95 duration-200">
-                           <style>{calendarStyles}</style>
-                           <DayPicker
-                             mode="single"
-                             selected={checkOutValue ? parseISO(checkOutValue) : undefined}
-                             onSelect={(date) => {
-                               if (date) {
-                                 const year = date.getFullYear();
-                                 const month = String(date.getMonth() + 1).padStart(2, '0');
-                                 const day = String(date.getDate()).padStart(2, '0');
-                                 setValue("check_out", `${year}-${month}-${day}`, { shouldValidate: true });
-                                 setActivePicker(null);
-                               }
-                             }}
-                             disabled={isCheckOutDisabled}
-                             locale={es}
-                             defaultMonth={checkInValue ? parseISO(checkInValue) : undefined}
-                             footer={<p className="text-[10px] text-center text-[#9a8a78] mt-2 italic font-medium">Estancia mínima de 2 noches</p>}
-                             components={{
-                               DayButton: (props) => {
-                                 const { day, ...buttonProps } = props as any;
-                                 const { date } = day;
-                                 const { price, isSeasonal } = getPriceForDate(date, seasonalPrices || [], basePrice || 0);
-                                 const formatted = price >= 1000 
-                                   ? new Intl.NumberFormat('es-CL').format(Math.floor(price / 1000)) + 'k'
-                                   : price;
-                                 
-                                 return (
-                                   <button {...buttonProps}>
-                                     <div className="flex flex-col items-center justify-center w-full h-full pt-1">
-                                     <span className="text-[10px] font-medium leading-none">{date.getDate()}</span>
-                                     {price > 0 && (
-                                       <span className={`text-[7px] mt-0.5 leading-none font-bold tracking-tighter ${isSeasonal ? 'text-[#00628f]' : 'text-[#b5a99a]'}`}>
-                                         ${formatted}
-                                       </span>
-                                     )}
-                                   </div>
-                                 </button>
-                               );
-                               }
-                             }}
-                           />
-                        </div>
-                      )}
+                  <div className="space-y-2">
+                    <label className="text-[10px] uppercase tracking-widest text-[#9a8a78] font-bold ml-1">Fecha Salida</label>
+                    <div className="relative">
+                      <button
+                        type="button"
+                        onClick={() => setActivePicker(activePicker === 'check_out' ? null : 'check_out')}
+                        className="picker-trigger w-full bg-white border border-[#e2d9cc] rounded-xl px-4 py-3.5 text-base sm:text-sm text-left outline-none focus:border-[#00628f] shadow-sm flex items-center justify-between transition-all hover:border-[#00628f]/50"
+                      >
+                        <span className={checkOutValue ? "text-[#2c2416]" : "text-[#b5a99a]"}>
+                          {checkOutValue ? format(parseISO(checkOutValue), "PPP", { locale: es }) : "Seleccionar fecha"}
+                        </span>
+                        <CalendarDays className="w-4 h-4 text-[#9a8a78]" />
+                      </button>
                     </div>
                     {errors.check_out && <p className="text-[10px] text-red-500 ml-1">{errors.check_out.message}</p>}
+                    {checkInValue && checkOutValue && isRangeBlocked(checkInValue, checkOutValue, blockedDateStrings) && (
+                      <p className="text-[10px] text-red-500 ml-1 mt-1 font-medium italic">Estas fechas no están disponibles</p>
+                    )}
                   </div>
                 </div>
 
@@ -668,7 +700,7 @@ export const CoastalRequestModal: React.FC<CoastalRequestModalProps> = ({
                         {calculatedPricing.breakdown.length} noches
                       </span>
                     </div>
-                    
+
                     <div className="space-y-3 max-h-[160px] overflow-y-auto pr-4 custom-scrollbar">
                       {calculatedPricing.breakdown.map((day, idx) => (
                         <div key={idx} className="flex justify-between items-center group">
@@ -688,7 +720,7 @@ export const CoastalRequestModal: React.FC<CoastalRequestModalProps> = ({
                         </div>
                       ))}
                     </div>
-                    
+
                     <div className="flex justify-between items-end pt-5 border-t border-[#00628f]/10">
                       <div className="space-y-0.5">
                         <span className="block text-[9px] uppercase tracking-widest text-[#9a8a78] font-bold">Total Estimado</span>
@@ -717,8 +749,8 @@ export const CoastalRequestModal: React.FC<CoastalRequestModalProps> = ({
                   <div className="pt-4 border-t border-[#e2d9cc] mt-4">
                     <label className="flex items-start gap-3 cursor-pointer group">
                       <div className="relative flex items-center">
-                        <input 
-                          type="checkbox" 
+                        <input
+                          type="checkbox"
                           {...register("rules_accepted")}
                           className="peer sr-only"
                         />
@@ -747,9 +779,9 @@ export const CoastalRequestModal: React.FC<CoastalRequestModalProps> = ({
                 </div>
 
                 <div className="pt-8">
-                  <button 
-                    type="submit" 
-                    disabled={!isValid || isSubmitting} 
+                  <button
+                    type="submit"
+                    disabled={!isValid || isSubmitting}
                     className="w-full py-4 bg-gradient-to-br from-[#00628f] to-[#007cb3] text-white rounded-full font-semibold uppercase tracking-[-0.01em] text-[12px] transition-all duration-200 hover:brightness-110 active:scale-[0.97] disabled:opacity-50 disabled:grayscale flex items-center justify-center gap-3"
                   >
                     {isSubmitting ? "Procesando solicitud..." : "Enviar Postulación"}
@@ -772,8 +804,8 @@ export const CoastalRequestModal: React.FC<CoastalRequestModalProps> = ({
                   Gracias por tu interés en Playa Serena. Revisaremos tu postulación y te contactaremos a la brevedad luego de revisar tu solicitud.
                 </p>
               </div>
-              <button 
-                onClick={onClose} 
+              <button
+                onClick={onClose}
                 className="mt-4 px-10 py-3 border border-[#00628f] text-[11px] uppercase tracking-widest font-bold text-[#00628f] rounded-full hover:bg-[#00628f] hover:text-white transition-all active:scale-95"
               >
                 Cerrar Ventana

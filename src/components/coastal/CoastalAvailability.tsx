@@ -1,242 +1,49 @@
 "use client";
 
-import React, { useState, useRef, useEffect, useCallback } from "react";
-import { format } from "date-fns";
+import React, { useState, useEffect, useMemo } from "react";
+import { DayPicker, type DateRange } from "react-day-picker";
 import { es } from "date-fns/locale";
-import { DayPicker } from "react-day-picker";
-import "react-day-picker/style.css";
-import { ChevronDown, X, RefreshCw, CalendarDays, AlertCircle, Clock } from "lucide-react";
-
-import { getPriceForDate } from "@/lib/pricingClient";
+import { format, differenceInDays } from "date-fns";
 import { SITE_CONTENT } from "@/config/site-content";
-import { isValidStay, calculateNights } from "@/lib/dateUtils";
-
-// Custom styles for the calendar
-const calendarStyles = `
-  .rdp {
-    --rdp-cell-size: 40px;
-    --rdp-accent-color: #00628f;
-    --rdp-background-color: #f5f0e8;
-    margin: 0;
-  }
-  .rdp-day_selected, .rdp-day_selected:focus-visible, .rdp-day_selected:hover {
-    background-color: var(--rdp-accent-color) !important;
-    color: white !important;
-  }
-  .rdp-day_disabled {
-    opacity: 0.3;
-    text-decoration: line-through;
-    cursor: not-allowed;
-    color: #991b1b !important; /* Dark red for occupied */
-  }
-  .rdp-day_disabled:after {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 24px;
-    height: 24px;
-    background-color: #fee2e2;
-    border-radius: 50%;
-    z-index: -1;
-  }
-`;
-
-interface DateInputProps {
-  label: string;
-  selected?: Date;
-  onSelect: (date: Date | undefined) => void;
-  hint: string;
-  disabledDays?: React.ComponentProps<typeof DayPicker>['disabled'];
-  onClear: () => void;
-  id: string;
-  defaultMonth?: Date;
-  disabled?: boolean;
-  seasonalPrices?: any[];
-  basePrice?: number;
-}
-
-const DateInput: React.FC<DateInputProps> = ({
-  label,
-  selected,
-  onSelect,
-  hint,
-  disabledDays,
-  onClear,
-  id,
-  defaultMonth,
-  disabled = false,
-  seasonalPrices,
-  basePrice,
-}) => {
-  const [open, setOpen] = useState(false);
-  const containerRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (!open) return;
-
-    const handleClickOutside = (event: MouseEvent) => {
-      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
-        setOpen(false);
-      }
-    };
-
-    const timeoutId = setTimeout(() => {
-      document.addEventListener("click", handleClickOutside);
-    }, 10);
-
-    return () => {
-      clearTimeout(timeoutId);
-      document.removeEventListener("click", handleClickOutside);
-    };
-  }, [open]);
-
-  const formatDisplay = (date: Date) => format(date, "EEE, d MMM", { locale: es });
-
-  const handleToggle = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (!disabled) setOpen(!open);
-  };
-
-  const handleSelect = (date: Date | undefined) => {
-    onSelect(date);
-    if (date) setOpen(false);
-  };
-
-  return (
-    <div className="relative flex-1 min-w-0" ref={containerRef}>
-      <button
-        id={id}
-        type="button"
-        onClick={handleToggle}
-        disabled={disabled}
-        className={`w-full text-left flex flex-col gap-0.5 px-4 py-3.5 rounded-2xl border transition-all duration-300 bg-white relative z-30 outline-none ${disabled ? "opacity-50 cursor-not-allowed bg-gray-50 border-[#e2d9cc]" : "cursor-pointer"
-          } ${open ? "border-[#00628f] shadow-[0_10px_25px_-5px_rgba(0,0,0,0.1)] ring-1 ring-[#00628f]" : "border-[#e2d9cc] hover:border-[#b5a99a] shadow-sm"
-          }`}
-      >
-        <span className="block text-[10px] uppercase tracking-[0.15em] font-bold text-[#9a8a78] pointer-events-none">
-          {label}
-        </span>
-        <span className="flex items-center justify-between gap-2 mt-0.5 pointer-events-none">
-          <span className={`block text-sm font-medium truncate ${selected ? "text-[#2c2416]" : "text-[#b5a99a]"}`}>
-            {selected ? formatDisplay(selected) : hint}
-          </span>
-          {selected ? (
-            <X
-              className="w-3.5 h-3.5 text-[#b5a99a] hover:text-[#2c2416] pointer-events-auto"
-              onClick={(e) => { e.stopPropagation(); onClear(); }}
-            />
-          ) : (
-            <ChevronDown className={`w-4 h-4 text-[#e2d9cc] transition-transform duration-300 ${open ? "rotate-180" : ""}`} />
-          )}
-        </span>
-      </button>
-
-      {open && !disabled && (
-        <div className="absolute top-[105%] left-0 sm:left-auto sm:right-0 z-[100] bg-white border border-[#e2d9cc] rounded-2xl shadow-2xl p-4 animate-in fade-in zoom-in-95 duration-200 origin-top overflow-hidden">
-          <style>{calendarStyles}</style>
-          <DayPicker
-            mode="single"
-            selected={selected}
-            onSelect={handleSelect}
-            disabled={disabledDays}
-            locale={es}
-            defaultMonth={defaultMonth || selected || new Date()}
-            initialFocus
-            footer={id === 'checkout' ? <p className="text-[10px] text-center text-[#9a8a78] mt-2 italic font-medium">{SITE_CONTENT.availability.labels.minStayWarning}</p> : undefined}
-            components={{
-              DayButton: (props) => {
-                const { day, modifiers, ...buttonProps } = props;
-                const { price, isSeasonal } = getPriceForDate(day.date, seasonalPrices || [], basePrice || 0);
-                const formatted = price >= 1000
-                  ? new Intl.NumberFormat('es-CL').format(Math.floor(price / 1000)) + 'k'
-                  : price;
-
-                return (
-                  <button {...buttonProps}>
-                    <div className="flex flex-col items-center justify-center w-full h-full pt-1">
-                      <span className="text-[10px] font-medium leading-none">{day.date.getDate()}</span>
-                      {price > 0 && (
-                        <span className={`text-[7px] mt-0.5 leading-none font-bold tracking-tighter ${isSeasonal ? 'text-[#00628f]' : 'text-[#b5a99a]'}`}>
-                          ${formatted}
-                        </span>
-                      )}
-                    </div>
-                  </button>
-                );
-              }
-            }}
-          />
-        </div>
-      )}
-    </div>
-  );
-};
+import { CalendarDays, ArrowRight, AlertCircle, Info } from "lucide-react";
+import { getPriceForDate, type SeasonalPricing } from "@/lib/pricingClient";
+import "react-day-picker/style.css";
+import { useRef } from "react";
 
 interface CoastalAvailabilityProps {
-  onAction?: (dates: { checkIn: Date; checkOut: Date }) => void;
+  onAction?: (dates?: { checkIn: Date; checkOut: Date }) => void;
 }
 
 export const CoastalAvailability: React.FC<CoastalAvailabilityProps> = ({ onAction }) => {
-  const [checkIn, setCheckIn] = useState<Date | undefined>();
-  const [checkOut, setCheckOut] = useState<Date | undefined>();
-
-  const [status, setStatus] = useState<'loading' | 'error' | 'success' | 'empty'>('loading');
+  const [range, setRange] = useState<DateRange | undefined>();
+  const [blockedDates, setBlockedDates] = useState<Date[]>([]);
   const [blockedDateStrings, setBlockedDateStrings] = useState<string[]>([]);
-  const [seasonalPrices, setSeasonalPrices] = useState<any[]>([]);
+  const [seasonalPrices, setSeasonalPrices] = useState<SeasonalPricing[]>([]);
   const [basePrice, setBasePrice] = useState<number>(0);
-  const [calculatedPricing, setCalculatedPricing] = useState<{ totalPrice: number, breakdown: any[] } | null>(null);
-
-  const fetchAvailability = useCallback(async () => {
-    // Only set loading if we don't have data yet to prevent flashing on re-fetches
-    setStatus('loading');
-
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s timeout
-
-    try {
-      // Use a timestamp to bust cache instead of 'no-store' which can hang in some mobile browsers
-      const res = await fetch(`/api/public/availability?t=${Date.now()}`, {
-        signal: controller.signal
-      });
-      clearTimeout(timeoutId);
-
-      if (!res.ok) {
-        throw new Error(`Server responded with ${res.status}`);
-      }
-
-      const data = await res.json();
-
-      if (data.success && data.data) {
-        const blocks: string[] = data.data.blockedDates || [];
-        setBlockedDateStrings(blocks);
-
-        if (blocks.length > 365) {
-          setStatus('empty');
-        } else {
-          setStatus('success');
-        }
-      } else {
-        console.error('[CoastalAvailability] API returned success:false', data);
-        setStatus('error');
-      }
-    } catch (e: any) {
-      clearTimeout(timeoutId);
-      if (e.name === 'AbortError') {
-        console.error('[CoastalAvailability] Fetch timed out');
-      } else {
-        console.error('[CoastalAvailability] Fetch error:', e);
-      }
-      setStatus('error');
-    }
-  }, []);
+  
+  const confirmButtonRef = useRef<HTMLButtonElement>(null);
+  const [hasScrolled, setHasScrolled] = useState(false);
+  const [shouldAnimate, setShouldAnimate] = useState(false);
 
   useEffect(() => {
-    fetchAvailability();
+    const fetchAvailability = async () => {
+      try {
+        const res = await fetch(`/api/public/availability?t=${Date.now()}`);
+        const data = await res.json();
+        if (data.success && data.data) {
+          const raw = data.data.blockedDates || [];
+          setBlockedDateStrings(raw);
+          const dates = raw.map((d: string) => {
+            const [y, m, d_] = d.split('-').map(Number);
+            return new Date(y, m - 1, d_);
+          });
+          setBlockedDates(dates);
+        }
+      } catch (e) {
+        console.error('Error fetching availability:', e);
+      }
+    };
 
-    // Fetch pricing data
     const fetchPricing = async () => {
       try {
         const res = await fetch('/api/public/pricing');
@@ -249,240 +56,234 @@ export const CoastalAvailability: React.FC<CoastalAvailabilityProps> = ({ onActi
         console.error('Error fetching pricing:', e);
       }
     };
+
+    fetchAvailability();
     fetchPricing();
-  }, [fetchAvailability]);
+  }, []);
 
-  useEffect(() => {
-    if (checkIn && checkOut && basePrice > 0) {
-      const nightsCount = calculateNights(checkIn, checkOut);
-
-      if (nightsCount > 0) {
-        let total = 0;
-        const breakdown = [];
-        const curr = new Date(checkIn);
-        for (let i = 0; i < nightsCount; i++) {
-          const { price, seasonName } = getPriceForDate(curr, seasonalPrices, basePrice);
-          total += price;
-          breakdown.push({ date: format(curr, 'yyyy-MM-dd'), price, seasonName });
-          curr.setDate(curr.getDate() + 1);
-        }
-        setCalculatedPricing({ totalPrice: total, breakdown });
-      } else {
-        setCalculatedPricing(null);
+  const { nights, totalPrice, isValid, isBlocked } = useMemo(() => {
+    if (!range?.from || !range?.to) return { nights: 0, totalPrice: 0, isValid: false, isBlocked: false };
+    
+    // Check if range contains blocked dates
+    const start = range.from;
+    const end = range.to;
+    const currCheck = new Date(start);
+    let rangeHasBlocked = false;
+    
+    while (currCheck <= end) {
+      const dStr = `${currCheck.getFullYear()}-${String(currCheck.getMonth() + 1).padStart(2, '0')}-${String(currCheck.getDate()).padStart(2, '0')}`;
+      if (blockedDateStrings.includes(dStr)) {
+        rangeHasBlocked = true;
+        break;
       }
-    } else {
-      setCalculatedPricing(null);
-    }
-  }, [checkIn, checkOut, seasonalPrices, basePrice]);
-
-  const handleAction = () => {
-    if (checkIn && checkOut) {
-      onAction?.({ checkIn, checkOut });
-    }
-  };
-
-  // Safe formatting to compare with YYYY-MM-DD
-  const formatIso = (date: Date) => {
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
-  };
-
-  const isCheckInDisabled = (date: Date) => {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    if (date < today) return true;
-    if (blockedDateStrings.includes(formatIso(date))) return true;
-    return false;
-  };
-
-  const isCheckOutDisabled = (date: Date) => {
-    if (!checkIn) return isCheckInDisabled(date);
-
-    // Checkout must be at least 2 nights after checkin
-    const minCheckout = new Date(checkIn);
-    minCheckout.setDate(minCheckout.getDate() + 2);
-    if (date < minCheckout) return true;
-
-    // Prevent checkout if there is a blocked date between checkIn and selected date
-    const current = new Date(checkIn);
-    current.setDate(current.getDate() + 1); // Start checking from day after check-in
-
-    // We check up to the day BEFORE the selected checkout date.
-    // If a date is blocked, it means it's occupied. We cannot stay there.
-    while (current < date) {
-      if (blockedDateStrings.includes(formatIso(current))) return true;
-      current.setDate(current.getDate() + 1);
+      currCheck.setDate(currCheck.getDate() + 1);
     }
 
-    // Is the checkout date itself completely blocked?
-    if (blockedDateStrings.includes(formatIso(date))) return true;
+    if (rangeHasBlocked) return { nights: 0, totalPrice: 0, isValid: false, isBlocked: true };
 
-    return false;
+    const n = differenceInDays(range.to, range.from);
+    if (n < 2) return { nights: n, totalPrice: 0, isValid: false, isBlocked: false };
+
+    let total = 0;
+    const curr = new Date(range.from);
+    for (let i = 0; i < n; i++) {
+      const { price } = getPriceForDate(curr, seasonalPrices, basePrice);
+      total += price;
+      curr.setDate(curr.getDate() + 1);
+    }
+
+    return { nights: n, totalPrice: total, isValid: true, isBlocked: false };
+  }, [range, seasonalPrices, basePrice, blockedDateStrings]);
+
+  // Intelligent Auto-scroll for Mobile UX
+  useEffect(() => {
+    if (range?.from && range?.to && isValid && !hasScrolled) {
+      const isMobile = window.innerWidth < 1024;
+      if (isMobile) {
+        // Delay slightly to allow the UI to update with pricing info
+        const timer = setTimeout(() => {
+          confirmButtonRef.current?.scrollIntoView({ 
+            behavior: 'smooth', 
+            block: 'center' 
+          });
+          setHasScrolled(true);
+          setShouldAnimate(true);
+          
+          // Reset animation class after it plays
+          setTimeout(() => setShouldAnimate(false), 1500);
+        }, 300);
+        return () => clearTimeout(timer);
+      }
+    } 
+    // Reset scroll flag if range is cleared or becomes invalid
+    if (!range?.from || !range?.to) {
+      setHasScrolled(false);
+    }
+  }, [range, isValid, hasScrolled]);
+
+  const handleContinue = () => {
+    if (range?.from && range?.to && isValid) {
+      onAction?.({ checkIn: range.from, checkOut: range.to });
+    }
   };
 
-  const nights = calculateNights(checkIn, checkOut);
-  const isValid = isValidStay(checkIn, checkOut);
+  const calendarStyles = `
+    .availability-calendar .rdp {
+      --rdp-accent-color: #00628f;
+      --rdp-background-color: #f5f0e8;
+      margin: 0;
+      width: 100% !important;
+    }
+    .availability-calendar .rdp-months {
+      justify-content: center;
+    }
+    .availability-calendar .rdp-day_selected, 
+    .availability-calendar .rdp-day_selected:focus-visible, 
+    .availability-calendar .rdp-day_selected:hover {
+      background-color: var(--rdp-accent-color) !important;
+      color: white !important;
+    }
+    .availability-calendar .rdp-day_disabled {
+      opacity: 0.2;
+      text-decoration: line-through;
+    }
+    @keyframes pulse-highlight {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.05); box-shadow: 0 0 25px rgba(0, 98, 143, 0.3); }
+      100% { transform: scale(1); }
+    }
+    .animate-confirm-pulse {
+      animation: pulse-highlight 1s ease-out;
+    }
+  `;
 
   return (
-    <section id="booking" className="relative z-40 -mt-10 md:-mt-16 px-4 pb-12">
-      <div className="max-w-4xl mx-auto relative">
+    <section id="availability" className="relative z-40 bg-[#faf7f2] border-t border-[#e2d9cc]">
+      <style>{calendarStyles}</style>
+      
+      <div className="max-w-7xl mx-auto px-6 py-24 md:py-40">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 lg:gap-24 items-start">
+          
+          {/* A. STATIC HEADER (Column 1-5) */}
+          <div className="lg:col-span-5 text-center lg:text-left">
+            <span className="text-[10px] uppercase tracking-[0.4em] font-bold text-[#9a8a78] mb-8 block opacity-80">
+              {SITE_CONTENT.availability.title}
+            </span>
+            <h2 
+              className="text-5xl md:text-7xl font-serif italic text-[#2c2416] mb-8 leading-[1.1]"
+              style={{ fontFamily: "var(--font-newsreader), serif" }}
+            >
+              ¿Cuándo quieres venir?
+            </h2>
+            <p className="text-[#6b5d4f] text-lg md:text-xl font-light mb-12 leading-relaxed">
+              Selecciona las fechas de tu estadía para verificar disponibilidad y comenzar tu reserva.
+            </p>
 
-        {/* Loading Overlay Skeleton */}
-        {status === 'loading' && (
-          <div className="absolute inset-0 z-50 bg-white/50 backdrop-blur-[2px] rounded-[32px] flex items-center justify-center border border-white/60">
-            <div className="flex flex-col items-center gap-3 bg-white/80 px-6 py-4 rounded-2xl shadow-sm border border-[#e2d9cc]/50">
-              <CalendarDays className="w-6 h-6 text-[#00628f] animate-pulse" />
-              <span className="text-[10px] uppercase tracking-[0.2em] font-bold text-[#00628f] animate-pulse">
-                Cargando {SITE_CONTENT.availability.title}...
-              </span>
-              <button
-                onClick={(e) => { e.stopPropagation(); fetchAvailability(); }}
-                className="mt-1 text-[9px] text-[#9a8a78] hover:text-[#00628f] underline underline-offset-2 transition-colors pointer-events-auto"
-              >
-                ¿Demora mucho? Reintentar
-              </button>
-            </div>
-          </div>
-        )}
-
-        {/* Error State */}
-        {status === 'error' && (
-          <div className="absolute inset-0 z-50 bg-rose-50/90 backdrop-blur-sm rounded-[32px] flex items-center justify-center border border-rose-200">
-            <div className="flex flex-col items-center gap-3 text-center px-6">
-              <AlertCircle className="w-8 h-8 text-rose-500" />
-              <p className="text-sm font-medium text-rose-800">No pudimos cargar la disponibilidad.</p>
-              <button
-                onClick={fetchAvailability}
-                className="mt-2 flex items-center gap-2 bg-white px-4 py-2 rounded-xl text-rose-700 text-xs font-bold uppercase tracking-wider shadow-sm hover:bg-rose-50 border border-rose-200 transition-all"
-              >
-                <RefreshCw className="w-3.5 h-3.5" /> Reintentar
-              </button>
-            </div>
-          </div>
-        )}
-
-        {/* Empty State */}
-        {status === 'empty' && (
-          <div className="absolute inset-0 z-50 bg-gray-50/90 backdrop-blur-sm rounded-[32px] flex items-center justify-center border border-gray-200">
-            <div className="flex flex-col items-center gap-3 text-center px-6">
-              <CalendarDays className="w-8 h-8 text-gray-400" />
-              <p className="text-sm font-medium text-gray-600">No hay fechas disponibles en este periodo.</p>
-              <p className="text-xs text-gray-400">Por favor, vuelve a revisar más adelante.</p>
-            </div>
-          </div>
-        )}
-
-        {/* Form Container */}
-        <div className="bg-white/90 backdrop-blur-md border border-white/40 rounded-[32px] p-2.5 shadow-2xl shadow-black/5">
-          <div className="px-5 py-3 border-b border-[#e2d9cc]/30 mb-3">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-              <span className="text-[10px] uppercase tracking-[0.2em] font-bold text-[#00628f]">
-                Consulta disponibilidad
-              </span>
-              <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
-                <div className="flex items-center gap-2 text-[#9a8a78]">
-                  <Clock className="w-3.5 h-3.5 opacity-60" />
-                  <span className="text-[10px] font-medium tracking-tight">
-                    {SITE_CONTENT.availability.labels.stayHours}
-                  </span>
-                </div>
-                <div className="flex items-center gap-1.5 px-2.5 py-1 bg-[#00628f]/5 rounded-lg border border-[#00628f]/10 text-[#00628f]">
-                  <span className="text-[9px] uppercase tracking-widest font-bold">
-                    Estadía mínima: 2 noches
-                  </span>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div className="flex flex-col md:flex-row gap-2.5">
-            <DateInput
-              id="checkin"
-              label={SITE_CONTENT.availability.labels.checkIn}
-              hint={SITE_CONTENT.availability.labels.checkInHint}
-              selected={checkIn}
-              onSelect={(date) => {
-                setCheckIn(date);
-                if (date) {
-                  // Suggest a checkout 2 days after
-                  const suggested = new Date(date);
-                  suggested.setDate(suggested.getDate() + 2);
-                  
-                  // Only auto-set if checkout is currently empty or invalid
-                  if (!checkOut || checkOut < suggested) {
-                    // Check if there's a block in between
-                    const dayAfter = new Date(date);
-                    dayAfter.setDate(dayAfter.getDate() + 1);
-                    const isBlockedBetween = blockedDateStrings.includes(formatIso(dayAfter)) || blockedDateStrings.includes(formatIso(suggested));
-                    
-                    if (!isBlockedBetween) {
-                      setCheckOut(suggested);
-                    }
-                  }
-                }
-              }}
-              onClear={() => { setCheckIn(undefined); setCheckOut(undefined); }}
-              disabledDays={isCheckInDisabled}
-              disabled={status !== 'success'}
-              seasonalPrices={seasonalPrices}
-              basePrice={basePrice}
-            />
-
-            <DateInput
-              id="checkout"
-              label={SITE_CONTENT.availability.labels.checkOut}
-              hint={SITE_CONTENT.availability.labels.checkOutHint}
-              selected={checkOut}
-              onSelect={setCheckOut}
-              onClear={() => setCheckOut(undefined)}
-              disabledDays={isCheckOutDisabled}
-              defaultMonth={checkIn}
-              disabled={status !== 'success'}
-              seasonalPrices={seasonalPrices}
-              basePrice={basePrice}
-            />
-
-            <div className="relative group">
-              <button
-                onClick={handleAction}
-                disabled={!isValid || status !== 'success'}
-                className="md:w-auto w-full bg-gradient-to-br from-[#00628f] to-[#007cb3] disabled:from-[#d4c9b8] disabled:to-[#d4c9b8] text-white px-10 py-4.5 md:py-0 h-full rounded-full font-semibold text-[11px] uppercase tracking-[-0.01em] transition-all duration-200 hover:brightness-110 active:scale-95 disabled:grayscale"
-              >
-                {SITE_CONTENT.availability.ctaText}
-              </button>
-              {checkIn && checkOut && !isValid && (
-                <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-max bg-rose-500 text-white text-[9px] font-bold uppercase py-1 px-3 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
-                  Selecciona al menos 2 noches para continuar
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-
-        {nights > 0 && status === 'success' && (
-          <div className="mt-6 text-center animate-in fade-in slide-in-from-top-2 duration-500">
-            <div className="inline-flex flex-col items-center gap-1">
-              {!isValid && nights > 0 && (
-                <p className="text-[10px] text-rose-500 font-bold uppercase tracking-wider mb-2 flex items-center gap-1.5">
-                  <AlertCircle className="w-3.5 h-3.5" /> {SITE_CONTENT.availability.labels.minStayWarning}
-                </p>
-              )}
-              <p className="text-[10px] uppercase tracking-[0.25em] text-[#00628f] font-bold">
-                {SITE_CONTENT.availability.labels.summary}
+            {/* Desktop-only: Placeholder for stability if needed, but we use a better approach */}
+            <div className="hidden lg:block">
+              {/* Optional: Additional descriptive text for the sanctuary */}
+              <p className="text-[#8a7a6a] text-sm italic font-serif max-w-sm">
+                * Tu reserva será confirmada personalmente por nuestro equipo para asegurar una experiencia exclusiva.
               </p>
-              <div className="flex items-baseline gap-2">
-                <span className="text-3xl font-serif italic text-[#2c2416]">
-                  ${calculatedPricing ? new Intl.NumberFormat('es-CL').format(calculatedPricing.totalPrice) : '...'}
-                </span>
-                <span className="text-xs text-[#9a8a78] font-light">
-                  Total por {nights} {nights === 1 ? SITE_CONTENT.availability.labels.night : SITE_CONTENT.availability.labels.nights}
-                </span>
-              </div>
             </div>
           </div>
-        )}
+
+          {/* B. INTERACTIVE ZONE (Column 6-12) — Stable Layout */}
+          <div className="lg:col-span-7 w-full max-w-2xl mx-auto lg:mx-0">
+            <div className="flex flex-col gap-8">
+              
+              {/* 1. CALENDAR — Fixed height/width container */}
+              <div className="availability-calendar bg-white p-8 md:p-12 rounded-[2.5rem] border border-[#e2d9cc] shadow-xl shadow-[#00628f]/5 min-h-[440px] flex items-center justify-center">
+                <DayPicker
+                  mode="range"
+                  selected={range}
+                  onSelect={setRange}
+                  disabled={[{ before: new Date() }, ...blockedDates]}
+                  locale={es}
+                  numberOfMonths={1}
+                  className="font-sans"
+                />
+              </div>
+
+              {/* 2. INFO PANEL — Persistent Container to prevent layout shift */}
+              <div className="min-h-[180px] relative transition-all duration-500">
+                {!range?.from ? (
+                  <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-8 bg-[#faf7f2] border border-dashed border-[#e2d9cc] rounded-3xl opacity-60">
+                    <CalendarDays className="w-6 h-6 text-[#9a8a78] mb-3" />
+                    <p className="text-sm text-[#8a7a6a] font-mono uppercase tracking-widest">
+                      Selecciona una fecha en el calendario
+                    </p>
+                  </div>
+                ) : (
+                  <div className="space-y-4 animate-in fade-in duration-500">
+                    {/* Status Bar */}
+                    <div className="flex flex-col sm:flex-row items-center gap-4 p-6 bg-white rounded-3xl border border-[#e2d9cc] shadow-sm">
+                      <div className="flex items-center gap-3 text-[#2c2416] flex-1">
+                        <div className="text-left">
+                          <p className="text-[9px] uppercase tracking-widest font-bold text-[#9a8a78]">Desde</p>
+                          <p className="font-serif italic text-base">{format(range.from, "eee d MMM", { locale: es })}</p>
+                        </div>
+                        <div className="h-4 w-[1px] bg-[#e2d9cc]" />
+                        <div className="text-left">
+                          <p className="text-[9px] uppercase tracking-widest font-bold text-[#9a8a78]">Hasta</p>
+                          <p className="font-serif italic text-base">
+                            {range.to ? format(range.to, "eee d MMM", { locale: es }) : "—"}
+                          </p>
+                        </div>
+                      </div>
+                      
+                      {range.to && isValid && (
+                        <button
+                          ref={confirmButtonRef}
+                          onClick={handleContinue}
+                          className={`w-full sm:w-auto px-6 py-3 bg-gradient-to-r from-[#00628f] to-[#007cb3] text-white rounded-full flex items-center justify-center gap-3 group transition-all hover:scale-105 active:scale-95 ${shouldAnimate ? 'animate-confirm-pulse' : ''}`}
+                        >
+                          <span className="text-xs font-bold uppercase tracking-widest">Confirmar</span>
+                          <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                        </button>
+                      )}
+                    </div>
+
+                    {/* Feedback Layer (Alert or Price) — Same container height */}
+                    <div className="relative min-h-[64px]">
+                      {range.to && !isValid && !isBlocked && (
+                        <div className="absolute inset-0 flex items-center gap-3 px-6 py-4 bg-amber-50 border border-amber-100 rounded-2xl text-amber-800 text-sm animate-in zoom-in-95 duration-300">
+                          <AlertCircle className="w-4 h-4" />
+                          <p className="font-medium italic">La estadía mínima es de 2 noches</p>
+                        </div>
+                      )}
+
+                      {range.to && isBlocked && (
+                        <div className="absolute inset-0 flex items-center gap-3 px-6 py-4 bg-red-50 border border-red-100 rounded-2xl text-red-800 text-sm animate-in zoom-in-95 duration-300">
+                          <AlertCircle className="w-4 h-4" />
+                          <p className="font-medium italic">Estas fechas no están disponibles</p>
+                        </div>
+                      )}
+
+                      {range.to && isValid && (
+                        <div className="absolute inset-0 flex items-center justify-between px-8 py-4 bg-[#00628f]/[0.03] border border-[#00628f]/10 rounded-2xl animate-in fade-in duration-700">
+                          <div className="flex items-center gap-2 text-[#00628f]">
+                            <Info className="w-4 h-4" />
+                            <span className="text-[10px] font-bold uppercase tracking-widest">{nights} noches</span>
+                          </div>
+                          <p className="text-[#2c2416] text-xl font-serif">
+                            <span className="text-xs font-sans text-[#8a7a6a] mr-2">Estadía estimada</span>
+                            <span className="italic font-bold">${new Intl.NumberFormat('es-CL').format(totalPrice)}</span>
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+            </div>
+          </div>
+
+        </div>
       </div>
     </section>
   );
 };
+
+export default CoastalAvailability;

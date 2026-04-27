@@ -44,6 +44,8 @@ export interface GalleryData {
   featured: GallerySection;
   interiors: GallerySection;
   amenities: GallerySection;
+  interiorsLabel: string;
+  amenitiesLabel: string;
 }
 
 export interface SpecificationItem {
@@ -132,12 +134,12 @@ export const SITE_CONTENT: SiteContent = {
     ]
   },
   hero: {
-    headline: "Despierta Frente al Mar",
-    tagline: "79 m² · Primera línea · 2 dormitorios · Cuatro Esquinas, La Serena",
-    subheadline: "Solicita tu reserva — sin intermediarios.",
-    availabilityPrompt: "Consulta disponibilidad en segundos",
-    ctaText: "Solicitud de Reserva",
-    staySchedule: "Check-in desde 15:00 · Check-out hasta 11:00",
+    headline: "Despierta Frente al Mar en La Serena",
+    tagline: "Tu refugio perfecto frente al Pacífico",
+    subheadline: "",
+    availabilityPrompt: "",
+    ctaText: "Consultar disponibilidad",
+    staySchedule: "",
   },
   experience: {
     sectionTitle: "La Experiencia",
@@ -176,12 +178,14 @@ export const SITE_CONTENT: SiteContent = {
       subtitle: "Un lugar pensado para bajar el ritmo y sentirte cómodo desde el primer momento.",
       ctaText: "Solicitud de Reserva",
     },
+    interiorsLabel: "Ver el departamento completo",
+    amenitiesLabel: "Explorar amenidades",
   },
   specs: {
     sectionTitle: "Especificaciones",
     items: [
       { icon: "area", label: "79 m²", sublabel: "Superficie total" },
-      { icon: "bed", label: "2 Dormitorios, 1 Baño", sublabel: "Habitaciones" },
+      { icon: "bed", label: "2 Dormitorios, 2 Baños", sublabel: "Habitaciones" },
       { icon: "terrace", label: "Terraza", sublabel: "16.06 m²" },
       { icon: "car", label: "Estacionamiento", sublabel: "1 privado" },
     ],

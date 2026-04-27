@@ -33,33 +33,31 @@ export function HomeClient({ dynamicImages, property }: HomeClientProps) {
 
   return (
     <main className="min-h-screen bg-[#faf7f2] relative">
-      {/* 1. Hero — emotional first impression */}
+      {/* 🟢 ZONA 1 — IMPACTO (0–15% scroll) — Generate desire */}
       <CoastalHero 
-        onAction={() => openModal()} 
+        onAction={() => document.getElementById('availability')?.scrollIntoView({ behavior: 'smooth' })} 
         dynamicImages={dynamicImages} 
         property={property} 
       />
 
-      {/* 2. Availability — date range picker with Modal CTA */}
-      <CoastalAvailability onAction={(dates) => openModal(dates)} />
-
-      {/* 3. Experience — values and core selling points */}
-      <CoastalExperience />
-
-      {/* 4. Gallery — curated views */}
+      {/* 🟠 ZONA 2 — INMERSIÓN (15–35% scroll) — Visual connection */}
       <CoastalGallery onAction={() => openModal()} dynamicImages={dynamicImages} />
 
-      {/* 5. Discover La Serena — local context */}
+      {/* 🟡 ZONA 3 — SIGNIFICADO (35–55% scroll) — Rationalize desire */}
+      <CoastalExperience />
+
+      {/* 🟢 ZONA 4 — EXPANSIÓN (55–70% scroll) — Value expansion */}
       <CoastalDiscover />
 
-      {/* 6. Specifications — premium details */}
-      <CoastalSpecs />
-
-      {/* 7. Location + Testimonials */}
+      {/* 🔵 ZONA 5 — CONFIANZA (70–85% scroll) — Credibility & Certainty */}
       <CoastalLocationTestimonials onAction={() => openModal()} />
 
-      {/* 8. Footer CTA */}
-      <CoastalFooterCta onAction={() => openModal()} />
+      {/* 🟣 ZONA 6 — DECISIÓN (85–95% scroll) — Intent to action */}
+      <CoastalAvailability onAction={(dates) => openModal(dates)} />
+
+      {/* ⚫ ZONA 7 — CIERRE (95–100% scroll) — Specs & Final Confirmation */}
+      <CoastalSpecs />
+      <CoastalFooterCta onAction={() => document.getElementById('availability')?.scrollIntoView({ behavior: 'smooth' })} />
 
       {/* MODAL SYSTEM — Powered by Portals for absolute mobile stability */}
       <CoastalRequestModal 

@@ -3,7 +3,6 @@
 
 import React from "react";
 import Image from "next/image";
-import { Calendar } from "lucide-react";
 import { SITE_CONTENT } from "@/config/site-content";
 import { IMAGE_FALLBACKS } from "@/config/image-fallbacks";
 import { useConfig } from "@/components/providers/ConfigProvider";
@@ -45,90 +44,62 @@ export const CoastalHero: React.FC<CoastalHeroProps> = ({
     
     return (
         <section 
-            className={`relative z-10 w-full min-h-[560px] h-[78vh] md:h-[82vh] flex items-center justify-center text-center px-6 ${className}`}
+            className={`relative z-10 w-full min-h-[600px] h-[85vh] md:h-[90vh] flex flex-col items-center justify-center px-6 ${className}`}
         >
-            {/* Background image */}
+            {/* Background image - Edge-to-edge */}
             <div className="absolute inset-0 z-0 pointer-events-none">
                 {heroImage && heroImage.trim() !== "" ? (
                     <Image
                         src={heroImage}
                         alt="Vista principal del departamento frente al mar"
                         fill
-                        sizes="(max-width: 768px) 100vw, 100vw"
+                        sizes="100vw"
                         priority
                         placeholder="blur"
                         blurDataURL={blurDataURL}
                         className="object-cover object-center"
                     />
                 ) : (
-                    /* Fallback background when no hero image is defined */
-                    <div className="absolute inset-0 bg-[#2c2416] bg-opacity-90 flex items-center justify-center overflow-hidden">
-                        <div className="absolute inset-0 bg-gradient-to-br from-[#3a2e1e] to-[#1a1208] opacity-50" />
-                        {/* Abstract subtle pattern or blur effect could go here */}
+                    <div className="absolute inset-0 bg-[#001a2c] flex items-center justify-center overflow-hidden">
+                        <div className="absolute inset-0 bg-gradient-to-br from-[#002a46] to-[#000d16] opacity-50" />
                     </div>
                 )}
-                <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/30 to-black/80 md:from-[#3a2e1e]/40 md:via-transparent md:to-[#1a1208]/85" />
+                {/* Minimalist Overlay - Only dark at the base */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
             </div>
 
-            {/* Content block */}
-            <div className="relative z-30 max-w-2xl">
-                <p className="text-white/80 text-[10px] md:text-xs tracking-[0.3em] uppercase font-bold mb-5 drop-shadow-md">
+            {/* Content block - The Digital Sanctuary */}
+            <div className="relative z-30 max-w-4xl w-full flex flex-col items-center text-center mt-auto mb-16 md:my-auto">
+                {/* Emotional Subtitle */}
+                <p className="text-white/90 text-sm md:text-base font-light tracking-[0.15em] uppercase mb-4 drop-shadow-sm">
                     {SITE_CONTENT.hero.tagline}
                 </p>
 
+                {/* Dominant Headline */}
                 <h1
-                    className="text-4xl md:text-5xl lg:text-7xl font-serif font-normal text-white leading-tight tracking-tight mb-6 drop-shadow-2xl"
+                    className="text-5xl md:text-7xl lg:text-8xl font-serif text-white leading-[1.1] mb-8 drop-shadow-xl"
                     style={{ fontFamily: "var(--font-newsreader), serif" }}
                 >
                     {SITE_CONTENT.hero.headline}
                 </h1>
 
-                <div className="flex flex-col items-center gap-3 mb-10">
-                    <div className="flex items-baseline gap-3">
-                        <p className="text-white/90 text-base md:text-lg font-light tracking-wide drop-shadow-md">
-                            Desde <span className="font-semibold text-white">${displayPrice}</span> por noche
-                        </p>
-                        <span className="text-[8px] bg-white/10 text-white/80 border border-white/20 px-2 py-0.5 rounded-full uppercase tracking-widest font-bold">
-                            Mín. 2 noches
-                        </span>
-                    </div>
-                    <div className="h-px w-8 bg-[#00628f] opacity-50 my-1" />
-                    <p className="text-white/60 text-[9px] uppercase tracking-[0.25em] font-bold">
-                        {SITE_CONTENT.hero.availabilityPrompt}
-                    </p>
-                </div>
+                {/* Price - Less visual weight */}
+                <p className="text-white/70 text-lg md:text-xl font-light tracking-wide mb-12 drop-shadow-md">
+                    Desde <span className="text-white font-medium">${displayPrice}</span> por noche
+                </p>
 
-                <div className="flex flex-col items-center w-full max-w-sm mx-auto">
+                {/* Single Primary CTA */}
+                <div className="w-full sm:w-auto px-4">
                     <button
                         onClick={(e) => {
                             e.preventDefault();
                             onAction?.();
                         }}
-                        className="w-full sm:w-auto px-8 py-3 bg-gradient-to-br from-[#00628f] to-[#007cb3] text-white font-semibold tracking-[-0.01em] rounded-full transition-all duration-200 hover:brightness-110 cursor-pointer inline-flex items-center justify-center gap-3 group relative z-50"
+                        className="w-full sm:min-w-[280px] px-10 py-5 bg-gradient-to-r from-[#00628f] to-[#007cb3] text-white text-lg font-semibold rounded-full transition-all duration-300 hover:scale-105 active:scale-95 cursor-pointer shadow-none border-none"
                     >
-                        <span>Reservar ahora</span>
-                        <Calendar className="w-5 h-5 group-hover:rotate-12 transition-transform duration-200" fill="currentColor" />
+                        Explorar disponibilidad
                     </button>
-                    
-                    <div className="mt-4 flex flex-col items-center gap-1.5">
-                        <p className="text-white text-sm font-semibold flex items-center gap-2 drop-shadow-md">
-                            <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-                            Respuesta en menos de 1 hora
-                        </p>
-                        <p className="text-white/60 text-[9px] font-medium tracking-wider">
-                            {SITE_CONTENT.hero.staySchedule}
-                        </p>
-                        <p className="text-white/50 text-[10px] uppercase tracking-[0.2em] font-medium">
-                            Consulta disponibilidad sin compromiso
-                        </p>
-                    </div>
                 </div>
-
-                {SITE_CONTENT.hero.subheadline && (
-                    <p className="text-white/40 text-[10px] tracking-widest uppercase font-light mt-8">
-                        {SITE_CONTENT.hero.subheadline}
-                    </p>
-                )}
             </div>
         </section>
     );

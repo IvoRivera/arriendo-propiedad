@@ -4,6 +4,7 @@ import { calculateBookingPrice } from '@/lib/pricing';
 import { validateSchema } from '@/lib/schemaValidator';
 import { isValidStay } from '@/lib/dateUtils';
 import { SITE_CONTENT } from '@/config/site-content';
+import { supabasePublic } from '@/lib/supabase';
 import * as z from 'zod';
 
 const bookingSchema = z.object({
@@ -39,7 +40,35 @@ export async function POST(req: Request) {
       throw new Error(SITE_CONTENT.availability.labels.minStayWarning);
     }
 
-    // 3. Anti-Fiesta Scoring (Scoring Logic - moved from frontend for integrity)
+    // 3. Strict Overlap Detection (Source of Truth)
+    const { data: manualBlocks } = await supabaseService
+      .from('blocked_dates')
+      .select('start_date, end_date');
+
+    const { data: confirmedBookings } = await supabaseService
+      .from('booking_requests')
+      .select('check_in, check_out')
+      .eq('status', 'confirmed');
+
+    const blockedRanges = [
+      ...(manualBlocks || []).map(b => ({ from: b.start_date, to: b.end_date })),
+      ...(confirmedBookings || []).map(b => ({ from: b.check_in, to: b.check_out }))
+    ];
+
+    const start = new Date(`${validatedData.check_in}T12:00:00Z`);
+    const end = new Date(`${validatedData.check_out}T12:00:00Z`);
+    
+    for (const range of blockedRanges) {
+      const bStart = new Date(`${range.from}T12:00:00Z`);
+      const bEnd = new Date(`${range.to}T12:00:00Z`);
+      
+      // Overlap condition: (start <= bEnd) && (end >= bStart)
+      if (start <= bEnd && end >= bStart) {
+        throw new Error("Lo sentimos, algunas de las fechas seleccionadas ya no están disponibles.");
+      }
+    }
+
+    // 4. Anti-Fiesta Scoring (Scoring Logic - moved from frontend for integrity)
     const keywords = ["fiesta", "cumpleaños", "carrete", "celebración", "evento", "despedida", "juntada", "party", "reunión"];
     const reasonLower = validatedData.trip_reason.toLowerCase();
     let riskScore = "Bajo";
@@ -51,7 +80,7 @@ export async function POST(req: Request) {
       riskScore = "Medio";
     }
 
-    // 4. Insert into Supabase
+    // 5. Insert into Supabase
     const { data, error } = await supabaseService
       .from("booking_requests")
       .insert([{
@@ -70,7 +99,7 @@ export async function POST(req: Request) {
       throw new Error('Error al guardar la solicitud en la base de datos');
     }
 
-    // 5. Notify owner (Async - trigger and continue)
+    // 6. Notify owner (Async - trigger and continue)
     const protocol = process.env.NODE_ENV === 'development' ? 'http' : 'https';
     const host = req.headers.get('host');
     
