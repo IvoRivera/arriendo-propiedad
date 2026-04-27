@@ -15,26 +15,39 @@ import { SITE_CONTENT } from "@/config/site-content";
 import { getPriceForDate, type SeasonalPricing } from "@/lib/pricingClient";
 import { isValidStay, calculateNights, isRangeBlocked } from "@/lib/dateUtils";
 
-const countries = [
-  { name: "Chile", code: "+56", flag: "🇨🇱", placeholder: "9 1234 5678", pattern: /^9\d{8}$/, error: "Formato: 9 XXXX XXXX" },
-  { name: "Argentina", code: "+54", flag: "🇦🇷", placeholder: "9 11 1234-5678", pattern: /^\d{10,11}$/, error: "Número inválido" },
-  { name: "España", code: "+34", flag: "🇪🇸", placeholder: "600 000 000", pattern: /^[67]\d{8}$/, error: "Número inválido" },
-  { name: "Estados Unidos", code: "+1", flag: "🇺🇸", placeholder: "(555) 000-0000", pattern: /^\d{10}$/, error: "Número inválido" },
-  { name: "Perú", code: "+51", flag: "🇵🇪", placeholder: "900 000 000", pattern: /^9\d{8}$/, error: "Número inválido" },
-  { name: "Colombia", code: "+57", flag: "🇨🇴", placeholder: "300 000 0000", pattern: /^3\d{9}$/, error: "Número inválido" },
-  { name: "Brasil", code: "+55", flag: "🇧🇷", placeholder: "11 90000-0000", pattern: /^\d{10,11}$/, error: "Número inválido" },
-  { name: "Uruguay", code: "+598", flag: "🇺🇾", placeholder: "090 000 000", pattern: /^09\d{7}$/, error: "Número inválido" },
-  { name: "Otro", code: "+", flag: "🌐", placeholder: "Prefijo + Número", pattern: /^\d{7,15}$/, error: "Número inválido" },
-];
+// Simplified country logic - only used for reference if needed in future
+const CHILE_PREFIX = "+56";
+const CHILE_PHONE_LENGTH = 9;
 
 const normalizePhone = (code: string, number: string) => {
-  const cleaned = number.replace(/[^\d+]/g, "");
-  if (cleaned.startsWith("+")) return cleaned;
-  if (code === "+56" && cleaned.length === 9 && cleaned.startsWith("9")) {
-    return `+56${cleaned}`;
+  // Normalize prefix: ensure it starts with + and contains only digits
+  let cleanCode = code.replace(/[^\d+]/g, "");
+  if (cleanCode && !cleanCode.startsWith("+")) cleanCode = "+" + cleanCode;
+  
+  // Normalize number: digits only
+  let cleanNumber = number.replace(/[^\d]/g, "");
+  
+  // Avoid duplicate prefixes (e.g. if user pasted +56 in the number field)
+  const codeDigits = cleanCode.replace("+", "");
+  if (codeDigits && cleanNumber.startsWith(codeDigits)) {
+    cleanNumber = cleanNumber.substring(codeDigits.length);
   }
-  const prefix = code.startsWith("+") ? code : `+${code}`;
-  return `${prefix}${cleaned}`;
+  
+  // Format E.164: +[code][number]
+  return `${cleanCode}${cleanNumber}`;
+};
+
+const formatVisualPhone = (value: string, prefix: string) => {
+  const digits = value.replace(/[^\d]/g, "");
+  if (prefix === CHILE_PREFIX) {
+    // Formato Chile: 9 1234 5678
+    if (digits.length === 0) return "";
+    let res = digits.charAt(0);
+    if (digits.length > 1) res += " " + digits.slice(1, 5);
+    if (digits.length > 5) res += " " + digits.slice(5, 9);
+    return res;
+  }
+  return digits;
 };
 
 const calendarStyles = `
@@ -70,8 +83,8 @@ const calendarStyles = `
 const requestSchema = z.object({
   full_name: z.string().min(3, "El nombre debe tener al menos 3 caracteres"),
   email: z.string().email("Ingresa un correo electrónico válido"),
-  country_code: z.string(),
-  phone: z.string(),
+  country_code: z.string().min(2, "El prefijo es obligatorio"),
+  phone: z.string().min(1, "El teléfono es obligatorio"),
   guests_count: z.string().refine(val => {
     const num = parseInt(val.split(" ")[0]);
     return num >= 1 && num <= 4;
@@ -85,17 +98,46 @@ const requestSchema = z.object({
     errorMap: () => ({ message: "Debes aceptar las reglas de la casa" }),
   }),
 }).superRefine((data, ctx) => {
-  // 1. Phone Validation
-  const country = countries.find(c => c.code === data.country_code);
-  if (country) {
-    const cleaned = data.phone.replace(/[^\d]/g, "");
-    if (!country.pattern.test(cleaned)) {
+  // 1. Phone & Prefix Validation
+  const prefix = data.country_code;
+  const digits = data.phone.replace(/[^\d]/g, "");
+
+  // Required checks
+  if (!prefix.startsWith("+") || prefix.length < 2) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "El prefijo debe empezar con + (ej: +56)",
+      path: ["country_code"],
+    });
+  }
+
+  // Chile (+56) specific rules
+  if (prefix === CHILE_PREFIX) {
+    if (digits.length > CHILE_PHONE_LENGTH) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        message: country.error,
+        message: `El número para Chile debe tener máximo ${CHILE_PHONE_LENGTH} dígitos`,
+        path: ["phone"],
+      });
+    } else if (digits.length > 0 && !digits.startsWith("9")) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "El número debe empezar con 9",
+        path: ["phone"],
+      });
+    } else if (digits.length < CHILE_PHONE_LENGTH && digits.length > 0) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: `El número para Chile debe tener ${CHILE_PHONE_LENGTH} dígitos`,
         path: ["phone"],
       });
     }
+  } else if (digits.length > 0 && digits.length < 7) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "Número demasiado corto",
+      path: ["phone"],
+    });
   }
 
   // 2. Dates Validation
@@ -197,12 +239,12 @@ export const CoastalRequestModal: React.FC<CoastalRequestModalProps> = ({
     defaultValues: {
       guests_count: "2 Huéspedes",
       country_code: "+56",
+      phone: "",
       referred_by_relation: "Amigo/a",
     }
   });
 
   const selectedCountryCode = watch("country_code");
-  const selectedCountry = countries.find(c => c.code === selectedCountryCode) || countries[countries.length - 1];
 
   useEffect(() => {
     setMounted(true);
@@ -504,13 +546,45 @@ export const CoastalRequestModal: React.FC<CoastalRequestModalProps> = ({
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                   <div className="space-y-2">
                     <label className="text-[10px] uppercase tracking-widest text-[#9a8a78] font-bold ml-1">Teléfono Móvil</label>
-                    <div className="flex gap-2">
-                      <select {...register("country_code")} className="bg-white border border-[#e2d9cc] rounded-xl px-3 py-3.5 text-base sm:text-sm outline-none focus:border-[#00628f] min-w-[90px]">
-                        {countries.map(c => <option key={c.code} value={c.code}>{c.flag} {c.code}</option>)}
-                      </select>
-                      <input {...register("phone")} type="tel" placeholder={selectedCountry.placeholder} className="flex-1 min-w-0 bg-white border border-[#e2d9cc] rounded-xl px-4 py-3.5 text-base sm:text-sm focus:border-[#00628f] focus:ring-1 focus:ring-[#00628f] outline-none transition-all shadow-sm" />
+                    <div className="flex items-center gap-2 w-full">
+                      <input 
+                        {...register("country_code")} 
+                        placeholder="+56"
+                        maxLength={6}
+                        onInput={(e) => {
+                          let val = e.currentTarget.value;
+                          if (val && !val.startsWith("+")) val = "+" + val;
+                          e.currentTarget.value = "+" + val.replace(/[^\d]/g, "");
+                        }}
+                        className="w-[80px] flex-shrink-0 bg-white border border-[#e2d9cc] rounded-xl px-3 py-3.5 text-base sm:text-sm outline-none focus:border-[#00628f] shadow-sm"
+                      />
+
+                      <input 
+                        {...register("phone")} 
+                        type="tel" 
+                        placeholder={selectedCountryCode === CHILE_PREFIX ? "9 1234 5678" : "Número"} 
+                        maxLength={selectedCountryCode === CHILE_PREFIX ? 11 : 15} // 11 to account for 2 spaces in 9 digits
+                        onInput={(e) => {
+                          let val = e.currentTarget.value.replace(/[^\d]/g, "");
+                          const prefixDigits = selectedCountryCode?.replace("+", "") || "";
+                          
+                          // Handle duplicate prefix on paste
+                          if (prefixDigits && val.startsWith(prefixDigits) && val.length > prefixDigits.length) {
+                            val = val.substring(prefixDigits.length);
+                          }
+                          
+                          const formatted = formatVisualPhone(val, selectedCountryCode);
+                          e.currentTarget.value = formatted;
+                          setValue("phone", formatted, { shouldValidate: true });
+                        }}
+                        className="flex-1 min-w-0 bg-white border border-[#e2d9cc] rounded-xl px-4 py-3.5 text-base sm:text-sm focus:border-[#00628f] focus:ring-1 focus:ring-[#00628f] outline-none transition-all shadow-sm" 
+                      />
                     </div>
-                    {errors.phone && <p className="text-[10px] text-red-500 ml-1">{errors.phone.message}</p>}
+                    {(errors.phone || errors.country_code) && (
+                      <p className="text-[10px] text-red-500 ml-1">
+                        {errors.phone?.message || errors.country_code?.message}
+                      </p>
+                    )}
                   </div>
                   <div className="space-y-2">
                     <label className="text-[10px] uppercase tracking-widest text-[#9a8a78] font-bold ml-1">Huéspedes</label>
