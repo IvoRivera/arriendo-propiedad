@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseService } from '@/lib/supabaseServer';
-import { getPropertyBaseConfig, validatePropertyRentValue } from '@/lib/systemConfigServer';
+import { getLiveConfigServer, getPropertyBaseConfig, validatePropertyRentValue } from '@/lib/systemConfigServer';
 import { validateSchema } from '@/lib/schemaValidator';
 
 export async function GET(request: NextRequest) {
@@ -16,12 +16,17 @@ export async function GET(request: NextRequest) {
     const propertyId = searchParams.get('propertyId') || undefined;
     const propertySlug = searchParams.get('propertySlug') || undefined;
 
-    // 1. Fetch property base config
-    const property = await getPropertyBaseConfig(
-      propertyId ? { id: propertyId } : (propertySlug ? { slug: propertySlug } : undefined)
-    );
+    // 1. Fetch property base config and global system config
+    const [property, liveConfig] = await Promise.all([
+      getPropertyBaseConfig(
+        propertyId ? { id: propertyId } : (propertySlug ? { slug: propertySlug } : undefined)
+      ),
+      getLiveConfigServer()
+    ]);
     
-    const basePrice = validatePropertyRentValue(property?.base_price ?? 80000);
+    // Prioritize PROPERTY_RENT_VALUE from system_config (Admin Panel) as requested
+    const globalBasePrice = liveConfig['PROPERTY_RENT_VALUE'];
+    const basePrice = validatePropertyRentValue(globalBasePrice ?? property?.base_price ?? 80000);
 
     // 2. Fetch active and future seasonal prices (for this property OR global)
     let seasonalQuery = supabaseService

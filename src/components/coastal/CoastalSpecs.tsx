@@ -36,7 +36,7 @@ export const CoastalSpecs: React.FC<CoastalSpecsProps> = ({ className = "" }) =>
           {SITE_CONTENT.specs.items.map((item, index) => (
             // data-stitch-id: specs-item
             <div key={index} className="flex flex-col items-center text-center gap-3">
-              <div className="text-[#6b7c4a]">
+              <div className="text-[#00628f]">
                 {iconMap[item.icon]}
               </div>
               <div>

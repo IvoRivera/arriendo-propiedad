@@ -26,7 +26,7 @@ export const CoastalFooterCta: React.FC<CoastalFooterCtaProps> = ({ className = 
         </p>
         <button
           onClick={onAction}
-          className="inline-flex items-center gap-2.5 bg-[#6b7c4a] hover:bg-[#5a6a3d] text-white font-medium text-sm px-8 py-4 rounded-full transition-all duration-300 hover:shadow-md hover:-translate-y-0.5 cursor-pointer"
+          className="inline-flex items-center gap-2.5 bg-gradient-to-br from-[#00628f] to-[#007cb3] text-white font-semibold tracking-[-0.01em] px-8 py-3 rounded-full transition-all duration-200 hover:brightness-110 cursor-pointer"
         >
           <MessageCircle className="w-4 h-4" fill="currentColor" />
           <span>{SITE_CONTENT.footerCta.ctaText}</span>

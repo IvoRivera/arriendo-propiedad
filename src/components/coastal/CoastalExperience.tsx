@@ -43,7 +43,7 @@ export const CoastalExperience: React.FC<CoastalExperienceProps> = ({ className 
               key={index}
               className="flex flex-col items-center text-center px-8 py-8 md:py-4 border-b md:border-b-0 border-[#d4c9b8] last:border-b-0"
             >
-              <div className="text-[#6b7c4a] mb-5">
+              <div className="text-[#00628f] mb-5">
                 {iconMap[feature.icon]}
               </div>
               <h3

@@ -46,7 +46,7 @@ export const CoastalLocationTestimonials: React.FC<CoastalLocationTestimonialsPr
           </div>
 
           <div className="flex items-start gap-2 text-[#6b5d4f] text-sm">
-            <MapPin className="w-4 h-4 mt-0.5 text-[#6b7c4a] flex-shrink-0" />
+            <MapPin className="w-4 h-4 mt-0.5 text-[#00628f] flex-shrink-0" />
             <div>
               <p className="font-medium text-[#2c2416]">Edificio Playa Serena</p>
               <p className="font-light">{SITE_CONTENT.site.address}</p>
@@ -54,7 +54,7 @@ export const CoastalLocationTestimonials: React.FC<CoastalLocationTestimonialsPr
                 href={SITE_CONTENT.site.mapUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-[#6b7c4a] hover:underline text-xs mt-1 inline-block"
+                className="text-[#00628f] hover:underline text-xs mt-1 inline-block"
               >
                 Ver en Google Maps →
               </a>
@@ -103,7 +103,7 @@ export const CoastalLocationTestimonials: React.FC<CoastalLocationTestimonialsPr
           {/* Post-testimonials CTA — trust-based */}
           <button
             onClick={onAction}
-            className="inline-flex items-center gap-2.5 bg-[#6b7c4a] hover:bg-[#5a6a3d] text-white font-medium text-sm px-7 py-3.5 rounded-full transition-all duration-300 hover:shadow-md w-full justify-center md:w-auto cursor-pointer"
+            className="inline-flex items-center gap-2.5 bg-gradient-to-br from-[#00628f] to-[#007cb3] text-white font-semibold tracking-[-0.01em] px-8 py-3 rounded-full transition-all duration-200 hover:brightness-110 w-full justify-center md:w-auto cursor-pointer"
           >
             <MessageCircle className="w-4 h-4" fill="currentColor" />
             <span>{SITE_CONTENT.testimonials.ctaText}</span>

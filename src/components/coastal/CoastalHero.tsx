@@ -87,26 +87,40 @@ export const CoastalHero: React.FC<CoastalHeroProps> = ({
                     <p className="text-white/90 text-base md:text-lg font-light tracking-wide drop-shadow-md">
                         Desde <span className="font-semibold text-white">${displayPrice}</span> por noche
                     </p>
-                    <div className="h-px w-8 bg-[#6b7c4a] opacity-50 my-1" />
+                    <div className="h-px w-8 bg-[#00628f] opacity-50 my-1" />
                     <p className="text-white/60 text-[9px] uppercase tracking-[0.25em] font-bold">
                         {SITE_CONTENT.hero.availabilityPrompt}
                     </p>
                 </div>
 
-                <button
-                    onClick={(e) => {
-                        e.preventDefault();
-                        onAction?.();
-                    }}
-                    className="bg-[#6b7c4a] hover:bg-[#5a6a3d] text-white font-bold text-[11px] md:text-xs uppercase tracking-[0.2em] px-10 py-4.5 rounded-full transition-all duration-300 hover:shadow-2xl hover:-translate-y-0.5 active:scale-95 cursor-pointer inline-flex items-center gap-3 group relative z-50"
-                >
-                    <span>{getValue("hero_cta_text") || SITE_CONTENT.hero.ctaText}</span>
-                    <Calendar className="w-4 h-4" fill="currentColor" />
-                </button>
+                <div className="flex flex-col items-center w-full max-w-sm mx-auto">
+                    <button
+                        onClick={(e) => {
+                            e.preventDefault();
+                            onAction?.();
+                        }}
+                        className="w-full sm:w-auto px-8 py-3 bg-gradient-to-br from-[#00628f] to-[#007cb3] text-white font-semibold tracking-[-0.01em] rounded-full transition-all duration-200 hover:brightness-110 cursor-pointer inline-flex items-center justify-center gap-3 group relative z-50"
+                    >
+                        <span>Reservar ahora</span>
+                        <Calendar className="w-5 h-5 group-hover:rotate-12 transition-transform duration-200" fill="currentColor" />
+                    </button>
+                    
+                    <div className="mt-4 flex flex-col items-center gap-1.5">
+                        <p className="text-white text-sm font-semibold flex items-center gap-2 drop-shadow-md">
+                            <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+                            Respuesta en menos de 1 hora
+                        </p>
+                        <p className="text-white/50 text-[10px] uppercase tracking-[0.2em] font-medium">
+                            Consulta disponibilidad sin compromiso
+                        </p>
+                    </div>
+                </div>
 
-                <p className="text-white/60 text-xs tracking-wide font-light mt-6">
-                    {SITE_CONTENT.hero.subheadline}
-                </p>
+                {SITE_CONTENT.hero.subheadline && (
+                    <p className="text-white/40 text-[10px] tracking-widest uppercase font-light mt-8">
+                        {SITE_CONTENT.hero.subheadline}
+                    </p>
+                )}
             </div>
         </section>
     );

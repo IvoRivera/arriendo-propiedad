@@ -15,7 +15,7 @@ import { SITE_CONTENT } from "@/config/site-content";
 const calendarStyles = `
   .rdp {
     --rdp-cell-size: 40px;
-    --rdp-accent-color: #6b7c4a;
+    --rdp-accent-color: #00628f;
     --rdp-background-color: #f5f0e8;
     margin: 0;
   }
@@ -75,7 +75,7 @@ const DateInput: React.FC<DateInputProps> = ({
 
   useEffect(() => {
     if (!open) return;
-    
+
     const handleClickOutside = (event: MouseEvent) => {
       if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
         setOpen(false);
@@ -112,11 +112,9 @@ const DateInput: React.FC<DateInputProps> = ({
         type="button"
         onClick={handleToggle}
         disabled={disabled}
-        className={`w-full text-left flex flex-col gap-0.5 px-4 py-3.5 rounded-2xl border transition-all duration-300 bg-white relative z-30 outline-none ${
-          disabled ? "opacity-50 cursor-not-allowed bg-gray-50 border-[#e2d9cc]" : "cursor-pointer"
-        } ${
-          open ? "border-[#6b7c4a] shadow-[0_10px_25px_-5px_rgba(0,0,0,0.1)] ring-1 ring-[#6b7c4a]" : "border-[#e2d9cc] hover:border-[#b5a99a] shadow-sm"
-        }`}
+        className={`w-full text-left flex flex-col gap-0.5 px-4 py-3.5 rounded-2xl border transition-all duration-300 bg-white relative z-30 outline-none ${disabled ? "opacity-50 cursor-not-allowed bg-gray-50 border-[#e2d9cc]" : "cursor-pointer"
+          } ${open ? "border-[#00628f] shadow-[0_10px_25px_-5px_rgba(0,0,0,0.1)] ring-1 ring-[#00628f]" : "border-[#e2d9cc] hover:border-[#b5a99a] shadow-sm"
+          }`}
       >
         <span className="block text-[10px] uppercase tracking-[0.15em] font-bold text-[#9a8a78] pointer-events-none">
           {label}
@@ -126,9 +124,9 @@ const DateInput: React.FC<DateInputProps> = ({
             {selected ? formatDisplay(selected) : hint}
           </span>
           {selected ? (
-            <X 
-              className="w-3.5 h-3.5 text-[#b5a99a] hover:text-[#2c2416] pointer-events-auto" 
-              onClick={(e) => { e.stopPropagation(); onClear(); }} 
+            <X
+              className="w-3.5 h-3.5 text-[#b5a99a] hover:text-[#2c2416] pointer-events-auto"
+              onClick={(e) => { e.stopPropagation(); onClear(); }}
             />
           ) : (
             <ChevronDown className={`w-4 h-4 text-[#e2d9cc] transition-transform duration-300 ${open ? "rotate-180" : ""}`} />
@@ -151,16 +149,16 @@ const DateInput: React.FC<DateInputProps> = ({
               DayButton: (props) => {
                 const { day, modifiers, ...buttonProps } = props;
                 const { price, isSeasonal } = getPriceForDate(day.date, seasonalPrices || [], basePrice || 0);
-                const formatted = price >= 1000 
+                const formatted = price >= 1000
                   ? new Intl.NumberFormat('es-CL').format(Math.floor(price / 1000)) + 'k'
                   : price;
-                
+
                 return (
                   <button {...buttonProps}>
                     <div className="flex flex-col items-center justify-center w-full h-full pt-1">
                       <span className="text-[10px] font-medium leading-none">{day.date.getDate()}</span>
                       {price > 0 && (
-                        <span className={`text-[7px] mt-0.5 leading-none font-bold tracking-tighter ${isSeasonal ? 'text-[#6b7c4a]' : 'text-[#b5a99a]'}`}>
+                        <span className={`text-[7px] mt-0.5 leading-none font-bold tracking-tighter ${isSeasonal ? 'text-[#00628f]' : 'text-[#b5a99a]'}`}>
                           ${formatted}
                         </span>
                       )}
@@ -183,37 +181,37 @@ interface CoastalAvailabilityProps {
 export const CoastalAvailability: React.FC<CoastalAvailabilityProps> = ({ onAction }) => {
   const [checkIn, setCheckIn] = useState<Date | undefined>();
   const [checkOut, setCheckOut] = useState<Date | undefined>();
-  
+
   const [status, setStatus] = useState<'loading' | 'error' | 'success' | 'empty'>('loading');
   const [blockedDateStrings, setBlockedDateStrings] = useState<string[]>([]);
   const [seasonalPrices, setSeasonalPrices] = useState<any[]>([]);
   const [basePrice, setBasePrice] = useState<number>(0);
-  const [calculatedPricing, setCalculatedPricing] = useState<{totalPrice: number, breakdown: any[]} | null>(null);
+  const [calculatedPricing, setCalculatedPricing] = useState<{ totalPrice: number, breakdown: any[] } | null>(null);
 
   const fetchAvailability = useCallback(async () => {
     // Only set loading if we don't have data yet to prevent flashing on re-fetches
     setStatus('loading');
-    
+
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s timeout
-    
+
     try {
       // Use a timestamp to bust cache instead of 'no-store' which can hang in some mobile browsers
       const res = await fetch(`/api/public/availability?t=${Date.now()}`, {
         signal: controller.signal
       });
       clearTimeout(timeoutId);
-      
+
       if (!res.ok) {
         throw new Error(`Server responded with ${res.status}`);
       }
 
       const data = await res.json();
-      
+
       if (data.success && data.data) {
         const blocks: string[] = data.data.blockedDates || [];
         setBlockedDateStrings(blocks);
-        
+
         if (blocks.length > 365) {
           setStatus('empty');
         } else {
@@ -236,7 +234,7 @@ export const CoastalAvailability: React.FC<CoastalAvailabilityProps> = ({ onActi
 
   useEffect(() => {
     fetchAvailability();
-    
+
     // Fetch pricing data
     const fetchPricing = async () => {
       try {
@@ -258,7 +256,7 @@ export const CoastalAvailability: React.FC<CoastalAvailabilityProps> = ({ onActi
       const start = new Date(checkIn);
       const end = new Date(checkOut);
       const nightsCount = Math.round((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
-      
+
       if (nightsCount > 0) {
         let total = 0;
         const breakdown = [];
@@ -302,14 +300,14 @@ export const CoastalAvailability: React.FC<CoastalAvailabilityProps> = ({ onActi
 
   const isCheckOutDisabled = (date: Date) => {
     if (!checkIn) return isCheckInDisabled(date);
-    
+
     // Checkout must be after checkin
     if (date <= checkIn) return true;
 
     // Prevent checkout if there is a blocked date between checkIn and selected date
     const current = new Date(checkIn);
     current.setDate(current.getDate() + 1); // Start checking from day after check-in
-    
+
     // We check up to the day BEFORE the selected checkout date.
     // If a date is blocked, it means it's occupied. We cannot stay there.
     while (current < date) {
@@ -323,25 +321,25 @@ export const CoastalAvailability: React.FC<CoastalAvailabilityProps> = ({ onActi
     return false;
   };
 
-  const nights = checkIn && checkOut 
+  const nights = checkIn && checkOut
     ? Math.round((checkOut.getTime() - checkIn.getTime()) / (1000 * 60 * 60 * 24))
     : 0;
 
   return (
     <section id="booking" className="relative z-40 -mt-10 md:-mt-16 px-4 pb-12">
       <div className="max-w-4xl mx-auto relative">
-        
+
         {/* Loading Overlay Skeleton */}
         {status === 'loading' && (
           <div className="absolute inset-0 z-50 bg-white/50 backdrop-blur-[2px] rounded-[32px] flex items-center justify-center border border-white/60">
             <div className="flex flex-col items-center gap-3 bg-white/80 px-6 py-4 rounded-2xl shadow-sm border border-[#e2d9cc]/50">
-              <CalendarDays className="w-6 h-6 text-[#6b7c4a] animate-pulse" />
-              <span className="text-[10px] uppercase tracking-[0.2em] font-bold text-[#6b7c4a] animate-pulse">
+              <CalendarDays className="w-6 h-6 text-[#00628f] animate-pulse" />
+              <span className="text-[10px] uppercase tracking-[0.2em] font-bold text-[#00628f] animate-pulse">
                 Cargando {SITE_CONTENT.availability.title}...
               </span>
-              <button 
+              <button
                 onClick={(e) => { e.stopPropagation(); fetchAvailability(); }}
-                className="mt-1 text-[9px] text-[#9a8a78] hover:text-[#6b7c4a] underline underline-offset-2 transition-colors pointer-events-auto"
+                className="mt-1 text-[9px] text-[#9a8a78] hover:text-[#00628f] underline underline-offset-2 transition-colors pointer-events-auto"
               >
                 ¿Demora mucho? Reintentar
               </button>
@@ -355,7 +353,7 @@ export const CoastalAvailability: React.FC<CoastalAvailabilityProps> = ({ onActi
             <div className="flex flex-col items-center gap-3 text-center px-6">
               <AlertCircle className="w-8 h-8 text-rose-500" />
               <p className="text-sm font-medium text-rose-800">No pudimos cargar la disponibilidad.</p>
-              <button 
+              <button
                 onClick={fetchAvailability}
                 className="mt-2 flex items-center gap-2 bg-white px-4 py-2 rounded-xl text-rose-700 text-xs font-bold uppercase tracking-wider shadow-sm hover:bg-rose-50 border border-rose-200 transition-all"
               >
@@ -391,7 +389,7 @@ export const CoastalAvailability: React.FC<CoastalAvailabilityProps> = ({ onActi
               seasonalPrices={seasonalPrices}
               basePrice={basePrice}
             />
-            
+
             <DateInput
               id="checkout"
               label={SITE_CONTENT.availability.labels.checkOut}
@@ -409,7 +407,7 @@ export const CoastalAvailability: React.FC<CoastalAvailabilityProps> = ({ onActi
             <button
               onClick={handleAction}
               disabled={!checkIn || !checkOut || status !== 'success'}
-              className="md:w-auto w-full bg-[#6b7c4a] hover:bg-[#5a6a3d] disabled:bg-[#d4c9b8] text-white px-10 py-4.5 md:py-0 rounded-2xl md:rounded-xl font-bold text-[11px] uppercase tracking-[0.2em] transition-all shadow-lg active:scale-95 disabled:grayscale"
+              className="md:w-auto w-full bg-gradient-to-br from-[#00628f] to-[#007cb3] disabled:from-[#d4c9b8] disabled:to-[#d4c9b8] text-white px-10 py-4.5 md:py-0 rounded-full font-semibold text-[11px] uppercase tracking-[-0.01em] transition-all duration-200 hover:brightness-110 active:scale-95 disabled:grayscale"
             >
               {SITE_CONTENT.availability.ctaText}
             </button>
@@ -419,7 +417,7 @@ export const CoastalAvailability: React.FC<CoastalAvailabilityProps> = ({ onActi
         {nights > 0 && status === 'success' && (
           <div className="mt-6 text-center animate-in fade-in slide-in-from-top-2 duration-500">
             <div className="inline-flex flex-col items-center gap-1">
-              <p className="text-[10px] uppercase tracking-[0.25em] text-[#6b7c4a] font-bold">
+              <p className="text-[10px] uppercase tracking-[0.25em] text-[#00628f] font-bold">
                 {SITE_CONTENT.availability.labels.summary}
               </p>
               <div className="flex items-baseline gap-2">

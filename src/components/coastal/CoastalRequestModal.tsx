@@ -38,8 +38,7 @@ const normalizePhone = (code: string, number: string) => {
 
 const calendarStyles = `
   .rdp {
-    --rdp-cell-size: 38px;
-    --rdp-accent-color: #6b7c4a;
+    --rdp-accent-color: #00628f;
     --rdp-background-color: #f5f0e8;
     margin: 0;
   }
@@ -403,7 +402,7 @@ export const CoastalRequestModal: React.FC<CoastalRequestModalProps> = ({
             <div className="w-full animate-in fade-in slide-in-from-bottom-4 duration-500 relative">
               {isPreparing && (
                 <div className="absolute inset-0 z-50 bg-[#faf7f2] flex flex-col items-center justify-center gap-8 animate-in fade-in duration-500 rounded-[40px]">
-                  <div className="w-12 h-12 border-4 border-[#e2d9cc] border-t-[#6b7c4a] rounded-full animate-spin"></div>
+                  <div className="w-12 h-12 border-4 border-[#e2d9cc] border-t-[#00628f] rounded-full animate-spin"></div>
                   <div className="space-y-3 text-center px-6">
                     <h3 className="font-serif text-2xl sm:text-3xl text-[#2c2416] italic">Estamos preparando tu estadía...</h3>
                     <p className="text-[#6b5d4f] text-sm font-light">Verificando opciones frente al mar</p>
@@ -426,12 +425,12 @@ export const CoastalRequestModal: React.FC<CoastalRequestModalProps> = ({
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                   <div className="space-y-2">
                     <label className="text-[10px] uppercase tracking-widest text-[#9a8a78] font-bold ml-1">Nombre Completo</label>
-                    <input {...register("full_name")} type="text" className="w-full bg-white border border-[#e2d9cc] rounded-xl px-4 py-3.5 text-base sm:text-sm focus:border-[#6b7c4a] focus:ring-1 focus:ring-[#6b7c4a] outline-none transition-all shadow-sm" />
+                    <input {...register("full_name")} type="text" className="w-full bg-white border border-[#e2d9cc] rounded-xl px-4 py-3.5 text-base sm:text-sm focus:border-[#00628f] focus:ring-1 focus:ring-[#00628f] outline-none transition-all shadow-sm" />
                     {errors.full_name && <p className="text-[10px] text-red-500 ml-1">{errors.full_name.message}</p>}
                   </div>
                   <div className="space-y-2">
                     <label className="text-[10px] uppercase tracking-widest text-[#9a8a78] font-bold ml-1">Email</label>
-                    <input {...register("email")} type="email" className="w-full bg-white border border-[#e2d9cc] rounded-xl px-4 py-3.5 text-base sm:text-sm focus:border-[#6b7c4a] focus:ring-1 focus:ring-[#6b7c4a] outline-none transition-all shadow-sm" />
+                    <input {...register("email")} type="email" className="w-full bg-white border border-[#e2d9cc] rounded-xl px-4 py-3.5 text-base sm:text-sm focus:border-[#00628f] focus:ring-1 focus:ring-[#00628f] outline-none transition-all shadow-sm" />
                     {errors.email && <p className="text-[10px] text-red-500 ml-1">{errors.email.message}</p>}
                   </div>
                 </div>
@@ -440,17 +439,17 @@ export const CoastalRequestModal: React.FC<CoastalRequestModalProps> = ({
                   <div className="space-y-2">
                     <label className="text-[10px] uppercase tracking-widest text-[#9a8a78] font-bold ml-1">Teléfono Móvil</label>
                     <div className="flex gap-2">
-                      <select {...register("country_code")} className="bg-white border border-[#e2d9cc] rounded-xl px-3 py-3.5 text-base sm:text-sm outline-none focus:border-[#6b7c4a] min-w-[90px]">
+                      <select {...register("country_code")} className="bg-white border border-[#e2d9cc] rounded-xl px-3 py-3.5 text-base sm:text-sm outline-none focus:border-[#00628f] min-w-[90px]">
                         {countries.map(c => <option key={c.code} value={c.code}>{c.flag} {c.code}</option>)}
                       </select>
-                      <input {...register("phone")} type="tel" placeholder={selectedCountry.placeholder} className="flex-1 min-w-0 bg-white border border-[#e2d9cc] rounded-xl px-4 py-3.5 text-base sm:text-sm focus:border-[#6b7c4a] focus:ring-1 focus:ring-[#6b7c4a] outline-none transition-all shadow-sm" />
+                      <input {...register("phone")} type="tel" placeholder={selectedCountry.placeholder} className="flex-1 min-w-0 bg-white border border-[#e2d9cc] rounded-xl px-4 py-3.5 text-base sm:text-sm focus:border-[#00628f] focus:ring-1 focus:ring-[#00628f] outline-none transition-all shadow-sm" />
                     </div>
                     {errors.phone && <p className="text-[10px] text-red-500 ml-1">{errors.phone.message}</p>}
                   </div>
                   <div className="space-y-2">
                     <label className="text-[10px] uppercase tracking-widest text-[#9a8a78] font-bold ml-1">Huéspedes</label>
                     <div className="relative">
-                      <select {...register("guests_count")} className="w-full bg-white border border-[#e2d9cc] rounded-xl px-4 py-3.5 text-base sm:text-sm outline-none focus:border-[#6b7c4a] shadow-sm appearance-none cursor-pointer">
+                      <select {...register("guests_count")} className="w-full bg-white border border-[#e2d9cc] rounded-xl px-4 py-3.5 text-base sm:text-sm outline-none focus:border-[#00628f] shadow-sm appearance-none cursor-pointer">
                         <option value="1 Huésped">1 Huésped</option>
                         <option value="2 Huéspedes">2 Huéspedes</option>
                         <option value="3 Huéspedes">3 Huéspedes</option>
@@ -470,7 +469,7 @@ export const CoastalRequestModal: React.FC<CoastalRequestModalProps> = ({
                       <button 
                         type="button"
                         onClick={() => setActivePicker(activePicker === 'check_in' ? null : 'check_in')}
-                        className="w-full bg-white border border-[#e2d9cc] rounded-xl px-4 py-3.5 text-base sm:text-sm text-left outline-none focus:border-[#6b7c4a] shadow-sm flex items-center justify-between"
+                        className="w-full bg-white border border-[#e2d9cc] rounded-xl px-4 py-3.5 text-base sm:text-sm text-left outline-none focus:border-[#00628f] shadow-sm flex items-center justify-between"
                       >
                         <span className={checkInValue ? "text-[#2c2416]" : "text-[#b5a99a]"}>
                           {checkInValue ? format(parseISO(checkInValue), "PPP", { locale: es }) : "Seleccionar fecha"}
@@ -508,7 +507,7 @@ export const CoastalRequestModal: React.FC<CoastalRequestModalProps> = ({
                                      <div className="flex flex-col items-center justify-center w-full h-full pt-1">
                                      <span className="text-[10px] font-medium leading-none">{date.getDate()}</span>
                                      {price > 0 && (
-                                       <span className={`text-[7px] mt-0.5 leading-none font-bold tracking-tighter ${isSeasonal ? 'text-[#6b7c4a]' : 'text-[#b5a99a]'}`}>
+                                       <span className={`text-[7px] mt-0.5 leading-none font-bold tracking-tighter ${isSeasonal ? 'text-[#00628f]' : 'text-[#b5a99a]'}`}>
                                          ${formatted}
                                        </span>
                                      )}
@@ -530,7 +529,7 @@ export const CoastalRequestModal: React.FC<CoastalRequestModalProps> = ({
                        <button 
                          type="button"
                          onClick={() => setActivePicker(activePicker === 'check_out' ? null : 'check_out')}
-                         className="w-full bg-white border border-[#e2d9cc] rounded-xl px-4 py-3.5 text-base sm:text-sm text-left outline-none focus:border-[#6b7c4a] shadow-sm flex items-center justify-between"
+                         className="w-full bg-white border border-[#e2d9cc] rounded-xl px-4 py-3.5 text-base sm:text-sm text-left outline-none focus:border-[#00628f] shadow-sm flex items-center justify-between"
                        >
                          <span className={checkOutValue ? "text-[#2c2416]" : "text-[#b5a99a]"}>
                            {checkOutValue ? format(parseISO(checkOutValue), "PPP", { locale: es }) : "Seleccionar fecha"}
@@ -569,7 +568,7 @@ export const CoastalRequestModal: React.FC<CoastalRequestModalProps> = ({
                                      <div className="flex flex-col items-center justify-center w-full h-full pt-1">
                                      <span className="text-[10px] font-medium leading-none">{date.getDate()}</span>
                                      {price > 0 && (
-                                       <span className={`text-[7px] mt-0.5 leading-none font-bold tracking-tighter ${isSeasonal ? 'text-[#6b7c4a]' : 'text-[#b5a99a]'}`}>
+                                       <span className={`text-[7px] mt-0.5 leading-none font-bold tracking-tighter ${isSeasonal ? 'text-[#00628f]' : 'text-[#b5a99a]'}`}>
                                          ${formatted}
                                        </span>
                                      )}
@@ -588,18 +587,18 @@ export const CoastalRequestModal: React.FC<CoastalRequestModalProps> = ({
 
                 <div className="space-y-2">
                   <label className="text-[10px] uppercase tracking-widest text-[#9a8a78] font-bold ml-1">Propósito del Viaje</label>
-                  <textarea {...register("trip_reason")} placeholder="Cuéntanos un poco más sobre tu estadía..." className="w-full bg-white border border-[#e2d9cc] rounded-xl px-4 py-3.5 text-base sm:text-sm outline-none focus:border-[#6b7c4a] focus:ring-1 focus:ring-[#6b7c4a] transition-all shadow-sm" rows={3}></textarea>
+                  <textarea {...register("trip_reason")} placeholder="Cuéntanos un poco más sobre tu estadía..." className="w-full bg-white border border-[#e2d9cc] rounded-xl px-4 py-3.5 text-base sm:text-sm outline-none focus:border-[#00628f] focus:ring-1 focus:ring-[#00628f] transition-all shadow-sm" rows={3}></textarea>
                   {errors.trip_reason && <p className="text-[10px] text-red-500 ml-1">{errors.trip_reason.message}</p>}
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                   <div className="space-y-2">
                     <label className="text-[10px] uppercase tracking-widest text-[#9a8a78] font-bold ml-1">Recomendado por</label>
-                    <input {...register("referred_by_name")} type="text" placeholder="Nombre" className="w-full bg-white border border-[#e2d9cc] rounded-xl px-4 py-3.5 text-base sm:text-sm outline-none focus:border-[#6b7c4a] shadow-sm" />
+                    <input {...register("referred_by_name")} type="text" placeholder="Nombre" className="w-full bg-white border border-[#e2d9cc] rounded-xl px-4 py-3.5 text-base sm:text-sm outline-none focus:border-[#00628f] shadow-sm" />
                   </div>
                   <div className="space-y-2">
                     <label className="text-[10px] uppercase tracking-widest text-[#9a8a78] font-bold ml-1">Relación</label>
-                    <select {...register("referred_by_relation")} className="w-full bg-white border border-[#e2d9cc] rounded-xl px-4 py-3.5 text-base sm:text-sm outline-none focus:border-[#6b7c4a] shadow-sm">
+                    <select {...register("referred_by_relation")} className="w-full bg-white border border-[#e2d9cc] rounded-xl px-4 py-3.5 text-base sm:text-sm outline-none focus:border-[#00628f] shadow-sm">
                       <option value="Amigo/a">Amigo/a</option>
                       <option value="Familiar">Familiar</option>
                       <option value="Pareja">Pareja</option>
@@ -616,7 +615,7 @@ export const CoastalRequestModal: React.FC<CoastalRequestModalProps> = ({
                         <h4 className="text-[10px] uppercase tracking-[0.25em] font-bold text-[#2c2416]">Resumen de Estancia</h4>
                         <p className="text-[9px] text-[#9a8a78] uppercase tracking-widest mt-0.5">Valores finales por noche</p>
                       </div>
-                      <span className="bg-[#6b7c4a]/10 text-[#6b7c4a] px-3 py-1 rounded-full text-[9px] font-bold uppercase tracking-widest border border-[#6b7c4a]/20">
+                      <span className="bg-[#00628f]/10 text-[#00628f] px-3 py-1 rounded-full text-[9px] font-bold uppercase tracking-widest border border-[#00628f]/20">
                         {calculatedPricing.breakdown.length} noches
                       </span>
                     </div>
@@ -634,19 +633,19 @@ export const CoastalRequestModal: React.FC<CoastalRequestModalProps> = ({
                               </span>
                             )}
                           </div>
-                          <span className="text-sm font-serif italic text-[#2c2416] group-hover:text-[#6b7c4a] transition-colors">
+                          <span className="text-sm font-serif italic text-[#2c2416] group-hover:text-[#00628f] transition-colors">
                             ${new Intl.NumberFormat('es-CL').format(day.price)}
                           </span>
                         </div>
                       ))}
                     </div>
                     
-                    <div className="flex justify-between items-end pt-5 border-t border-[#6b7c4a]/10">
+                    <div className="flex justify-between items-end pt-5 border-t border-[#00628f]/10">
                       <div className="space-y-0.5">
                         <span className="block text-[9px] uppercase tracking-widest text-[#9a8a78] font-bold">Total Estimado</span>
                         <span className="text-xs text-[#6b5d4f] font-light italic">Sujeto a confirmación</span>
                       </div>
-                      <span className="text-3xl font-serif italic text-[#6b7c4a] leading-none tracking-tight">
+                      <span className="text-3xl font-serif italic text-[#00628f] leading-none tracking-tight">
                         ${new Intl.NumberFormat('es-CL').format(calculatedPricing.totalPrice)}
                       </span>
                     </div>
@@ -655,13 +654,13 @@ export const CoastalRequestModal: React.FC<CoastalRequestModalProps> = ({
 
                 <div className="space-y-4 bg-white/50 border border-[#e2d9cc] rounded-2xl p-6 shadow-sm">
                   <div className="flex items-center gap-2 mb-2">
-                    <ShieldCheck className="w-5 h-5 text-[#6b7c4a]" />
+                    <ShieldCheck className="w-5 h-5 text-[#00628f]" />
                     <h4 className="text-xs uppercase tracking-widest font-bold text-[#2c2416]">Reglas de la Casa</h4>
                   </div>
                   <ul className="space-y-2.5">
                     {SITE_CONTENT.site.houseRules.map((rule, idx) => (
                       <li key={idx} className="flex gap-3 text-xs text-[#6b5d4f] leading-relaxed">
-                        <span className="text-[#6b7c4a] mt-0.5">•</span>
+                        <span className="text-[#00628f] mt-0.5">•</span>
                         {rule}
                       </li>
                     ))}
@@ -674,7 +673,7 @@ export const CoastalRequestModal: React.FC<CoastalRequestModalProps> = ({
                           {...register("rules_accepted")}
                           className="peer sr-only"
                         />
-                        <div className="w-5 h-5 border-2 border-[#e2d9cc] rounded-md transition-all group-hover:border-[#6b7c4a] peer-checked:bg-[#6b7c4a] peer-checked:border-[#6b7c4a]"></div>
+                        <div className="w-5 h-5 border-2 border-[#e2d9cc] rounded-md transition-all group-hover:border-[#00628f] peer-checked:bg-[#00628f] peer-checked:border-[#00628f]"></div>
                         <CheckCircle2 className="absolute inset-0 w-5 h-5 text-white scale-0 transition-transform peer-checked:scale-75" />
                       </div>
                       <span className="text-xs text-[#2c2416] font-medium select-none">
@@ -689,7 +688,7 @@ export const CoastalRequestModal: React.FC<CoastalRequestModalProps> = ({
                   <button 
                     type="submit" 
                     disabled={!isValid || isSubmitting} 
-                    className="w-full py-4 bg-[#6b7c4a] text-white rounded-full font-bold uppercase tracking-[0.25em] text-[12px] hover:bg-[#5a6a3d] transition-all shadow-xl active:scale-[0.97] disabled:opacity-50 disabled:grayscale flex items-center justify-center gap-3"
+                    className="w-full py-4 bg-gradient-to-br from-[#00628f] to-[#007cb3] text-white rounded-full font-semibold uppercase tracking-[-0.01em] text-[12px] transition-all duration-200 hover:brightness-110 active:scale-[0.97] disabled:opacity-50 disabled:grayscale flex items-center justify-center gap-3"
                   >
                     {isSubmitting ? "Procesando solicitud..." : "Enviar Postulación"}
                   </button>
@@ -702,7 +701,7 @@ export const CoastalRequestModal: React.FC<CoastalRequestModalProps> = ({
             </div>
           ) : (
             <div className="py-20 text-center flex flex-col items-center gap-8 animate-in fade-in zoom-in-95 duration-500">
-              <div className="w-24 h-24 bg-[#6b7c4a]/10 rounded-full flex items-center justify-center text-[#6b7c4a] mb-2 shadow-inner">
+              <div className="w-24 h-24 bg-[#00628f]/10 rounded-full flex items-center justify-center text-[#00628f] mb-2 shadow-inner">
                 <CheckCircle2 className="w-12 h-12" />
               </div>
               <div className="space-y-3">
@@ -713,7 +712,7 @@ export const CoastalRequestModal: React.FC<CoastalRequestModalProps> = ({
               </div>
               <button 
                 onClick={onClose} 
-                className="mt-4 px-10 py-3 border border-[#6b7c4a] text-[11px] uppercase tracking-widest font-bold text-[#6b7c4a] rounded-full hover:bg-[#6b7c4a] hover:text-white transition-all active:scale-95"
+                className="mt-4 px-10 py-3 border border-[#00628f] text-[11px] uppercase tracking-widest font-bold text-[#00628f] rounded-full hover:bg-[#00628f] hover:text-white transition-all active:scale-95"
               >
                 Cerrar Ventana
               </button>

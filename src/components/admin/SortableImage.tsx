@@ -12,9 +12,10 @@ interface SortableImageProps {
   onDelete: (id: string) => void;
   onUpdate: (id: string, payload: Partial<DbImage>) => Promise<void>;
   isDeleting: boolean;
+  isOverlay?: boolean;
 }
 
-export function SortableImage({ id, image, onDelete, onUpdate, isDeleting }: SortableImageProps) {
+export function SortableImage({ id, image, onDelete, onUpdate, isDeleting, isOverlay }: SortableImageProps) {
   const {
     attributes,
     listeners,
@@ -22,18 +23,23 @@ export function SortableImage({ id, image, onDelete, onUpdate, isDeleting }: Sor
     transform,
     transition,
     isDragging
-  } = useSortable({ id });
+  } = useSortable({ 
+    id,
+    disabled: isOverlay
+  });
 
   const [isEditing, setIsEditing] = useState(false);
   const [editAlt, setEditAlt] = useState(image.metadata?.alt || '');
   const [editCategory, setEditCategory] = useState<ImageCategory>(image.category);
+  const [editPriority, setEditPriority] = useState(image.priority);
   const [isUpdating, setIsUpdating] = useState(false);
 
   const style = {
     transform: CSS.Transform.toString(transform),
-    transition,
-    zIndex: isDragging ? 50 : 'auto',
-    opacity: isDragging ? 0.5 : 1,
+    transition: transition || 'transform 200ms ease',
+    zIndex: isDragging ? 0 : isOverlay ? 100 : 'auto',
+    opacity: isDragging ? 0.3 : 1,
+    cursor: isOverlay ? 'grabbing' : 'inherit',
   };
 
   const handleSave = async () => {
@@ -41,6 +47,7 @@ export function SortableImage({ id, image, onDelete, onUpdate, isDeleting }: Sor
     try {
       await onUpdate(image.id, {
         category: editCategory,
+        priority: Number(editPriority),
         metadata: { ...image.metadata, alt: editAlt }
       });
       setIsEditing(false);
@@ -55,6 +62,7 @@ export function SortableImage({ id, image, onDelete, onUpdate, isDeleting }: Sor
   const handleCancel = () => {
     setEditAlt(image.metadata?.alt || '');
     setEditCategory(image.category);
+    setEditPriority(image.priority);
     setIsEditing(false);
   };
 
@@ -62,7 +70,9 @@ export function SortableImage({ id, image, onDelete, onUpdate, isDeleting }: Sor
     <div 
       ref={setNodeRef} 
       style={style} 
-      className="group relative bg-white border border-[#e2d9cc] rounded-3xl overflow-hidden shadow-sm hover:shadow-md transition-all flex flex-col"
+      className={`group relative bg-white border border-[#e2d9cc] rounded-3xl overflow-hidden transition-all flex flex-col ${
+        isOverlay ? 'shadow-2xl ring-2 ring-[#6b7c4a]/20 scale-[1.02]' : 'shadow-sm hover:shadow-md'
+      }`}
     >
       <div className="aspect-[4/3] relative overflow-hidden bg-gray-100 flex items-center justify-center shrink-0">
         {image?.url?.trim() ? (
@@ -76,13 +86,16 @@ export function SortableImage({ id, image, onDelete, onUpdate, isDeleting }: Sor
         )}
         
         {/* Drag Handle Overlay */}
-        <div 
-          {...attributes} 
-          {...listeners}
-          className="absolute top-2 left-2 p-2 bg-white/90 backdrop-blur-sm rounded-xl border border-[#e2d9cc] text-[#9a8a78] cursor-grab active:cursor-grabbing opacity-0 group-hover:opacity-100 transition-opacity shadow-sm"
-        >
-          <GripVertical className="w-4 h-4" />
-        </div>
+        {!isOverlay && (
+          <div 
+            {...attributes} 
+            {...listeners}
+            className="absolute top-2 left-2 p-2 bg-white/90 backdrop-blur-sm rounded-xl border border-[#e2d9cc] text-[#9a8a78] cursor-grab active:cursor-grabbing opacity-0 group-hover:opacity-100 transition-opacity shadow-sm"
+            style={{ touchAction: 'none' }}
+          >
+            <GripVertical className="w-4 h-4" />
+          </div>
+        )}
 
         <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-all duration-300 pointer-events-none" />
       </div>
@@ -102,6 +115,15 @@ export function SortableImage({ id, image, onDelete, onUpdate, isDeleting }: Sor
                 <option value="featured">Destacadas</option>
                 <option value="hero">Imagen Hero</option>
               </select>
+            </div>
+            <div className="space-y-1">
+              <label className="text-[10px] font-bold text-[#9a8a78] uppercase tracking-wider">Orden (Prioridad)</label>
+              <input 
+                type="number" 
+                value={editPriority}
+                onChange={(e) => setEditPriority(parseInt(e.target.value) || 0)}
+                className="w-full bg-[#faf7f2] border border-[#e2d9cc] rounded-lg px-2 py-1.5 text-xs text-[#2c2416] focus:outline-none focus:ring-1 focus:ring-[#6b7c4a]"
+              />
             </div>
             <div className="space-y-1">
               <label className="text-[10px] font-bold text-[#9a8a78] uppercase tracking-wider">Texto Alternativo (Alt)</label>

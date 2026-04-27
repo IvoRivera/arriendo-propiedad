@@ -7,12 +7,16 @@ import { Trash2, Plus, Loader2, Image as ImageIcon, AlertCircle, Info } from 'lu
 import { ImageUploader } from './ImageUploader';
 import { SortableImage } from './SortableImage';
 import {
-  DndContext, 
+  DndContext,
   closestCenter,
   PointerSensor,
+  TouchSensor,
   useSensor,
   useSensors,
+  DragStartEvent,
   DragEndEvent,
+  DragOverlay,
+  defaultDropAnimationSideEffects,
 } from '@dnd-kit/core';
 import {
   arrayMove,
@@ -27,11 +31,18 @@ export function ImageManager() {
   const [error, setError] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [isReordering, setIsReordering] = useState(false);
+  const [activeId, setActiveId] = useState<string | null>(null);
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
         distance: 8,
+      },
+    }),
+    useSensor(TouchSensor, {
+      activationConstraint: {
+        delay: 250,
+        tolerance: 5,
       },
     })
   );
@@ -78,61 +89,127 @@ export function ImageManager() {
 
   const handleUpdate = async (id: string, payload: Partial<DbImage>) => {
     try {
-      // If category is changing, we should put it at the end of the new category list
-      // to avoid breaking the priority order of the new category.
+      console.log(`[Update] Image: ${id}`, payload);
+      
+      const currentImage = images.find(img => img.id === id);
+      if (!currentImage) return;
+
       let finalPayload = { ...payload };
-      if (payload.category) {
+      let imagesToPersist: DbImage[] = [];
+      
+      // CASO 1: Cambio de categoría (sin especificar prioridad manual)
+      if (payload.category && payload.category !== currentImage.category && payload.priority === undefined) {
         const targetCategoryImages = images.filter(img => img.category === payload.category);
         const maxPriority = targetCategoryImages.reduce((max, img) => Math.max(max, img.priority), 0);
         finalPayload.priority = maxPriority + 1;
-      }
+        
+        // Simplemente actualizamos este registro
+        await ImageService.updateImage(id, finalPayload);
+        
+        setImages(prev => {
+          const updated = prev.map(img => img.id === id ? { ...img, ...finalPayload } as DbImage : img);
+          return [...updated].sort((a, b) => a.priority - b.priority);
+        });
+      } 
+      // CASO 2: Cambio de prioridad manual (Smart Shift) dentro de la misma categoría
+      else if (payload.priority !== undefined && payload.priority !== currentImage.priority && (!payload.category || payload.category === currentImage.category)) {
+        const categoryKey = currentImage.category;
+        const catImages = images
+          .filter(img => img.category === categoryKey)
+          .sort((a, b) => a.priority - b.priority);
 
-      await ImageService.updateImage(id, finalPayload);
-      
-      // Optimistic update
-      setImages(prev => prev.map(img => img.id === id ? { ...img, ...finalPayload } as DbImage : img));
+        const oldIndex = catImages.findIndex(img => img.id === id);
+        // Aseguramos que el nuevo índice esté dentro de los límites
+        const newIndex = Math.max(0, Math.min(catImages.length - 1, payload.priority - 1));
+
+        if (oldIndex !== -1) {
+          const movedImages = arrayMove(catImages, oldIndex, newIndex);
+          const reorderedCat = movedImages.map((img, idx) => ({
+            ...img,
+            priority: idx + 1
+          }));
+
+          imagesToPersist = reorderedCat;
+          
+          // Optimistic update
+          const otherImages = images.filter(img => img.category !== categoryKey);
+          setImages([...otherImages, ...reorderedCat].sort((a, b) => a.priority - b.priority));
+          
+          await ImageService.reorderImages(reorderedCat);
+        }
+      }
+      // CASO 3: Actualización normal (alt text, etc.)
+      else {
+        await ImageService.updateImage(id, finalPayload);
+        setImages(prev => prev.map(img => img.id === id ? { ...img, ...finalPayload } as DbImage : img));
+      }
       
       await revalidateImages();
     } catch (err) {
       console.error('Error updating image:', err);
-      throw err;
+      alert('Error al actualizar la imagen.');
+      fetchImages(); // Rollback
     }
+  };
+
+  const handleDragStart = (event: DragStartEvent) => {
+    setActiveId(event.active.id as string);
   };
 
   const handleDragEnd = async (event: DragEndEvent, categoryKey: ImageCategory) => {
     const { active, over } = event;
+    setActiveId(null);
 
     if (over && active.id !== over.id) {
-      const catImages = images.filter(img => img.category === categoryKey);
+      // 1. Obtener imágenes de la categoría y ASEGURAR que estén ordenadas por prioridad
+      // Esto es CRÍTICO: si el array no está ordenado por prioridad, el reordenamiento visual
+      // no coincidirá con el reordenamiento de los datos.
+      const catImages = images
+        .filter(img => img.category === categoryKey)
+        .sort((a, b) => a.priority - b.priority);
+      
+      console.log(`[DragEnd] Categoría: ${categoryKey}`);
+      console.log('Orden antes:', catImages.map(img => ({ id: img.id.substring(0, 4), priority: img.priority })));
+
       const oldIndex = catImages.findIndex(img => img.id === active.id);
       const newIndex = catImages.findIndex(img => img.id === over.id);
 
-      const reorderedCat = arrayMove(catImages, oldIndex, newIndex).map((img, idx) => ({
+      if (oldIndex === -1 || newIndex === -1) return;
+
+      // 2. Reordenar usando la función pura arrayMove
+      const movedImages = arrayMove(catImages, oldIndex, newIndex);
+
+      // 3. Recalcular 'priority' para TODOS los elementos (index + 1)
+      const reorderedCat = movedImages.map((img, idx) => ({
         ...img,
         priority: idx + 1
       }));
       
-      const finalImages: DbImage[] = [];
-      const categoryKeys: ImageCategory[] = ['hero', 'property', 'amenities', 'featured'];
-      
-      categoryKeys.forEach(key => {
-        if (key === categoryKey) {
-          finalImages.push(...reorderedCat);
-        } else {
-          finalImages.push(...images.filter(img => img.category === key));
-        }
+      console.log('Orden después:', reorderedCat.map(img => ({ id: img.id.substring(0, 4), priority: img.priority })));
+
+      // 4. Actualizar estado local inmediatamente (Optimistic Update)
+      const otherImages = images.filter(img => img.category !== categoryKey);
+      const finalImages = [...otherImages, ...reorderedCat].sort((a, b) => {
+        // Mantenemos el estado global ordenado
+        if (a.category !== b.category) return 0; // Agrupados por categoría naturalmente
+        return a.priority - b.priority;
       });
 
       setImages(finalImages);
 
+      // 5. Persistir en backend
       try {
         setIsReordering(true);
+        
+        // Enviamos el payload completo para cumplir con restricciones NOT NULL de upsert
+        console.log('Payload a backend:', reorderedCat.map(img => ({ id: img.id.substring(0, 4), priority: img.priority })));
+        
         await ImageService.reorderImages(reorderedCat);
         await revalidateImages();
       } catch (err) {
         console.error('Error persisting order:', err);
-        alert('No se pudo guardar el nuevo orden.');
-        fetchImages(); 
+        alert('No se pudo guardar el nuevo orden. Reintentando cargar datos...');
+        fetchImages(); // Rollback en caso de error
       } finally {
         setIsReordering(false);
       }
@@ -196,6 +273,7 @@ export function ImageManager() {
               <DndContext
                 sensors={sensors}
                 collisionDetection={closestCenter}
+                onDragStart={handleDragStart}
                 onDragEnd={(event) => handleDragEnd(event, cat.key)}
               >
                 <SortableContext
@@ -215,6 +293,31 @@ export function ImageManager() {
                     ))}
                   </div>
                 </SortableContext>
+
+                <DragOverlay
+                  dropAnimation={{
+                    sideEffects: defaultDropAnimationSideEffects({
+                      styles: {
+                        active: {
+                          opacity: '0.5',
+                        },
+                      },
+                    }),
+                  }}
+                >
+                  {activeId ? (
+                    <div className="w-full h-full opacity-90 scale-105 transition-transform duration-200">
+                      <SortableImage 
+                        id={activeId}
+                        image={images.find(img => img.id === activeId)!}
+                        onDelete={() => {}}
+                        onUpdate={async () => {}}
+                        isDeleting={false}
+                        isOverlay
+                      />
+                    </div>
+                  ) : null}
+                </DragOverlay>
               </DndContext>
             )}
           </div>

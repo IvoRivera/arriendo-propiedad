@@ -1,6 +1,4 @@
 import { supabaseAdmin } from '@/lib/supabase';
-import { unstable_cache } from 'next/cache';
-import { validateSchema } from '@/lib/schemaValidator';
 
 export type ImageCategory = 'property' | 'amenities' | 'featured' | 'hero';
 
@@ -34,13 +32,6 @@ export class ImageService {
     priority: number = 0,
     metadata: ImageMetadata = {}
   ) {
-    // [SchemaGuard] Early Integrity Check
-    const schema = await validateSchema();
-    if (!schema.success) {
-      const missing = schema.missing.map(m => `${m.table}.${m.column}`).join(', ');
-      throw new Error(`[SchemaGuard] [ImageService] Inconsistencia detectada. Faltan: ${missing}`);
-    }
-
     const fileExt = file.name.split('.').pop();
     const fileName = `${Math.random().toString(36).substring(2)}_${Date.now()}.${fileExt}`;
     const filePath = `${category}/${fileName}`;
@@ -157,34 +148,6 @@ export class ImageService {
     }
     return true;
   }
-
-  /**
-   * Fetches all images for public consumption, cached by Next.js.
-   */
-  static getPublicImages = unstable_cache(
-    async (): Promise<DbImage[]> => {
-      // [SchemaGuard] Early Integrity Check
-      const schema = await validateSchema();
-      if (!schema.success) {
-        const missing = schema.missing.map(m => `${m.table}.${m.column}`).join(', ');
-        throw new Error(`[SchemaGuard] [ImageService] Inconsistencia detectada. Faltan: ${missing}`);
-      }
-
-      const { data, error } = await supabaseAdmin
-        .from('images')
-        .select('*')
-        .order('category', { ascending: true })
-        .order('priority', { ascending: true });
-
-      if (error) {
-        console.error('Error fetching public images:', error);
-        return [];
-      }
-      return data as DbImage[];
-    },
-    ['public-images'],
-    { tags: ['images-all'], revalidate: 3600 } // 1 hour stale fallback
-  );
 
   /**
    * Groups images by category for easier consumption.
