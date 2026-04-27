@@ -16,6 +16,9 @@ export async function POST(req: Request) {
       check_out
     } = body;
 
+    console.log("SEND-STATUS EMAIL - TO:", email);
+    console.log("USER EMAIL SOURCE VALUE (from body):", email);
+
     // Fetch system and property configuration
     const freshConfig = await getLiveConfigServer();
     const property = await getPropertyBaseConfig();
@@ -126,19 +129,29 @@ export async function POST(req: Request) {
         return NextResponse.json({ error: 'Invalid status' }, { status: 400 });
     }
 
-    const { data, error } = await resend.emails.send({
+    const payload = {
       from: 'ArriendoLS <onboarding@resend.dev>',
       to: email,
       subject: subject,
       text: text,
-    });
+    };
 
-    if (error) {
-      console.error('Resend error:', error);
-      return NextResponse.json({ error }, { status: 500 });
+    console.log("RESEND PAYLOAD:", payload);
+
+    try {
+      const result = await resend.emails.send(payload);
+      console.log("RESEND RESULT:", result);
+      
+      if (result.error) {
+        console.error("RESEND ERROR (internal):", result.error);
+        return NextResponse.json({ error: result.error }, { status: 500 });
+      }
+
+      return NextResponse.json({ data: result.data });
+    } catch (error) {
+      console.error("RESEND EXCEPTION:", error);
+      return NextResponse.json({ error: 'Internal Resend Error' }, { status: 500 });
     }
-
-    return NextResponse.json({ data });
   } catch (err) {
     if (process.env.NODE_ENV === 'development') {
       console.error('API Error:', err);
