@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import { supabaseService } from '@/lib/supabaseServer';
 import { calculateBookingPrice } from '@/lib/pricing';
 import { validateSchema } from '@/lib/schemaValidator';
+import { isValidStay } from '@/lib/dateUtils';
+import { SITE_CONTENT } from '@/config/site-content';
 import * as z from 'zod';
 
 const bookingSchema = z.object({
@@ -33,8 +35,8 @@ export async function POST(req: Request) {
     // This fetches seasonal prices and the base price from system_config
     const pricing = await calculateBookingPrice(validatedData.check_in, validatedData.check_out);
 
-    if (pricing.nightsCount <= 0) {
-      throw new Error('La fecha de salida debe ser posterior a la de llegada');
+    if (!isValidStay(validatedData.check_in, validatedData.check_out)) {
+      throw new Error(SITE_CONTENT.availability.labels.minStayWarning);
     }
 
     // 3. Anti-Fiesta Scoring (Scoring Logic - moved from frontend for integrity)

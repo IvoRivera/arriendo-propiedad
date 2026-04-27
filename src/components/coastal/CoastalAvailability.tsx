@@ -5,11 +5,11 @@ import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { DayPicker } from "react-day-picker";
 import "react-day-picker/style.css";
-import { ChevronDown, X, RefreshCw, CalendarDays, AlertCircle } from "lucide-react";
+import { ChevronDown, X, RefreshCw, CalendarDays, AlertCircle, Clock } from "lucide-react";
 
 import { getPriceForDate } from "@/lib/pricingClient";
 import { SITE_CONTENT } from "@/config/site-content";
-// import { useConfig } from "@/components/providers/ConfigProvider";
+import { isValidStay, calculateNights } from "@/lib/dateUtils";
 
 // Custom styles for the calendar
 const calendarStyles = `
@@ -145,6 +145,7 @@ const DateInput: React.FC<DateInputProps> = ({
             locale={es}
             defaultMonth={defaultMonth || selected || new Date()}
             initialFocus
+            footer={id === 'checkout' ? <p className="text-[10px] text-center text-[#9a8a78] mt-2 italic font-medium">{SITE_CONTENT.availability.labels.minStayWarning}</p> : undefined}
             components={{
               DayButton: (props) => {
                 const { day, modifiers, ...buttonProps } = props;
@@ -253,14 +254,12 @@ export const CoastalAvailability: React.FC<CoastalAvailabilityProps> = ({ onActi
 
   useEffect(() => {
     if (checkIn && checkOut && basePrice > 0) {
-      const start = new Date(checkIn);
-      const end = new Date(checkOut);
-      const nightsCount = Math.round((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
+      const nightsCount = calculateNights(checkIn, checkOut);
 
       if (nightsCount > 0) {
         let total = 0;
         const breakdown = [];
-        const curr = new Date(start);
+        const curr = new Date(checkIn);
         for (let i = 0; i < nightsCount; i++) {
           const { price, seasonName } = getPriceForDate(curr, seasonalPrices, basePrice);
           total += price;
@@ -301,8 +300,10 @@ export const CoastalAvailability: React.FC<CoastalAvailabilityProps> = ({ onActi
   const isCheckOutDisabled = (date: Date) => {
     if (!checkIn) return isCheckInDisabled(date);
 
-    // Checkout must be after checkin
-    if (date <= checkIn) return true;
+    // Checkout must be at least 2 nights after checkin
+    const minCheckout = new Date(checkIn);
+    minCheckout.setDate(minCheckout.getDate() + 2);
+    if (date < minCheckout) return true;
 
     // Prevent checkout if there is a blocked date between checkIn and selected date
     const current = new Date(checkIn);
@@ -321,9 +322,8 @@ export const CoastalAvailability: React.FC<CoastalAvailabilityProps> = ({ onActi
     return false;
   };
 
-  const nights = checkIn && checkOut
-    ? Math.round((checkOut.getTime() - checkIn.getTime()) / (1000 * 60 * 60 * 24))
-    : 0;
+  const nights = calculateNights(checkIn, checkOut);
+  const isValid = isValidStay(checkIn, checkOut);
 
   return (
     <section id="booking" className="relative z-40 -mt-10 md:-mt-16 px-4 pb-12">
@@ -376,13 +376,52 @@ export const CoastalAvailability: React.FC<CoastalAvailabilityProps> = ({ onActi
 
         {/* Form Container */}
         <div className="bg-white/90 backdrop-blur-md border border-white/40 rounded-[32px] p-2.5 shadow-2xl shadow-black/5">
+          <div className="px-5 py-3 border-b border-[#e2d9cc]/30 mb-3">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <span className="text-[10px] uppercase tracking-[0.2em] font-bold text-[#00628f]">
+                Consulta disponibilidad
+              </span>
+              <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
+                <div className="flex items-center gap-2 text-[#9a8a78]">
+                  <Clock className="w-3.5 h-3.5 opacity-60" />
+                  <span className="text-[10px] font-medium tracking-tight">
+                    {SITE_CONTENT.availability.labels.stayHours}
+                  </span>
+                </div>
+                <div className="flex items-center gap-1.5 px-2.5 py-1 bg-[#00628f]/5 rounded-lg border border-[#00628f]/10 text-[#00628f]">
+                  <span className="text-[9px] uppercase tracking-widest font-bold">
+                    Estadía mínima: 2 noches
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
           <div className="flex flex-col md:flex-row gap-2.5">
             <DateInput
               id="checkin"
               label={SITE_CONTENT.availability.labels.checkIn}
               hint={SITE_CONTENT.availability.labels.checkInHint}
               selected={checkIn}
-              onSelect={setCheckIn}
+              onSelect={(date) => {
+                setCheckIn(date);
+                if (date) {
+                  // Suggest a checkout 2 days after
+                  const suggested = new Date(date);
+                  suggested.setDate(suggested.getDate() + 2);
+                  
+                  // Only auto-set if checkout is currently empty or invalid
+                  if (!checkOut || checkOut < suggested) {
+                    // Check if there's a block in between
+                    const dayAfter = new Date(date);
+                    dayAfter.setDate(dayAfter.getDate() + 1);
+                    const isBlockedBetween = blockedDateStrings.includes(formatIso(dayAfter)) || blockedDateStrings.includes(formatIso(suggested));
+                    
+                    if (!isBlockedBetween) {
+                      setCheckOut(suggested);
+                    }
+                  }
+                }
+              }}
               onClear={() => { setCheckIn(undefined); setCheckOut(undefined); }}
               disabledDays={isCheckInDisabled}
               disabled={status !== 'success'}
@@ -404,19 +443,31 @@ export const CoastalAvailability: React.FC<CoastalAvailabilityProps> = ({ onActi
               basePrice={basePrice}
             />
 
-            <button
-              onClick={handleAction}
-              disabled={!checkIn || !checkOut || status !== 'success'}
-              className="md:w-auto w-full bg-gradient-to-br from-[#00628f] to-[#007cb3] disabled:from-[#d4c9b8] disabled:to-[#d4c9b8] text-white px-10 py-4.5 md:py-0 rounded-full font-semibold text-[11px] uppercase tracking-[-0.01em] transition-all duration-200 hover:brightness-110 active:scale-95 disabled:grayscale"
-            >
-              {SITE_CONTENT.availability.ctaText}
-            </button>
+            <div className="relative group">
+              <button
+                onClick={handleAction}
+                disabled={!isValid || status !== 'success'}
+                className="md:w-auto w-full bg-gradient-to-br from-[#00628f] to-[#007cb3] disabled:from-[#d4c9b8] disabled:to-[#d4c9b8] text-white px-10 py-4.5 md:py-0 h-full rounded-full font-semibold text-[11px] uppercase tracking-[-0.01em] transition-all duration-200 hover:brightness-110 active:scale-95 disabled:grayscale"
+              >
+                {SITE_CONTENT.availability.ctaText}
+              </button>
+              {checkIn && checkOut && !isValid && (
+                <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-max bg-rose-500 text-white text-[9px] font-bold uppercase py-1 px-3 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                  Selecciona al menos 2 noches para continuar
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
         {nights > 0 && status === 'success' && (
           <div className="mt-6 text-center animate-in fade-in slide-in-from-top-2 duration-500">
             <div className="inline-flex flex-col items-center gap-1">
+              {!isValid && nights > 0 && (
+                <p className="text-[10px] text-rose-500 font-bold uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                  <AlertCircle className="w-3.5 h-3.5" /> {SITE_CONTENT.availability.labels.minStayWarning}
+                </p>
+              )}
               <p className="text-[10px] uppercase tracking-[0.25em] text-[#00628f] font-bold">
                 {SITE_CONTENT.availability.labels.summary}
               </p>

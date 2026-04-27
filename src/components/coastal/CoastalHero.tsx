@@ -84,9 +84,14 @@ export const CoastalHero: React.FC<CoastalHeroProps> = ({
                 </h1>
 
                 <div className="flex flex-col items-center gap-3 mb-10">
-                    <p className="text-white/90 text-base md:text-lg font-light tracking-wide drop-shadow-md">
-                        Desde <span className="font-semibold text-white">${displayPrice}</span> por noche
-                    </p>
+                    <div className="flex items-baseline gap-3">
+                        <p className="text-white/90 text-base md:text-lg font-light tracking-wide drop-shadow-md">
+                            Desde <span className="font-semibold text-white">${displayPrice}</span> por noche
+                        </p>
+                        <span className="text-[8px] bg-white/10 text-white/80 border border-white/20 px-2 py-0.5 rounded-full uppercase tracking-widest font-bold">
+                            Mín. 2 noches
+                        </span>
+                    </div>
                     <div className="h-px w-8 bg-[#00628f] opacity-50 my-1" />
                     <p className="text-white/60 text-[9px] uppercase tracking-[0.25em] font-bold">
                         {SITE_CONTENT.hero.availabilityPrompt}
@@ -109,6 +114,9 @@ export const CoastalHero: React.FC<CoastalHeroProps> = ({
                         <p className="text-white text-sm font-semibold flex items-center gap-2 drop-shadow-md">
                             <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
                             Respuesta en menos de 1 hora
+                        </p>
+                        <p className="text-white/60 text-[9px] font-medium tracking-wider">
+                            {SITE_CONTENT.hero.staySchedule}
                         </p>
                         <p className="text-white/50 text-[10px] uppercase tracking-[0.2em] font-medium">
                             Consulta disponibilidad sin compromiso

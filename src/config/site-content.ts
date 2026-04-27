@@ -19,6 +19,7 @@ export interface HeroData {
   subheadline: string;
   availabilityPrompt: string;
   ctaText: string;
+  staySchedule: string;
 }
 
 export interface ExperienceFeature {
@@ -68,6 +69,8 @@ export interface AvailabilityData {
     summary: string;
     night: string;
     nights: string;
+    minStayWarning: string;
+    stayHours: string;
   };
 }
 
@@ -124,9 +127,8 @@ export const SITE_CONTENT: SiteContent = {
     houseRules: [
       "Capacidad máxima: 4 personas (estricto).",
       "No se permiten fiestas, eventos o ruidos molestos.",
-      "Prohibido fumar dentro del departamento y en la terraza.",
+      "Prohibido fumar dentro del departamento.",
       "No se aceptan mascotas (reglamento del edificio).",
-      "Horario de silencio: 22:00 a 08:00 hrs.",
     ]
   },
   hero: {
@@ -135,6 +137,7 @@ export const SITE_CONTENT: SiteContent = {
     subheadline: "Solicita tu reserva — sin intermediarios.",
     availabilityPrompt: "Consulta disponibilidad en segundos",
     ctaText: "Solicitud de Reserva",
+    staySchedule: "Check-in desde 15:00 · Check-out hasta 11:00",
   },
   experience: {
     sectionTitle: "La Experiencia",
@@ -194,7 +197,9 @@ export const SITE_CONTENT: SiteContent = {
       checkOutHint: "Fecha de salida",
       summary: "Resumen de Estancia",
       night: "noche",
-      nights: "noches"
+      nights: "noches",
+      minStayWarning: "La estadía mínima es de 2 noches.",
+      stayHours: "Check-in: 15:00 · Check-out: 11:00",
     }
   },
   discover: {

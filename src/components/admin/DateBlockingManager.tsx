@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import { DayPicker, DateRange } from "react-day-picker";
 import { es } from "react-day-picker/locale";
 import "react-day-picker/style.css";
-import { Calendar, Trash2, Plus, Clock, AlertCircle, DollarSign } from "lucide-react";
+import { Calendar, Trash2, Plus, Clock, AlertCircle, DollarSign, X } from "lucide-react";
 import { supabaseAdmin } from "@/lib/supabase";
 import { getPriceForDate } from "@/lib/pricingClient";
 
@@ -15,8 +15,17 @@ interface BlockedDate {
   reason: string;
 }
 
+// Helper to format date as YYYY-MM-DD local
+const formatLocalDate = (date: Date) => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
 export function DateBlockingManager() {
   const [range, setRange] = useState<DateRange | undefined>();
+  const [hoverDate, setHoverDate] = useState<Date | undefined>();
   const [reason, setReason] = useState("");
   const [blocks, setBlocks] = useState<BlockedDate[]>([]);
   const [seasonalPrices, setSeasonalPrices] = useState<any[]>([]);
@@ -63,7 +72,45 @@ export function DateBlockingManager() {
 
   useEffect(() => {
     fetchBlocks();
+
+    const handleEsc = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setRange(undefined);
+        setHoverDate(undefined);
+      }
+    };
+
+    const handleGlobalClick = (e: MouseEvent) => {
+      console.log("[DEBUG] Global Click Target:", e.target);
+    };
+
+    window.addEventListener("keydown", handleEsc);
+    window.addEventListener("click", handleGlobalClick);
+    
+    return () => {
+      window.removeEventListener("keydown", handleEsc);
+      window.removeEventListener("click", handleGlobalClick);
+    };
   }, []);
+
+  const blockedMatchers = React.useMemo(() => {
+    return blocks.map(block => {
+      const [sYear, sMonth, sDay] = block.start_date.split('-').map(Number);
+      const [eYear, eMonth, eDay] = block.end_date.split('-').map(Number);
+      return {
+        from: new Date(sYear, sMonth - 1, sDay),
+        to: new Date(eYear, eMonth - 1, eDay)
+      };
+    });
+  }, [blocks]);
+
+  const previewRange = React.useMemo(() => {
+    if (!range?.from || range?.to || !hoverDate) return undefined;
+    return {
+      from: range.from < hoverDate ? range.from : hoverDate,
+      to: range.from < hoverDate ? hoverDate : range.from
+    };
+  }, [range, hoverDate]);
 
   const handleBlock = async () => {
     if (!range?.from || !range?.to) return;
@@ -78,8 +125,8 @@ export function DateBlockingManager() {
           'Authorization': `Bearer ${session?.access_token}`
         },
         body: JSON.stringify({
-          start_date: range.from.toISOString().split('T')[0],
-          end_date: range.to.toISOString().split('T')[0],
+          start_date: formatLocalDate(range.from),
+          end_date: formatLocalDate(range.to),
           reason: reason || "Bloqueo manual"
         })
       });
@@ -174,16 +221,103 @@ export function DateBlockingManager() {
               color: #9a8a78;
               padding-bottom: 0.5rem;
             }
+            .rdp-admin-root {
+              --rdp-cell-size: 48px;
+              --rdp-accent-color: #f4e7a1;
+              --rdp-background-color: #fef9c3;
+              margin: 0;
+              touch-action: manipulation;
+              pointer-events: auto !important;
+              position: relative;
+              z-index: 10;
+            }
+            .rdp-admin-root .rdp-day_selected {
+              background-color: #f4e7a1 !important;
+              color: #92400e !important;
+              font-weight: 600;
+            }
+            .rdp-admin-root .rdp-day_range_start {
+              border-top-left-radius: 8px !important;
+              border-bottom-left-radius: 8px !important;
+            }
+            .rdp-admin-root .rdp-day_range_end {
+              border-top-right-radius: 8px !important;
+              border-bottom-right-radius: 8px !important;
+            }
+            .rdp-admin-root .rdp-day_range_middle {
+              background-color: #fef9c3 !important;
+              color: #92400e !important;
+              border-radius: 0 !important;
+            }
+            .rdp-admin-root .rdp-day_preview {
+              background-color: #fefce8 !important;
+              color: #92400e !important;
+              border: 2px dashed #f4e7a1 !important;
+            }
+            .rdp-admin-root .rdp-day_blocked {
+              background-color: #fee2e2 !important;
+              color: #991b1b !important;
+              text-decoration: line-through;
+              position: relative;
+            }
+            .rdp-admin-root .rdp-day_disabled:not(.rdp-day_blocked) {
+              opacity: 0.25;
+            }
+            .rdp-admin-root .rdp-day_blocked:hover::after {
+              content: attr(title);
+              position: absolute;
+              bottom: 100%;
+              left: 50%;
+              transform: translateX(-50%);
+              background: #2c2416;
+              color: white;
+              padding: 4px 8px;
+              border-radius: 4px;
+              font-size: 10px;
+              white-space: nowrap;
+              z-index: 50;
+              pointer-events: none;
+            }
+            .rdp-admin-root .rdp-day {
+              border-radius: 0;
+              transition: none;
+              cursor: pointer;
+              touch-action: manipulation;
+              pointer-events: auto;
+            }
+            .rdp-admin-root .rdp-head_cell {
+              font-size: 10px;
+              font-weight: 700;
+              text-transform: uppercase;
+              color: #9a8a78;
+              padding-bottom: 0.5rem;
+              text-align: center;
+              pointer-events: none;
+            }
           `}</style>
           <DayPicker
             locale={es}
             mode="range"
             selected={range}
             onSelect={setRange}
-            disabled={{ before: new Date() }}
+            onDayMouseEnter={(day: any) => {
+              if (window.matchMedia("(pointer: fine)").matches) {
+                const actualDate = day instanceof Date ? day : day?.date;
+                if (actualDate) setHoverDate(actualDate);
+              }
+            }}
+            onDayMouseLeave={() => setHoverDate(undefined)}
+            modifiers={{ 
+              blocked: blockedMatchers,
+              preview: previewRange 
+            }}
+            modifiersClassNames={{ 
+              blocked: "rdp-day_blocked",
+              preview: "rdp-day_preview"
+            }}
+            disabled={[{ before: new Date(new Date().setHours(0,0,0,0)) }, ...blockedMatchers]}
             className="rdp-admin-root"
             classNames={{
-              root: "mx-auto",
               months: "flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0",
               month: "space-y-4",
               caption: "flex justify-between pt-1 relative items-center mb-2",
@@ -191,27 +325,47 @@ export function DateBlockingManager() {
               nav: "flex items-center gap-1",
               nav_button: "h-7 w-7 bg-white border border-[#e2d9cc] rounded-lg flex items-center justify-center text-[#9a8a78] hover:text-[#6b7c4a] hover:border-[#6b7c4a] transition-all",
               table: "w-full border-collapse",
-              head_row: "flex",
-              head_cell: "text-[#9a8a78] rounded-md w-10 font-bold text-[10px] uppercase",
-              row: "flex w-full mt-0",
-              cell: "text-center text-sm p-0 relative focus-within:relative focus-within:z-20",
-              day: "h-12 w-10 p-0 font-normal aria-selected:opacity-100",
+              day: "text-[11px] font-medium",
             }}
             components={{
               DayButton: (props) => {
                 const { day, modifiers, ...buttonProps } = props;
                 const { price, isSeasonal } = getPriceForDate(day.date, seasonalPrices, basePrice);
+                
+                const dateStr = formatLocalDate(day.date);
+                const block = blocks.find(b => dateStr >= b.start_date && dateStr <= b.end_date);
+                
                 const formatted = price >= 1000 
                   ? new Intl.NumberFormat('es-CL').format(Math.floor(price / 1000)) + 'k'
                   : price;
                 
+                const isBlocked = modifiers.blocked;
+                const isPreview = modifiers.preview;
+                const isSelected = modifiers.selected;
+                const isRangeMiddle = modifiers.range_middle;
+
                 return (
-                  <button {...buttonProps}>
-                    <div className="flex flex-col items-center justify-center w-full h-full pt-1.5">
-                      <span className="text-[10px] font-medium leading-none">{day.date.getDate()}</span>
-                      {price > 0 && (
-                        <span className={`text-[7px] mt-1 leading-none font-bold tracking-tighter ${isSeasonal ? 'text-amber-600' : 'text-gray-400'}`}>
+                  <button 
+                    {...buttonProps} 
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      console.log("[DEBUG] Day clicked:", dateStr);
+                      buttonProps.onClick?.(e);
+                    }}
+                    className={`${buttonProps.className} cursor-pointer touch-manipulation pointer-events-auto`}
+                    style={{ position: 'relative', zIndex: 20 }}
+                  >
+                    <div className="flex flex-col items-center justify-center w-full h-full relative pointer-events-none">
+                      <span className={isBlocked ? 'opacity-50' : ''}>{day.date.getDate()}</span>
+                      {price > 0 && !isBlocked && !isSelected && !isRangeMiddle && !isPreview && (
+                        <span className="text-[7px] absolute bottom-0 leading-none font-bold text-gray-400">
                           ${formatted}
+                        </span>
+                      )}
+                      {isBlocked && (
+                        <span className="text-[6px] absolute bottom-0 leading-none font-extrabold text-red-700 uppercase tracking-tighter">
+                          Bloq.
                         </span>
                       )}
                     </div>
@@ -244,6 +398,16 @@ export function DateBlockingManager() {
             {loading ? <Plus className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
             Confirmar Bloqueo
           </button>
+
+          {range?.from && (
+            <button
+              onClick={() => { setRange(undefined); setHoverDate(undefined); }}
+              className="w-full py-2 text-[#9a8a78] hover:text-[#6b7c4a] font-bold text-[9px] uppercase tracking-[0.1em] transition-all flex items-center justify-center gap-2"
+            >
+              <X className="w-3 h-3" />
+              Limpiar Selección
+            </button>
+          )}
         </div>
       </div>
 

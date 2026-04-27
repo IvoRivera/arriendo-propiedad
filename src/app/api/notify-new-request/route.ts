@@ -1,6 +1,7 @@
 import { Resend } from 'resend';
 import { NextResponse } from 'next/server';
 import { getLiveConfigServer, getPropertyBaseConfig } from '@/lib/systemConfigServer';
+import { calculateNights } from '@/lib/dateUtils';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -27,10 +28,7 @@ export async function POST(req: Request) {
     const ownerEmail = freshConfig['OWNER_EMAIL'] || process.env.OWNER_EMAIL || '';
     const dailyPrice = property?.base_price ?? 0;
 
-    // Stay summary calculation
-    const start = new Date(check_in);
-    const end = new Date(check_out);
-    const nights = Math.ceil(Math.abs(end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
+    const nights = calculateNights(check_in, check_out);
     
     // Use snapshotted total_price if provided (from the new bookings API)
     const totalPrice = body.total_price !== undefined ? Number(body.total_price) : (nights * dailyPrice);

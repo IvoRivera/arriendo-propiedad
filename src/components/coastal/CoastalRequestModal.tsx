@@ -5,7 +5,7 @@ import { createPortal } from "react-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { X, CheckCircle2, CalendarDays, ShieldCheck } from "lucide-react";
+import { X, CheckCircle2, CalendarDays, ShieldCheck, Clock } from "lucide-react";
 import { DayPicker } from "react-day-picker";
 import "react-day-picker/style.css";
 import { es } from "date-fns/locale";
@@ -13,6 +13,7 @@ import { format, parseISO } from "date-fns";
 
 import { SITE_CONTENT } from "@/config/site-content";
 import { getPriceForDate, type SeasonalPricing } from "@/lib/pricingClient";
+import { isValidStay, calculateNights } from "@/lib/dateUtils";
 
 const countries = [
   { name: "Chile", code: "+56", flag: "🇨🇱", placeholder: "9 1234 5678", pattern: /^9\d{8}$/, error: "Formato: 9 XXXX XXXX" },
@@ -99,10 +100,19 @@ const requestSchema = z.object({
 
   // 2. Dates Validation
   if (data.check_in && data.check_out) {
-    if (new Date(data.check_out) <= new Date(data.check_in)) {
+    const start = parseISO(data.check_in);
+    const end = parseISO(data.check_out);
+    
+    if (end <= start) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         message: "La fecha de salida debe ser posterior a la de llegada",
+        path: ["check_out"],
+      });
+    } else if (!isValidStay(start, end)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: SITE_CONTENT.availability.labels.minStayWarning,
         path: ["check_out"],
       });
     }
@@ -221,7 +231,7 @@ export const CoastalRequestModal: React.FC<CoastalRequestModalProps> = ({
     if (checkInValue && checkOutValue && basePrice > 0) {
       const start = parseISO(checkInValue);
       const end = parseISO(checkOutValue);
-      const nightsCount = Math.round((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
+      const nightsCount = calculateNights(start, end);
       
       if (nightsCount > 0) {
         let total = 0;
@@ -279,7 +289,9 @@ export const CoastalRequestModal: React.FC<CoastalRequestModalProps> = ({
   const isCheckOutDisabled = (date: Date) => {
     if (!checkInValue) return isDateDisabled(date);
     const checkInDate = parseISO(checkInValue);
-    if (date <= checkInDate) return true;
+    const minCheckout = new Date(checkInDate);
+    minCheckout.setDate(minCheckout.getDate() + 2);
+    if (date < minCheckout) return true;
     
     // Check range logic
     const current = new Date(checkInDate);
@@ -307,6 +319,13 @@ export const CoastalRequestModal: React.FC<CoastalRequestModalProps> = ({
     
     const finalPhone = normalizePhone(data.country_code, data.phone);
     const finalReferral = `${data.referred_by_name} (${data.referred_by_relation})`;
+
+    // Double-check stay validity before proceeding
+    if (!isValidStay(data.check_in, data.check_out)) {
+      setSubmitError(SITE_CONTENT.availability.labels.minStayWarning);
+      setIsSubmitting(false);
+      return;
+    }
 
     try {
       // 1. Concurrency Check (Server-side re-validation)
@@ -463,6 +482,12 @@ export const CoastalRequestModal: React.FC<CoastalRequestModalProps> = ({
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8 relative">
+                  <div className="absolute -top-6 right-1 flex items-center gap-1.5 bg-[#00628f]/5 px-2.5 py-1 rounded-full border border-[#00628f]/10">
+                    <Clock className="w-3 h-3 text-[#00628f]" />
+                    <span className="text-[8px] uppercase tracking-widest font-bold text-[#00628f]">
+                      Mínimo de estadía: 2 noches
+                    </span>
+                  </div>
                   <div className="space-y-2">
                     <label className="text-[10px] uppercase tracking-widest text-[#9a8a78] font-bold ml-1">Fecha Llegada</label>
                     <div className="relative">
@@ -487,7 +512,30 @@ export const CoastalRequestModal: React.FC<CoastalRequestModalProps> = ({
                                 const year = date.getFullYear();
                                 const month = String(date.getMonth() + 1).padStart(2, '0');
                                 const day = String(date.getDate()).padStart(2, '0');
-                                setValue("check_in", `${year}-${month}-${day}`, { shouldValidate: true });
+                                const dateStr = `${year}-${month}-${day}`;
+                                setValue("check_in", dateStr, { shouldValidate: true });
+                                
+                                // Auto-suggest checkout
+                                const suggested = new Date(date);
+                                suggested.setDate(suggested.getDate() + 2);
+                                
+                                const sYear = suggested.getFullYear();
+                                const sMonth = String(suggested.getMonth() + 1).padStart(2, '0');
+                                const sDay = String(suggested.getDate()).padStart(2, '0');
+                                const sDateStr = `${sYear}-${sMonth}-${sDay}`;
+
+                                if (!checkOutValue || parseISO(checkOutValue) < suggested) {
+                                  // Check blocks (simple check)
+                                  const dayAfter = new Date(date);
+                                  dayAfter.setDate(dayAfter.getDate() + 1);
+                                  const daStr = `${dayAfter.getFullYear()}-${String(dayAfter.getMonth() + 1).padStart(2, '0')}-${String(dayAfter.getDate()).padStart(2, '0')}`;
+                                  
+                                  const isBlocked = blockedDateStrings.includes(daStr) || blockedDateStrings.includes(sDateStr);
+                                  if (!isBlocked) {
+                                    setValue("check_out", sDateStr, { shouldValidate: true });
+                                  }
+                                }
+                                
                                 setActivePicker(null);
                               }
                             }}
@@ -554,6 +602,7 @@ export const CoastalRequestModal: React.FC<CoastalRequestModalProps> = ({
                              disabled={isCheckOutDisabled}
                              locale={es}
                              defaultMonth={checkInValue ? parseISO(checkInValue) : undefined}
+                             footer={<p className="text-[10px] text-center text-[#9a8a78] mt-2 italic font-medium">Estancia mínima de 2 noches</p>}
                              components={{
                                DayButton: (props) => {
                                  const { day, ...buttonProps } = props as any;
@@ -681,6 +730,19 @@ export const CoastalRequestModal: React.FC<CoastalRequestModalProps> = ({
                       </span>
                     </label>
                     {errors.rules_accepted && <p className="text-[10px] text-red-500 mt-1 ml-8">{errors.rules_accepted.message}</p>}
+                  </div>
+                </div>
+
+                {/* Recordatorio de Horarios */}
+                <div className="bg-[#00628f]/[0.03] border border-[#00628f]/10 rounded-2xl p-5 flex items-center gap-4 animate-in fade-in slide-in-from-bottom-2 duration-700">
+                  <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center text-[#00628f] shadow-sm border border-[#00628f]/5">
+                    <Clock className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h4 className="text-[10px] uppercase tracking-widest font-bold text-[#00628f]/80">Horarios de estadía</h4>
+                    <p className="text-xs text-[#2c2416] font-semibold mt-0.5 italic font-serif">
+                      {SITE_CONTENT.availability.labels.stayHours}
+                    </p>
                   </div>
                 </div>
 

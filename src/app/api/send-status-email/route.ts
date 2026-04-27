@@ -1,6 +1,7 @@
 import { Resend } from 'resend';
 import { NextResponse } from 'next/server';
 import { getLiveConfigServer, validatePropertyRentValue, getPropertyBaseConfig } from '@/lib/systemConfigServer';
+import { calculateNights } from '@/lib/dateUtils';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -18,7 +19,7 @@ export async function POST(req: Request) {
     // Fetch system and property configuration
     const freshConfig = await getLiveConfigServer();
     const property = await getPropertyBaseConfig();
-    
+
     // Validate critical values
     const dailyPrice = validatePropertyRentValue(property?.base_price);
 
@@ -27,15 +28,12 @@ export async function POST(req: Request) {
     const ownerEmail = freshConfig['OWNER_EMAIL'] || process.env.OWNER_EMAIL || '';
 
     // Calculation logic
-    const start = new Date(check_in);
-    const end = new Date(check_out);
-    const diffTime = Math.abs(end.getTime() - start.getTime());
-    const nightsCount = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    const nightsCount = calculateNights(check_in, check_out);
 
     // Use snapshotted price if available
     const totalAmount = body.total_price !== undefined ? Number(body.total_price) : (nightsCount * dailyPrice);
     const totalFormatted = new Intl.NumberFormat('es-CL').format(totalAmount);
-    
+
     // If we have a snapshotted price, we don't show the "nights x daily" calculation if daily is variable
     const bankDetails = `
           Monto a transferir: $${totalFormatted}
@@ -89,6 +87,8 @@ export async function POST(req: Request) {
 
           Nos alegra poder recibirte.
 
+          Tu llegada está prevista desde las 15:00, y el check-out es hasta las 11:00, para que puedas organizarte con tranquilidad.
+
           Para coordinar detalles de llegada, recomendaciones y cualquier duda, puedes escribirme directamente por WhatsApp:
 
           👉 ${whatsappLink}
@@ -134,17 +134,17 @@ export async function POST(req: Request) {
     if (process.env.NODE_ENV === 'development') {
       console.error('API Error:', err);
     }
-    
+
     // Controlled error responses
     if (err instanceof Error && err.message?.startsWith('CONFIG_')) {
       return NextResponse.json(
-        { error: 'Configuration Error', details: err.message }, 
+        { error: 'Configuration Error', details: err.message },
         { status: 500 }
       );
     }
 
     return NextResponse.json(
-      { error: 'Internal Server Error' }, 
+      { error: 'Internal Server Error' },
       { status: 500 }
     );
   }
