@@ -1,27 +1,25 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { supabaseAdmin } from "@/lib/supabase";
-import { Plus, Trash2, Calendar, TrendingUp, Info, AlertCircle, Save, ExternalLink, Zap, Edit2, X } from "lucide-react";
-import Link from "next/link";
+import { SeasonalPricing } from "@/types/pricing";
+import { usePricingData } from "@/hooks/usePricingData";
+import { BasePriceDisplay } from "./BasePriceDisplay";
+import { SeasonTable } from "./SeasonTable";
+import { RuleForm } from "./RuleForm";
 
-interface SeasonalPricing {
-  id: string;
-  start_date: string;
-  end_date: string;
-  price_per_night: number;
-  weekend_price: number | null;
-  season_name: string;
-  priority: number;
-}
+export default function PricingManager() {
+  const {
+    basePrice,
+    seasonalPrices,
+    isLoading,
+    isSaving,
+    setIsSaving,
+    fetchData
+  } = usePricingData();
 
-export const PricingManager: React.FC = () => {
-  const [seasonalPrices, setSeasonalPrices] = useState<SeasonalPricing[]>([]);
-  const [basePrice, setBasePrice] = useState<number>(0);
-  const [loading, setLoading] = useState(true);
-  const [isSaving, setIsSaving] = useState(false);
-  
-  // Form state for new rule
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editForm, setEditForm] = useState<SeasonalPricing | null>(null);
   const [newRule, setNewRule] = useState({
     start_date: "",
     end_date: "",
@@ -31,57 +29,18 @@ export const PricingManager: React.FC = () => {
     priority: 0
   });
 
-  // Edit state
-  const [editingId, setEditingId] = useState<string | null>(null);
-  const [editForm, setEditForm] = useState<SeasonalPricing | null>(null);
-
-  useEffect(() => {
-    fetchData();
-  }, []);
-
-  const fetchData = async () => {
-    setLoading(true);
-    try {
-      // Fetch seasonal prices
-      const { data: prices, error: pricesError } = await supabaseAdmin
-        .from("seasonal_pricing")
-        .select("*")
-        .order("start_date", { ascending: true });
-
-      if (pricesError) {
-        if (pricesError.code !== '42P01') throw pricesError;
-      }
-      setSeasonalPrices(prices || []);
-
-      // Fetch base price from system_config
-      const { data: config, error: configError } = await supabaseAdmin
-        .from("system_config")
-        .select("value")
-        .eq("key", "PROPERTY_RENT_VALUE")
-        .single();
-
-      if (configError) throw configError;
-      setBasePrice(parseInt(config.value.replace(/\D/g, '')));
-    } catch (err) {
-      console.error("Error fetching pricing data:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const handleAddRule = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newRule.start_date || !newRule.end_date || !newRule.price_per_night || !newRule.season_name) return;
-
     setIsSaving(true);
     try {
-      const { error } = await supabaseAdmin
-        .from("seasonal_pricing")
-        .insert([{
-          ...newRule,
-          price_per_night: parseInt(newRule.price_per_night),
-          weekend_price: newRule.weekend_price ? parseInt(newRule.weekend_price) : null
-        }]);
+      const { error } = await supabaseAdmin.from('seasonal_pricing').insert({
+        season_name: newRule.season_name,
+        start_date: newRule.start_date,
+        end_date: newRule.end_date,
+        price_per_night: Number(newRule.price_per_night),
+        weekend_price: newRule.weekend_price ? Number(newRule.weekend_price) : null,
+        priority: newRule.priority
+      });
 
       if (error) throw error;
       
@@ -93,396 +52,95 @@ export const PricingManager: React.FC = () => {
         season_name: "",
         priority: 0
       });
-      fetchData();
-    } catch (err) {
-      console.error("Error adding rule:", err);
-      alert("Error al guardar la regla. Asegúrate de que las fechas sean válidas.");
-    } finally {
-      setIsSaving(false);
-    }
-  };
-
-  const handleEditStart = (rule: SeasonalPricing) => {
-    setEditingId(rule.id);
-    setEditForm({ ...rule });
-  };
-
-  const handleEditCancel = () => {
-    setEditingId(null);
-    setEditForm(null);
-  };
-
-  const handleUpdateRule = async () => {
-    if (!editForm) return;
-    setIsSaving(true);
-    try {
-      const { error } = await supabaseAdmin
-        .from("seasonal_pricing")
-        .update({
-          season_name: editForm.season_name,
-          start_date: editForm.start_date,
-          end_date: editForm.end_date,
-          price_per_night: Number(editForm.price_per_night),
-          weekend_price: editForm.weekend_price ? Number(editForm.weekend_price) : null,
-          priority: Number(editForm.priority)
-        })
-        .eq("id", editForm.id);
-
-      if (error) throw error;
-      setEditingId(null);
-      setEditForm(null);
-      fetchData();
-    } catch (err) {
-      console.error("Error updating rule:", err);
-      alert("Error al actualizar la regla.");
+      await fetchData();
+    } catch (error) {
+      console.error('Error adding rule:', error);
+      alert('Error al agregar la regla');
     } finally {
       setIsSaving(false);
     }
   };
 
   const handleDeleteRule = async (id: string) => {
-    if (!window.confirm("¿Eliminar esta regla de precio?")) return;
-
+    if (!confirm('¿Seguro que quieres eliminar esta regla?')) return;
     try {
-      const { error } = await supabaseAdmin
-        .from("seasonal_pricing")
-        .delete()
-        .eq("id", id);
-
+      const { error } = await supabaseAdmin.from('seasonal_pricing').delete().eq('id', id);
       if (error) throw error;
-      fetchData();
-    } catch (err) {
-      console.error("Error deleting rule:", err);
-      alert("Error al eliminar la regla.");
+      await fetchData();
+    } catch (error) {
+      console.error('Error deleting rule:', error);
     }
   };
 
-  if (loading) return (
-    <div className="py-20 text-center flex flex-col items-center justify-center gap-4">
-      <div className="w-8 h-8 border-4 border-[#6b7c4a]/20 border-t-[#6b7c4a] rounded-full animate-spin"></div>
-      <p className="text-[#6b5d4f] text-sm font-medium">Cargando configuración de precios...</p>
-    </div>
-  );
+  const handleUpdateRule = async () => {
+    if (!editForm || !editingId) return;
+    setIsSaving(true);
+    try {
+      const { error } = await supabaseAdmin
+        .from('seasonal_pricing')
+        .update({
+          season_name: editForm.season_name,
+          start_date: editForm.start_date,
+          end_date: editForm.end_date,
+          price_per_night: editForm.price_per_night,
+          weekend_price: editForm.weekend_price,
+          priority: editForm.priority
+        })
+        .eq('id', editingId);
+
+      if (error) throw error;
+      setEditingId(null);
+      setEditForm(null);
+      await fetchData();
+    } catch (error) {
+      console.error('Error updating rule:', error);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="w-8 h-8 border-4 border-[#6b7c4a]/20 border-t-[#6b7c4a] rounded-full animate-spin" />
+      </div>
+    );
+  }
 
   return (
-    <div className="space-y-10 max-w-5xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-700">
-      {/* Header with link to advanced system */}
-      <div className="flex items-center justify-between">
-        <div className="space-y-1">
-          <h2 className="text-3xl font-serif italic text-[#2c2416]">Gestión de Tarifas</h2>
-          <p className="text-[10px] text-[#9a8a78] uppercase tracking-[0.2em] font-bold text-left">Control de temporadas y precios dinámicos</p>
-        </div>
-        <Link 
-          href="/admin/pricing"
-          className="flex items-center gap-2 px-6 py-3 bg-[#2c2416] text-white rounded-2xl text-[10px] font-bold uppercase tracking-[0.2em] hover:bg-[#6b7c4a] transition-all shadow-xl"
-        >
-          <Zap className="w-4 h-4 text-yellow-400" />
-          Calendario Avanzado
-          <ExternalLink className="w-3 h-3 ml-1" />
-        </Link>
-      </div>
+    <div className="max-w-7xl mx-auto space-y-12 pb-20">
+      {/* 1. Base Price Display */}
+      <BasePriceDisplay basePrice={basePrice} />
 
-      {/* Base Price Info */}
-      <div className="bg-white border border-[#e2d9cc] rounded-[32px] p-8 shadow-sm overflow-hidden relative group">
-        <div className="absolute top-0 right-0 w-48 h-48 bg-[#6b7c4a]/5 rounded-full -mr-24 -mt-24 transition-transform group-hover:scale-110 duration-700" />
-        <div className="flex flex-col md:flex-row md:items-start gap-6 relative z-10">
-          <div className="w-16 h-16 bg-[#6b7c4a]/10 rounded-2xl flex items-center justify-center text-[#6b7c4a] shrink-0 border border-[#6b7c4a]/20 shadow-inner">
-            <TrendingUp className="w-8 h-8" />
-          </div>
-          <div className="space-y-2">
-            <h3 className="text-[10px] font-bold uppercase tracking-[0.25em] text-[#9a8a78] text-left">Configuración Actual</h3>
-            <div className="flex items-baseline gap-2">
-              <span className="text-4xl font-serif italic text-[#2c2416]">
-                ${new Intl.NumberFormat('es-CL').format(basePrice)}
-              </span>
-              <span className="text-[#6b5d4f] text-sm font-light italic">por noche (base)</span>
-            </div>
-            <p className="text-xs text-[#6b5d4f] font-light max-w-xl mt-3 leading-relaxed text-left">
-              Este es el precio base. Las reglas de temporada <b>sobrescribirán</b> este valor. 
-              Ahora puedes definir precios diferenciados para **fines de semana** (Vie, Sáb) dentro de cada temporada.
-            </p>
-          </div>
-        </div>
-      </div>
+      {/* 2. Rule Form */}
+      <RuleForm 
+        newRule={newRule}
+        isSaving={isSaving}
+        setNewRule={setNewRule}
+        onAddRule={handleAddRule}
+      />
 
-      {/* Seasonal Rules Section */}
+      {/* 3. Season Table */}
       <div className="space-y-6">
-        <div className="bg-white border border-[#e2d9cc] rounded-[32px] shadow-sm overflow-hidden border-separate">
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="bg-[#faf7f2]/50 border-b border-[#e2d9cc]">
-                  <th className="px-8 py-5 text-[10px] font-bold uppercase tracking-widest text-[#9a8a78]">Temporada</th>
-                  <th className="px-8 py-5 text-[10px] font-bold uppercase tracking-widest text-[#9a8a78]">Periodo</th>
-                  <th className="px-8 py-5 text-[10px] font-bold uppercase tracking-widest text-[#9a8a78]">Semana</th>
-                  <th className="px-8 py-5 text-[10px] font-bold uppercase tracking-widest text-[#9a8a78]">Fin de Semana</th>
-                  <th className="px-8 py-5 text-[10px] font-bold uppercase tracking-widest text-[#9a8a78]">Prioridad</th>
-                  <th className="px-8 py-5 text-right"></th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-[#e2d9cc]/30">
-                {seasonalPrices.length === 0 ? (
-                  <tr>
-                    <td colSpan={6} className="px-8 py-16 text-center text-[#6b5d4f] italic font-light">
-                      No hay reglas de temporada configuradas actualmente.
-                    </td>
-                  </tr>
-                ) : (
-                  seasonalPrices.map((rule) => (
-                    <tr key={rule.id} className={`${editingId === rule.id ? 'bg-[#6b7c4a]/5' : 'hover:bg-[#faf7f2]/30'} transition-colors group`}>
-                      <td className="px-8 py-5">
-                        {editingId === rule.id ? (
-                          <input 
-                            type="text"
-                            value={editForm?.season_name}
-                            onChange={e => setEditForm(f => f ? {...f, season_name: e.target.value} : null)}
-                            className="w-full bg-white border border-[#e2d9cc] rounded-lg px-3 py-2 text-xs outline-none focus:border-[#6b7c4a]"
-                          />
-                        ) : (
-                          <span className="font-medium text-[#2c2416] group-hover:text-[#6b7c4a] transition-colors">{rule.season_name}</span>
-                        )}
-                      </td>
-                      <td className="px-8 py-5">
-                        {editingId === rule.id ? (
-                          <div className="flex flex-col gap-2">
-                            <input 
-                              type="date"
-                              value={editForm?.start_date}
-                              onChange={e => setEditForm(f => f ? {...f, start_date: e.target.value} : null)}
-                              className="w-full bg-white border border-[#e2d9cc] rounded-lg px-2 py-1 text-[10px] outline-none"
-                            />
-                            <input 
-                              type="date"
-                              value={editForm?.end_date}
-                              onChange={e => setEditForm(f => f ? {...f, end_date: e.target.value} : null)}
-                              className="w-full bg-white border border-[#e2d9cc] rounded-lg px-2 py-1 text-[10px] outline-none"
-                            />
-                          </div>
-                        ) : (
-                          <div className="flex items-center gap-3 text-[#6b5d4f] text-sm font-light">
-                            <Calendar className="w-3.5 h-3.5 text-[#9a8a78]" />
-                            <span>{rule.start_date} → {rule.end_date}</span>
-                          </div>
-                        )}
-                      </td>
-                      <td className="px-8 py-5">
-                        {editingId === rule.id ? (
-                          <div className="relative">
-                            <span className="absolute left-2 top-1/2 -translate-y-1/2 text-[10px] text-[#9a8a78]">$</span>
-                            <input 
-                              type="number"
-                              value={editForm?.price_per_night}
-                              onChange={e => setEditForm(f => f ? {...f, price_per_night: Number(e.target.value)} : null)}
-                              className="w-full bg-white border border-[#e2d9cc] rounded-lg pl-5 pr-2 py-2 text-xs outline-none"
-                            />
-                          </div>
-                        ) : (
-                          <span className="font-serif italic text-lg text-[#2c2416]">${new Intl.NumberFormat('es-CL').format(rule.price_per_night)}</span>
-                        )}
-                      </td>
-                      <td className="px-8 py-5">
-                        {editingId === rule.id ? (
-                          <div className="relative">
-                            <span className="absolute left-2 top-1/2 -translate-y-1/2 text-[10px] text-[#9a8a78]">$</span>
-                            <input 
-                              type="number"
-                              value={editForm?.weekend_price || ''}
-                              placeholder="Opcional"
-                              onChange={e => setEditForm(f => f ? {...f, weekend_price: e.target.value ? Number(e.target.value) : null} : null)}
-                              className="w-full bg-white border border-[#e2d9cc] rounded-lg pl-5 pr-2 py-2 text-xs outline-none"
-                            />
-                          </div>
-                        ) : (
-                          <span className="font-serif italic text-lg text-[#6b7c4a]">
-                            {rule.weekend_price ? `$${new Intl.NumberFormat('es-CL').format(rule.weekend_price)}` : '—'}
-                          </span>
-                        )}
-                      </td>
-                      <td className="px-8 py-5">
-                        {editingId === rule.id ? (
-                          <input 
-                            type="number"
-                            value={editForm?.priority}
-                            onChange={e => setEditForm(f => f ? {...f, priority: Number(e.target.value)} : null)}
-                            className="w-16 bg-white border border-[#e2d9cc] rounded-lg px-2 py-2 text-xs outline-none"
-                          />
-                        ) : (
-                          <span className={`px-2.5 py-1 rounded-full text-[9px] font-bold uppercase tracking-widest ${
-                            rule.priority > 0 
-                              ? 'bg-[#6b7c4a] text-white' 
-                              : 'bg-white text-[#9a8a78] border border-[#e2d9cc]'
-                          }`}>
-                            P{rule.priority}
-                          </span>
-                        )}
-                      </td>
-                      <td className="px-8 py-5 text-right">
-                        <div className="flex items-center justify-end gap-2">
-                          {editingId === rule.id ? (
-                            <>
-                              <button 
-                                onClick={handleUpdateRule}
-                                disabled={isSaving}
-                                className="p-2 text-[#6b7c4a] hover:bg-[#6b7c4a]/10 rounded-xl transition-all"
-                                title="Guardar cambios"
-                              >
-                                <Save className="w-4 h-4" />
-                              </button>
-                              <button 
-                                onClick={handleEditCancel}
-                                className="p-2 text-[#9a8a78] hover:bg-gray-100 rounded-xl transition-all"
-                                title="Cancelar"
-                              >
-                                <X className="w-4 h-4" />
-                              </button>
-                            </>
-                          ) : (
-                            <>
-                              <button 
-                                onClick={() => handleEditStart(rule)}
-                                className="p-2 text-[#9a8a78] hover:text-[#6b7c4a] hover:bg-[#6b7c4a]/5 rounded-xl transition-all"
-                                title="Editar regla"
-                              >
-                                <Edit2 className="w-4 h-4" />
-                              </button>
-                              <button 
-                                onClick={() => handleDeleteRule(rule.id)}
-                                className="p-2 text-[#9a8a78] hover:text-rose-500 hover:bg-rose-50 rounded-xl transition-all"
-                                title="Eliminar regla"
-                              >
-                                <Trash2 className="w-4 h-4" />
-                              </button>
-                            </>
-                          )}
-                        </div>
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-
-      {/* Add New Rule Form */}
-      <div className="bg-white border border-[#e2d9cc] rounded-[40px] p-10 shadow-sm space-y-8 relative overflow-hidden">
-        <div className="flex items-center gap-4">
-          <div className="w-10 h-10 bg-[#6b7c4a] rounded-2xl flex items-center justify-center text-white shadow-lg rotate-3">
-            <Plus className="w-6 h-6" />
-          </div>
-          <div>
-            <h3 className="text-xl font-serif italic text-[#2c2416]">Agregar Nueva Regla</h3>
-            <p className="text-[9px] text-[#9a8a78] uppercase tracking-[0.2em] font-bold text-left">Configuración de temporada especial</p>
-          </div>
-        </div>
-
-        <form onSubmit={handleAddRule} className="space-y-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            <div className="space-y-2">
-              <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#9a8a78] ml-1 flex">Nombre de la Temporada</label>
-              <input 
-                required
-                type="text" 
-                placeholder="Ej: Temporada Alta Enero"
-                value={newRule.season_name}
-                onChange={e => setNewRule({...newRule, season_name: e.target.value})}
-                className="w-full bg-[#faf7f2]/50 border border-[#e2d9cc] rounded-2xl px-5 py-4 text-sm focus:border-[#6b7c4a] outline-none transition-all shadow-sm" 
-              />
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#9a8a78] ml-1 flex">Fecha de Inicio</label>
-              <input 
-                required
-                type="date" 
-                value={newRule.start_date}
-                onChange={e => setNewRule({...newRule, start_date: e.target.value})}
-                className="w-full bg-[#faf7f2]/50 border border-[#e2d9cc] rounded-2xl px-5 py-4 text-sm focus:border-[#6b7c4a] outline-none transition-all shadow-sm" 
-              />
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#9a8a78] ml-1 flex">Fecha de Término</label>
-              <input 
-                required
-                type="date" 
-                value={newRule.end_date}
-                onChange={e => setNewRule({...newRule, end_date: e.target.value})}
-                className="w-full bg-[#faf7f2]/50 border border-[#e2d9cc] rounded-2xl px-5 py-4 text-sm focus:border-[#6b7c4a] outline-none transition-all shadow-sm" 
-              />
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#9a8a78] ml-1 flex">Precio Semanal (Lun-Jue)</label>
-              <div className="relative">
-                <span className="absolute left-5 top-1/2 -translate-y-1/2 text-[#9a8a78] font-bold">$</span>
-                <input 
-                  required
-                  type="number" 
-                  placeholder="0"
-                  value={newRule.price_per_night}
-                  onChange={e => setNewRule({...newRule, price_per_night: e.target.value})}
-                  className="w-full bg-[#faf7f2]/50 border border-[#6b7c4a]/30 rounded-2xl pl-10 pr-5 py-4 text-lg focus:border-[#6b7c4a] outline-none transition-all shadow-sm font-serif italic text-[#2c2416]" 
-                />
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#6b7c4a] ml-1 flex">Precio Fin de Semana (Vie-Sáb)</label>
-              <div className="relative">
-                <span className="absolute left-5 top-1/2 -translate-y-1/2 text-[#6b7c4a] font-bold">$</span>
-                <input 
-                  type="number" 
-                  placeholder="Opcional"
-                  value={newRule.weekend_price}
-                  onChange={e => setNewRule({...newRule, weekend_price: e.target.value})}
-                  className="w-full bg-[#6b7c4a]/5 border border-[#6b7c4a]/30 rounded-2xl pl-10 pr-5 py-4 text-lg focus:border-[#6b7c4a] outline-none transition-all shadow-sm font-serif italic text-[#2c2416]" 
-                />
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#9a8a78] ml-1 flex items-center gap-2">
-                Prioridad
-                <div className="group relative cursor-help">
-                  <Info className="w-3.5 h-3.5 text-[#9a8a78]" />
-                  <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 w-64 p-4 bg-[#2c2416] text-white text-[10px] rounded-2xl opacity-0 group-hover:opacity-100 transition-all pointer-events-none z-20 leading-relaxed font-light shadow-2xl border border-white/10">
-                    Gana la regla de <b>mayor prioridad</b>. Si es igual, gana la más específica (rango corto).
-                  </div>
-                </div>
-              </label>
-              <input 
-                type="number" 
-                value={newRule.priority}
-                onChange={e => setNewRule({...newRule, priority: parseInt(e.target.value) || 0})}
-                className="w-full bg-[#faf7f2]/50 border border-[#e2d9cc] rounded-2xl px-5 py-4 text-sm focus:border-[#6b7c4a] outline-none transition-all shadow-sm" 
-              />
-            </div>
-
-            <div className="flex items-end lg:col-span-3">
-              <button 
-                type="submit" 
-                disabled={isSaving}
-                className="w-full py-5 bg-[#6b7c4a] text-white rounded-2xl text-[11px] font-bold uppercase tracking-[0.25em] hover:bg-[#5a6a3d] transition-all shadow-xl active:scale-[0.97] disabled:opacity-50 flex items-center justify-center gap-3"
-              >
-                {isSaving ? <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin" /> : <Save className="w-4 h-4" />}
-                {isSaving ? "Guardando..." : "Activar Regla de Temporada"}
-              </button>
-            </div>
-          </div>
-        </form>
-
-        <div className="bg-[#faf7f2] border border-[#e2d9cc] rounded-3xl p-6 flex items-start gap-4">
-          <AlertCircle className="w-6 h-6 text-[#6b7c4a] shrink-0" />
-          <div className="space-y-1 text-left">
-            <p className="text-[11px] text-[#2c2416] font-medium leading-relaxed">
-              Las reglas se aplican instantáneamente. El sistema detectará automáticamente feriados y fines de semana largos si usas el <b>Calendario Avanzado</b>.
-            </p>
-          </div>
-        </div>
+        <h3 className="text-2xl font-serif italic text-[#2c2416] ml-4 text-left">Reglas Activas</h3>
+        <SeasonTable 
+          seasonalPrices={seasonalPrices}
+          editingId={editingId}
+          editForm={editForm}
+          isSaving={isSaving}
+          onEditStart={(rule) => {
+            setEditingId(rule.id);
+            setEditForm({...rule});
+          }}
+          onEditCancel={() => {
+            setEditingId(null);
+            setEditForm(null);
+          }}
+          onUpdateRule={handleUpdateRule}
+          onDeleteRule={handleDeleteRule}
+          setEditForm={setEditForm}
+        />
       </div>
     </div>
   );
-};
-
+}
