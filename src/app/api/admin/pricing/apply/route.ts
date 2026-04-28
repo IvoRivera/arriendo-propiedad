@@ -7,6 +7,7 @@ import { getLiveConfigServer } from '@/lib/systemConfigServer';
 import { parseSafeISO, toISODate } from '@/lib/date-utils';
 import { CONFIG_KEYS } from '@/lib/constants';
 import { parseBasePrice, calculateDynamicPrice } from '@/lib/pricing-utils';
+import { PricingUpdateSchema } from '@/types/pricing';
 
 export async function POST(request: Request) {
   const auth = await verifyAdminRequest(request);
@@ -15,11 +16,16 @@ export async function POST(request: Request) {
   }
 
   const body = await request.json();
-  const { startDate, endDate, targetType, priceMode, value, propertyId, name, priority = 999 } = body;
+  const validation = PricingUpdateSchema.safeParse(body);
 
-  if (!startDate || !endDate || !targetType || !priceMode || value === undefined) {
-    return NextResponse.json({ error: 'Missing parameters' }, { status: 400 });
+  if (!validation.success) {
+    return NextResponse.json({ 
+      error: 'Validation failed', 
+      details: validation.error.flatten().fieldErrors 
+    }, { status: 400 });
   }
+
+  const { startDate, endDate, targetType, priceMode, value, propertyId, name, priority } = validation.data;
 
   const start = parseSafeISO(startDate);
   const end = parseSafeISO(endDate);
@@ -43,7 +49,7 @@ export async function POST(request: Request) {
   const finalWeekendPrice = body.weekend_price ? calculateDynamicPrice(basePrice, priceMode, Number(body.weekend_price)) : null;
 
   if (process.env.NODE_ENV === 'development') {
-    console.log(`[BulkApply] Mode: ${priceMode}, Value: ${numValue}, Base: ${basePrice}, Final: ${finalPrice}`);
+    console.log(`[BulkApply] Mode: ${priceMode}, Value: ${value}, Base: ${basePrice}, Final: ${finalPrice}`);
   }
 
   // Logic based on targetType
