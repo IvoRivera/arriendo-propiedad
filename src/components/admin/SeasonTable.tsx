@@ -4,6 +4,7 @@ import React from "react";
 import { Calendar, Edit2, Trash2, Save, X } from "lucide-react";
 import { SeasonalPricing } from "@/types/pricing";
 import { formatCurrency } from "@/lib/formatters";
+import { PRICING_COLORS } from "@/lib/constants";
 
 interface SeasonTableProps {
   seasonalPrices: SeasonalPricing[];
@@ -123,19 +124,27 @@ export const SeasonTable: React.FC<SeasonTableProps> = ({
                   </td>
                   <td className="px-8 py-5">
                     {editingId === rule.id ? (
-                      <input 
-                        type="color"
-                        value={editForm?.color_hex || '#00628f'}
-                        onChange={e => setEditForm(f => f ? {...f, color_hex: e.target.value} : null)}
-                        className="w-10 h-10 bg-white border border-[#e2d9cc] rounded-lg cursor-pointer p-0.5"
-                      />
+                      <div className="flex flex-wrap gap-1.5 w-32">
+                        {PRICING_COLORS.map((c) => (
+                          <button
+                            key={c.hex}
+                            type="button"
+                            onClick={() => setEditForm(f => f ? {...f, color_hex: c.hex} : null)}
+                            className={`w-6 h-6 rounded-full border shadow-sm transition-all ${editForm?.color_hex === c.hex ? 'ring-2 ring-[#6b7c4a] ring-offset-1 scale-110' : 'opacity-40 hover:opacity-100'}`}
+                            style={{ backgroundColor: c.hex }}
+                            title={c.name}
+                          />
+                        ))}
+                      </div>
                     ) : (
                       <div className="flex items-center gap-2">
                         <div 
                           className="w-4 h-4 rounded-full border border-black/5 shadow-sm" 
                           style={{ backgroundColor: rule.color_hex || '#00628f' }}
                         />
-                        <span className="text-[9px] font-mono text-[#9a8a78] uppercase">{rule.color_hex || '#00628f'}</span>
+                        <span className="text-[9px] font-bold uppercase tracking-tighter text-[#9a8a78]">
+                          {PRICING_COLORS.find(c => c.hex === rule.color_hex)?.name || 'Especial'}
+                        </span>
                       </div>
                     )}
                   </td>

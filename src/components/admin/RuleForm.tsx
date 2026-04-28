@@ -1,7 +1,8 @@
 "use client";
 
 import React from "react";
-import { Plus, Info, Save, AlertCircle } from "lucide-react";
+import { Plus, Info, Save, AlertCircle, Check } from "lucide-react";
+import { PRICING_COLORS } from "@/lib/constants";
 
 interface RuleFormProps {
   newRule: {
@@ -119,20 +120,34 @@ export const RuleForm: React.FC<RuleFormProps> = ({
             />
           </div>
 
-          <div className="space-y-2">
-            <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#9a8a78] ml-1 flex">Color en Calendario</label>
-            <div className="flex gap-3 items-center">
-              <input 
-                type="color" 
-                value={newRule.color_hex}
-                onChange={e => setNewRule({...newRule, color_hex: e.target.value})}
-                className="w-16 h-14 bg-[#faf7f2]/50 border border-[#e2d9cc] rounded-2xl cursor-pointer p-1" 
-              />
-              <span className="text-[10px] text-[#9a8a78] font-mono uppercase">{newRule.color_hex}</span>
+          <div className="space-y-3 lg:col-span-3">
+            <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#9a8a78] ml-1 flex">Color en Calendario (Categoría)</label>
+            <div className="flex flex-wrap gap-4">
+              {PRICING_COLORS.map((color) => (
+                <button
+                  key={color.hex}
+                  type="button"
+                  onClick={() => setNewRule({...newRule, color_hex: color.hex})}
+                  className={`
+                    flex flex-col items-center gap-2 p-2 rounded-2xl transition-all border-2
+                    ${newRule.color_hex === color.hex ? 'border-[#6b7c4a] bg-[#6b7c4a]/5' : 'border-transparent hover:bg-[#faf7f2]'}
+                  `}
+                >
+                  <div 
+                    className="w-10 h-10 rounded-full shadow-md flex items-center justify-center text-white"
+                    style={{ backgroundColor: color.hex }}
+                  >
+                    {newRule.color_hex === color.hex && <Check className="w-5 h-5 drop-shadow-md" />}
+                  </div>
+                  <span className="text-[10px] font-bold uppercase tracking-tighter text-[#9a8a78]">
+                    {color.name}
+                  </span>
+                </button>
+              ))}
             </div>
           </div>
 
-          <div className="flex items-end lg:col-span-2">
+          <div className="flex items-end lg:col-span-3">
             <button 
               type="submit" 
               disabled={isSaving}
