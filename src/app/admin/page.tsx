@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import type { User as SupabaseUser } from "@supabase/supabase-js";
-import { supabaseAdmin } from "@/lib/supabase";
+import { createClient } from "@/utils/supabase/client";
 import { useRouter } from "next/navigation";
 import { XCircle, Calendar, LogOut, RefreshCw, Archive, ArchiveRestore, Eye, Filter, User, AlertCircle, Settings, Inbox as InboxIcon, DollarSign, Image as ImageIcon, Mail, Users, Briefcase, Share2 } from "lucide-react";
 import { SystemConfigPanel } from "@/components/admin/SystemConfigPanel";
@@ -36,6 +36,7 @@ export default function AdminPage() {
   const [showExceptions, setShowExceptions] = useState(false);
   const [activeView, setActiveView] = useState<'inbox' | 'config' | 'availability' | 'pricing' | 'images'>('inbox');
   const router = useRouter();
+  const supabase = createClient();
 
   // Load archived IDs from localStorage on mount
   useEffect(() => {
@@ -56,7 +57,7 @@ export default function AdminPage() {
 
   useEffect(() => {
     const checkUser = async () => {
-      const { data: { session } } = await supabaseAdmin.auth.getSession();
+      const { data: { session } } = await supabase.auth.getSession();
       
       if (!session) {
         router.push("/admin/login");
@@ -73,7 +74,7 @@ export default function AdminPage() {
   const fetchRequests = async () => {
     try {
       setLoading(true);
-      const { data, error: fetchError } = await supabaseAdmin
+      const { data, error: fetchError } = await supabase
         .from("booking_requests")
         .select("*")
         .order("created_at", { ascending: false });
@@ -89,8 +90,9 @@ export default function AdminPage() {
   };
 
   const handleLogout = async () => {
-    await supabaseAdmin.auth.signOut();
+    await supabase.auth.signOut();
     router.push("/admin/login");
+    router.refresh();
   };
 
   const updateStatus = async (id: string, newStatus: BookingRequest['status']) => {
@@ -105,7 +107,7 @@ export default function AdminPage() {
     if (!window.confirm(messages[newStatus])) return;
 
     try {
-      const { error: updateError } = await supabaseAdmin
+      const { error: updateError } = await supabase
         .from("booking_requests")
         .update({ status: newStatus })
         .eq("id", id);

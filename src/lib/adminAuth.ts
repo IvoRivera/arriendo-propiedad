@@ -1,6 +1,7 @@
 import 'server-only';
-import { supabaseService, createSessionClient } from './supabaseServer';
+import { supabaseService } from './supabaseServer';
 import { SupabaseClient, User } from '@supabase/supabase-js';
+import { createClient } from '@/utils/supabase/server';
 
 /**
  * Shared Admin Authentication Logic
@@ -27,11 +28,11 @@ export async function getAdminEmails(): Promise<string[]> {
  * Verifies if a request is authorized for administrative actions.
  * Supports:
  * 1. INTERNAL_SECRET via 'x-internal-key' header
- * 2. User JWT via 'Authorization: Bearer <token>' + Whitelist check
+ * 2. Supabase Session via Cookies (Next.js SSR)
+ * 3. User JWT via 'Authorization: Bearer <token>' (Fallback)
  */
-export async function verifyAdminRequest(req: Request): Promise<AdminAuthResult> {
-  const internalKey = req.headers.get('x-internal-key') || req.headers.get('x-internal-secret');
-  const authHeader = req.headers.get('authorization');
+export async function verifyAdminRequest(req?: Request): Promise<AdminAuthResult> {
+  const internalKey = req?.headers.get('x-internal-key') || req?.headers.get('x-internal-secret');
   const systemSecret = process.env.INTERNAL_SECRET;
 
   // 1. Check for ALLOWED_ADMIN_EMAILS configuration
@@ -44,31 +45,27 @@ export async function verifyAdminRequest(req: Request): Promise<AdminAuthResult>
     return { success: true, mode: 'SYSTEM', client: supabaseService };
   }
 
-  // Mode B: USER (Auth by JWT + Whitelist)
-  if (authHeader?.startsWith('Bearer ')) {
-    const token = authHeader.substring(7);
-    const sessionClient = createSessionClient(token);
-    
-    const { data: { user }, error: authError } = await sessionClient.auth.getUser();
-    
-    if (authError || !user) {
-      return { success: false, error: 'Sesión inválida', status: 401 };
-    }
-
+  // Mode B: USER (Auth by Supabase SSR / Cookies)
+  const supabase = await createClient();
+  const { data: { user }, error: authError } = await supabase.auth.getUser();
+  
+  if (!authError && user) {
     const adminEmails = await getAdminEmails();
-    if (!adminEmails.includes(user.email || '')) {
-      console.warn(`[Security] Unauthorized access attempt: ${user.email}`);
-      return { success: false, error: 'No tienes permisos de administrador', status: 403 };
+    const email = user.email?.toLowerCase() || '';
+    
+    if (adminEmails.map(e => e.toLowerCase()).includes(email)) {
+      return { 
+        success: true, 
+        mode: 'USER', 
+        user, 
+        client: supabase,
+        userEmail: email
+      };
     }
-
-    return { 
-      success: true, 
-      mode: 'USER', 
-      user, 
-      client: sessionClient,
-      userEmail: user.email || ''
-    };
+    
+    console.warn(`[Security] Unauthorized access attempt: ${email}`);
+    return { success: false, error: 'No tienes permisos de administrador', status: 403 };
   }
 
-  return { success: false, error: 'Autenticación requerida', status: 401 };
+  return { success: false, error: 'Autenticación requerida o sesión expirada', status: 401 };
 }

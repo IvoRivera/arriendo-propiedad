@@ -96,13 +96,26 @@ export async function getPriceForDate(
   const isLongWkd = isLongWeekend(date, holidaysSet!);
 
   // 3. Find the best matching rule
-  // Already ordered by priority DESC in query if not cached, but let's be safe
+  // Priority order: 
+  // 1. Higher priority value
+  // 2. More specific range (shorter duration)
+  // 3. Most recently created
   const matches = seasonalPrices!.filter(rule => {
-    // Ensure we compare strings to avoid timezone issues
     const ruleStart = typeof rule.start_date === 'string' ? rule.start_date : format(parseISO(rule.start_date), 'yyyy-MM-dd');
     const ruleEnd = typeof rule.end_date === 'string' ? rule.end_date : format(parseISO(rule.end_date), 'yyyy-MM-dd');
     return formattedDate >= ruleStart && formattedDate <= ruleEnd;
-  }).sort((a, b) => b.priority - a.priority || (new Date(a.end_date).getTime() - new Date(a.start_date).getTime()) - (new Date(b.end_date).getTime() - new Date(b.start_date).getTime()));
+  }).sort((a, b) => {
+    // 1. Priority (DESC)
+    if (b.priority !== a.priority) return b.priority - a.priority;
+    
+    // 2. Specificity (ASC duration)
+    const durA = new Date(a.end_date).getTime() - new Date(a.start_date).getTime();
+    const durB = new Date(b.end_date).getTime() - new Date(b.start_date).getTime();
+    if (durA !== durB) return durA - durB;
+
+    // 3. Recency (DESC ID/Created)
+    return b.id.localeCompare(a.id);
+  });
 
   const bestRule = matches[0];
   
@@ -110,22 +123,22 @@ export async function getPriceForDate(
     console.log(`[PricingEngine] Date: ${formattedDate}, Matches: ${matches.length}, Best Rule: ${bestRule?.season_name || 'None'}`);
   }
 
-  let price = basePrice;
-  let source = 'Base Price';
-  let season = 'Standard';
+  let price = Number(basePrice);
+  let source = 'Precio Base (Configuración)';
+  let season = 'Estándar';
   let rulePriority = -1;
 
   if (bestRule) {
     const isWkdDay = isFriday(date) || isSaturday(date);
-    // Use weekend_price if available and it's a weekend, otherwise standard price
-    const hasWeekendPrice = bestRule.weekend_price !== null && bestRule.weekend_price !== undefined;
+    const standardPrice = Number(bestRule.price_per_night);
+    const weekendPrice = bestRule.weekend_price !== null ? Number(bestRule.weekend_price) : standardPrice;
     
-    if (isWkdDay && hasWeekendPrice) {
-      price = Number(bestRule.weekend_price);
-      source = `Seasonal Rule (Weekend): ${bestRule.season_name}`;
+    if (isWkdDay) {
+      price = weekendPrice;
+      source = `Regla Temporal (Fin de Semana): ${bestRule.season_name}`;
     } else {
-      price = Number(bestRule.price_per_night);
-      source = `Seasonal Rule: ${bestRule.season_name}`;
+      price = standardPrice;
+      source = `Regla Temporal: ${bestRule.season_name}`;
     }
     
     season = bestRule.season_name;

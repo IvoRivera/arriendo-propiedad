@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
+import { updateSession } from './utils/supabase/middleware';
 
 /**
  * Next.js Edge Middleware
@@ -28,17 +29,25 @@ function isExcludedPath(pathname: string): boolean {
   return EXCLUDED_PATHS.some(pattern => pattern.test(pathname));
 }
 
-export function proxy(req: NextRequest) {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const ip = (req as any).ip || req.headers.get('x-forwarded-for')?.split(',')[0] || 'unknown';
+export async function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
   // 0. Skip rate limiting for excluded paths or in development
-  if (isExcludedPath(pathname) || process.env.NODE_ENV !== 'production') {
+  if (isExcludedPath(pathname)) {
     return NextResponse.next();
   }
 
-  // 1. Rate Limiting Logic
+  // 1. Supabase Session Management (Crucial for SSR & Production)
+  const { supabaseResponse, user } = await updateSession(req);
+
+  // 2. Skip remaining logic in development if needed, but SESSION UPDATE must run
+  if (process.env.NODE_ENV !== 'production') {
+    return supabaseResponse;
+  }
+
+  // 3. Rate Limiting Logic
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const ip = (req as any).ip || req.headers.get('x-forwarded-for')?.split(',')[0] || 'unknown';
   const now = Date.now();
   const record = ipCache.get(ip) || { count: 0, lastReset: now };
   
@@ -58,20 +67,31 @@ export function proxy(req: NextRequest) {
     );
   }
 
-  // 2. Protection Layers
+  // 4. Protection Layers
   const internalSecret = process.env.INTERNAL_SECRET;
   const providedSecret = req.headers.get('x-internal-key') || req.headers.get('x-internal-secret');
 
-  // A. Protect Admin Routes
-  if (pathname.startsWith('/api/admin')) {
-    const authHeader = req.headers.get('authorization');
+  // A. Protect Admin Routes (Pages and API)
+  if (pathname.startsWith('/admin') || pathname.startsWith('/api/admin')) {
+    // RBAC check (Role-based access control)
+    const isAdmin = user?.app_metadata?.role === 'admin';
+    const isInternal = internalSecret && providedSecret === internalSecret;
 
-    // Early block if no credentials
-    if (!authHeader && (!internalSecret || providedSecret !== internalSecret)) {
-      return new NextResponse(
-        JSON.stringify({ success: false, error: 'Autenticación requerida para acceder a recursos administrativos.' }),
-        { status: 401, headers: { 'content-type': 'application/json' } }
-      );
+    if (!isAdmin && !isInternal) {
+      // If it's an API route, return 401 JSON
+      if (pathname.startsWith('/api/')) {
+        return new NextResponse(
+          JSON.stringify({ success: false, error: 'Acceso administrativo denegado. Sesión inválida o permisos insuficientes.' }),
+          { status: 401, headers: { 'content-type': 'application/json' } }
+        );
+      }
+      // If it's a page, redirect to login
+      if (pathname !== '/admin/login') {
+        const url = req.nextUrl.clone();
+        url.pathname = '/admin/login';
+        url.searchParams.set('unauthorized', 'true');
+        return NextResponse.redirect(url);
+      }
     }
   }
 
@@ -87,13 +107,13 @@ export function proxy(req: NextRequest) {
     }
   }
 
-  return NextResponse.next();
+  return supabaseResponse;
 }
 
-// Ensure middleware runs on relevant paths, including potential static assets if matcher is loose
+// Ensure middleware runs on relevant paths
 export const config = {
   matcher: [
-    '/((?!api|_next/static|_next/image|favicon.ico|robots.txt|sitemap.xml).*)', // All pages
-    '/api/:path*', // All API routes
+    '/((?!_next/static|_next/image|favicon.ico|robots.txt|sitemap.xml).*)',
   ],
 };
+
