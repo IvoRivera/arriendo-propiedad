@@ -1,9 +1,12 @@
 import { NextResponse } from 'next/server';
 import { verifyAdminRequest } from '@/lib/adminAuth';
 import { supabaseService } from '@/lib/supabaseServer';
-import { format, parseISO, eachDayOfInterval } from 'date-fns';
-import { getPriceForDate, isDateHoliday, isLongWeekend } from '@/lib/pricing-engine';
+import { format, eachDayOfInterval } from 'date-fns';
+import { isLongWeekend } from '@/lib/pricing-engine';
 import { getLiveConfigServer } from '@/lib/systemConfigServer';
+import { parseSafeISO, toISODate } from '@/lib/date-utils';
+import { CONFIG_KEYS } from '@/lib/constants';
+import { parseBasePrice, calculateDynamicPrice } from '@/lib/pricing-utils';
 
 export async function POST(request: Request) {
   const auth = await verifyAdminRequest(request);
@@ -18,35 +21,26 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Missing parameters' }, { status: 400 });
   }
 
-  const start = parseISO(startDate);
-  const end = parseISO(endDate);
+  const start = parseSafeISO(startDate);
+  const end = parseSafeISO(endDate);
   
   // Fetch holidays for the range to detect them
   const { data: holidaysData } = await supabaseService
     .from('holidays')
     .select('date')
-    .gte('date', format(start, 'yyyy-MM-dd'))
-    .lte('date', format(end, 'yyyy-MM-dd'));
+    .gte('date', toISODate(start))
+    .lte('date', toISODate(end));
   
   const holidaysSet = new Set(holidaysData?.map(h => h.date) || []);
 
   const rulesToInsert: any[] = [];
 
   const config = await getLiveConfigServer();
-  const rentValueRaw = config['PROPERTY_RENT_VALUE'];
-  const basePrice = rentValueRaw ? parseInt(rentValueRaw.replace(/\D/g, '')) : 80000;
+  const basePrice = parseBasePrice(config[CONFIG_KEYS.PROPERTY_RENT_VALUE]);
 
-  // Robust price calculation
-  const numValue = Number(value);
-  const calculatePrice = (base: number) => {
-    if (priceMode === 'fixed') return numValue;
-    // Percentage: base + (base * value / 100)
-    const multiplier = 1 + (numValue / 100);
-    return Math.max(1, Math.round(base * multiplier)); // Ensure positive price
-  };
-
-  const finalPrice = calculatePrice(basePrice);
-  const finalWeekendPrice = body.weekend_price ? calculatePrice(basePrice) : null; 
+  // Use centralized dynamic price calculator
+  const finalPrice = calculateDynamicPrice(basePrice, priceMode, value);
+  const finalWeekendPrice = body.weekend_price ? calculateDynamicPrice(basePrice, priceMode, Number(body.weekend_price)) : null;
 
   if (process.env.NODE_ENV === 'development') {
     console.log(`[BulkApply] Mode: ${priceMode}, Value: ${numValue}, Base: ${basePrice}, Final: ${finalPrice}`);
@@ -91,7 +85,7 @@ export async function POST(request: Request) {
     
     days.forEach(day => {
       if (isLongWeekend(day, holidaysSet)) {
-        currentRange.push(format(day, 'yyyy-MM-dd'));
+        currentRange.push(toISODate(day));
       } else {
         if (currentRange.length > 0) {
           rulesToInsert.push({

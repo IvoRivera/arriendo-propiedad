@@ -1,6 +1,9 @@
-import { format, parseISO, isFriday, isSaturday, isSunday, addDays, subDays, startOfMonth, endOfMonth, eachDayOfInterval } from 'date-fns';
+import { format, isFriday, isSaturday, isSunday, addDays, subDays, startOfMonth, endOfMonth, eachDayOfInterval } from 'date-fns';
 import { supabaseService } from './supabaseServer';
 import { getPropertyBaseConfig, getLiveConfigServer } from './systemConfigServer';
+import { parseSafeISO, toISODate } from './date-utils';
+import { CONFIG_KEYS } from './constants';
+import { parseBasePrice } from './pricing-utils';
 
 export interface PricingDetails {
   price: number;
@@ -16,7 +19,7 @@ export interface PricingDetails {
  * Checks if a date is a holiday based on a provided set of holiday dates (YYYY-MM-DD).
  */
 export function isDateHoliday(date: Date, holidaysSet: Set<string>): boolean {
-  return holidaysSet.has(format(date, 'yyyy-MM-dd'));
+  return holidaysSet.has(toISODate(date));
 }
 
 /**
@@ -54,8 +57,7 @@ export async function getPriceForDate(
     basePrice?: number;
   }
 ): Promise<PricingDetails> {
-  // Parse date ensuring we stay on the correct day regardless of timezone (using noon)
-  const date = parseISO(dateStr.includes('T') ? dateStr : `${dateStr}T12:00:00`);
+  const date = parseSafeISO(dateStr);
   const formattedDate = dateStr.split('T')[0];
 
   // 1. Fetch data if not provided (Optimization: allow passing cached data for bulk calculations)
@@ -63,8 +65,8 @@ export async function getPriceForDate(
 
   if (!seasonalPrices || !holidaysSet || basePrice === undefined) {
     // Fetch everything needed for the month to avoid multiple DB calls
-    const start = format(startOfMonth(date), 'yyyy-MM-dd');
-    const end = format(endOfMonth(date), 'yyyy-MM-dd');
+    const start = toISODate(startOfMonth(date));
+    const end = toISODate(endOfMonth(date));
 
     const [pricesRes, holidaysRes, propertyRes, config] = await Promise.all([
       supabaseService
@@ -76,8 +78,8 @@ export async function getPriceForDate(
       supabaseService
         .from('holidays')
         .select('date')
-        .gte('date', format(subDays(date, 4), 'yyyy-MM-dd'))
-        .lte('date', format(addDays(date, 4), 'yyyy-MM-dd')),
+        .gte('date', toISODate(subDays(date, 4)))
+        .lte('date', toISODate(addDays(date, 4))),
       getPropertyBaseConfig(propertyId ? { id: propertyId } : undefined),
       getLiveConfigServer()
     ]);
@@ -86,8 +88,7 @@ export async function getPriceForDate(
     holidaysSet = new Set(holidaysRes.data?.map(h => h.date) || []);
     
     // Prioritize system_config PROPERTY_RENT_VALUE over property table base_price
-    const rentValueRaw = config['PROPERTY_RENT_VALUE'];
-    basePrice = rentValueRaw ? parseInt(rentValueRaw.replace(/\D/g, '')) : (propertyRes?.base_price ?? 80000);
+    basePrice = parseBasePrice(config[CONFIG_KEYS.PROPERTY_RENT_VALUE]) || (propertyRes?.base_price ?? undefined);
   }
 
   // 2. Determine day properties
@@ -101,8 +102,8 @@ export async function getPriceForDate(
   // 2. More specific range (shorter duration)
   // 3. Most recently created
   const matches = seasonalPrices!.filter(rule => {
-    const ruleStart = typeof rule.start_date === 'string' ? rule.start_date : format(parseISO(rule.start_date), 'yyyy-MM-dd');
-    const ruleEnd = typeof rule.end_date === 'string' ? rule.end_date : format(parseISO(rule.end_date), 'yyyy-MM-dd');
+    const ruleStart = typeof rule.start_date === 'string' ? rule.start_date : toISODate(rule.start_date);
+    const ruleEnd = typeof rule.end_date === 'string' ? rule.end_date : toISODate(rule.end_date);
     return formattedDate >= ruleStart && formattedDate <= ruleEnd;
   }).sort((a, b) => {
     // 1. Priority (DESC)
@@ -165,8 +166,8 @@ export async function getPricingForRange(
   propertyId?: string,
   includeLastDay: boolean = false
 ) {
-  const start = parseISO(startDate.includes('T') ? startDate : `${startDate}T12:00:00`);
-  const end = parseISO(endDate.includes('T') ? endDate : `${endDate}T12:00:00`);
+  const start = parseSafeISO(startDate);
+  const end = parseSafeISO(endDate);
   const days = eachDayOfInterval({ start, end });
   const nights = includeLastDay ? days : days.slice(0, -1);
 
@@ -180,8 +181,8 @@ export async function getPricingForRange(
     supabaseService
       .from('holidays')
       .select('date')
-      .gte('date', format(subDays(start, 4), 'yyyy-MM-dd'))
-      .lte('date', format(addDays(end, 4), 'yyyy-MM-dd')),
+      .gte('date', toISODate(subDays(start, 4)))
+      .lte('date', toISODate(addDays(end, 4))),
     getPropertyBaseConfig(propertyId ? { id: propertyId } : undefined),
     getLiveConfigServer()
   ]);
@@ -190,8 +191,7 @@ export async function getPricingForRange(
   const holidaysSet = new Set(holidaysRes.data?.map(h => h.date) || []);
   
   // Prioritize system_config PROPERTY_RENT_VALUE over property table base_price
-  const rentValueRaw = config['PROPERTY_RENT_VALUE'];
-  const basePrice = rentValueRaw ? parseInt(rentValueRaw.replace(/\D/g, '')) : (propertyRes?.base_price ?? 80000);
+  const basePrice = parseBasePrice(config[CONFIG_KEYS.PROPERTY_RENT_VALUE]) || (propertyRes?.base_price ?? undefined);
 
   const breakdown = await Promise.all(nights.map(async (night) => {
     const details = await getPriceForDate(format(night, 'yyyy-MM-dd'), propertyId, {
@@ -200,7 +200,7 @@ export async function getPricingForRange(
       basePrice
     });
     return {
-      date: format(night, 'yyyy-MM-dd'),
+      date: toISODate(night),
       ...details
     };
   }));
