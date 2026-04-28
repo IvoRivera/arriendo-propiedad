@@ -19,6 +19,7 @@ export const CoastalAvailability: React.FC<CoastalAvailabilityProps> = ({ onActi
   const [blockedDates, setBlockedDates] = useState<Date[]>([]);
   const [blockedDateStrings, setBlockedDateStrings] = useState<string[]>([]);
   const [seasonalPrices, setSeasonalPrices] = useState<SeasonalPricing[]>([]);
+  const [holidays, setHolidays] = useState<any[]>([]);
   const [basePrice, setBasePrice] = useState<number>(0);
   
   const confirmButtonRef = useRef<HTMLButtonElement>(null);
@@ -50,6 +51,7 @@ export const CoastalAvailability: React.FC<CoastalAvailabilityProps> = ({ onActi
         const data = await res.json();
         if (data.success) {
           setSeasonalPrices(data.data.seasonalPrices);
+          setHolidays(data.data.holidays || []);
           setBasePrice(data.data.basePrice);
         }
       } catch (e) {
@@ -87,13 +89,13 @@ export const CoastalAvailability: React.FC<CoastalAvailabilityProps> = ({ onActi
     let total = 0;
     const curr = new Date(range.from);
     for (let i = 0; i < n; i++) {
-      const { price } = getPriceForDate(curr, seasonalPrices, basePrice);
+      const { price } = getPriceForDate(curr, seasonalPrices, basePrice, holidays);
       total += price;
       curr.setDate(curr.getDate() + 1);
     }
 
     return { nights: n, totalPrice: total, isValid: true, isBlocked: false };
-  }, [range, seasonalPrices, basePrice, blockedDateStrings]);
+  }, [range, seasonalPrices, basePrice, holidays, blockedDateStrings]);
 
   // Intelligent Auto-scroll for Mobile UX
   useEffect(() => {

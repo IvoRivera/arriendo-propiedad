@@ -1,6 +1,6 @@
 import { format, parseISO, isFriday, isSaturday, isSunday, addDays, subDays, startOfMonth, endOfMonth, eachDayOfInterval } from 'date-fns';
 import { supabaseService } from './supabaseServer';
-import { getPropertyBaseConfig } from './systemConfigServer';
+import { getPropertyBaseConfig, getLiveConfigServer } from './systemConfigServer';
 
 export interface PricingDetails {
   price: number;
@@ -54,8 +54,9 @@ export async function getPriceForDate(
     basePrice?: number;
   }
 ): Promise<PricingDetails> {
-  const date = parseISO(dateStr);
-  const formattedDate = format(date, 'yyyy-MM-dd');
+  // Parse date ensuring we stay on the correct day regardless of timezone (using noon)
+  const date = parseISO(dateStr.includes('T') ? dateStr : `${dateStr}T12:00:00`);
+  const formattedDate = dateStr.split('T')[0];
 
   // 1. Fetch data if not provided (Optimization: allow passing cached data for bulk calculations)
   let { seasonalPrices, holidaysSet, basePrice } = cachedData || {};
@@ -65,7 +66,7 @@ export async function getPriceForDate(
     const start = format(startOfMonth(date), 'yyyy-MM-dd');
     const end = format(endOfMonth(date), 'yyyy-MM-dd');
 
-    const [pricesRes, holidaysRes, propertyRes] = await Promise.all([
+    const [pricesRes, holidaysRes, propertyRes, config] = await Promise.all([
       supabaseService
         .from('seasonal_pricing')
         .select('*')
@@ -77,26 +78,37 @@ export async function getPriceForDate(
         .select('date')
         .gte('date', format(subDays(date, 4), 'yyyy-MM-dd'))
         .lte('date', format(addDays(date, 4), 'yyyy-MM-dd')),
-      getPropertyBaseConfig(propertyId ? { id: propertyId } : undefined)
+      getPropertyBaseConfig(propertyId ? { id: propertyId } : undefined),
+      getLiveConfigServer()
     ]);
 
     seasonalPrices = pricesRes.data || [];
     holidaysSet = new Set(holidaysRes.data?.map(h => h.date) || []);
-    basePrice = propertyRes?.base_price ?? 80000;
+    
+    // Prioritize system_config PROPERTY_RENT_VALUE over property table base_price
+    const rentValueRaw = config['PROPERTY_RENT_VALUE'];
+    basePrice = rentValueRaw ? parseInt(rentValueRaw.replace(/\D/g, '')) : (propertyRes?.base_price ?? 80000);
   }
 
   // 2. Determine day properties
   const isHoliday = isDateHoliday(date, holidaysSet!);
-  const isWeekend = isFriday(date) || isSaturday(date) || isSunday(date);
+  const isWeekend = isFriday(date) || isSaturday(date);
   const isLongWkd = isLongWeekend(date, holidaysSet!);
 
   // 3. Find the best matching rule
   // Already ordered by priority DESC in query if not cached, but let's be safe
-  const matches = seasonalPrices!.filter(rule => 
-    formattedDate >= rule.start_date && formattedDate <= rule.end_date
-  ).sort((a, b) => b.priority - a.priority || (new Date(a.end_date).getTime() - new Date(a.start_date).getTime()) - (new Date(b.end_date).getTime() - new Date(b.start_date).getTime()));
+  const matches = seasonalPrices!.filter(rule => {
+    // Ensure we compare strings to avoid timezone issues
+    const ruleStart = typeof rule.start_date === 'string' ? rule.start_date : format(parseISO(rule.start_date), 'yyyy-MM-dd');
+    const ruleEnd = typeof rule.end_date === 'string' ? rule.end_date : format(parseISO(rule.end_date), 'yyyy-MM-dd');
+    return formattedDate >= ruleStart && formattedDate <= ruleEnd;
+  }).sort((a, b) => b.priority - a.priority || (new Date(a.end_date).getTime() - new Date(a.start_date).getTime()) - (new Date(b.end_date).getTime() - new Date(b.start_date).getTime()));
 
   const bestRule = matches[0];
+  
+  if (process.env.NODE_ENV === 'development' && !cachedData) {
+    console.log(`[PricingEngine] Date: ${formattedDate}, Matches: ${matches.length}, Best Rule: ${bestRule?.season_name || 'None'}`);
+  }
 
   let price = basePrice;
   let source = 'Base Price';
@@ -104,7 +116,7 @@ export async function getPriceForDate(
   let rulePriority = -1;
 
   if (bestRule) {
-    const isWkdDay = isFriday(date) || isSaturday(date) || isSunday(date);
+    const isWkdDay = isFriday(date) || isSaturday(date);
     // Use weekend_price if available and it's a weekend, otherwise standard price
     const hasWeekendPrice = bestRule.weekend_price !== null && bestRule.weekend_price !== undefined;
     
@@ -137,15 +149,16 @@ export async function getPriceForDate(
 export async function getPricingForRange(
   startDate: string,
   endDate: string,
-  propertyId?: string
+  propertyId?: string,
+  includeLastDay: boolean = false
 ) {
-  const start = parseISO(startDate);
-  const end = parseISO(endDate);
+  const start = parseISO(startDate.includes('T') ? startDate : `${startDate}T12:00:00`);
+  const end = parseISO(endDate.includes('T') ? endDate : `${endDate}T12:00:00`);
   const days = eachDayOfInterval({ start, end });
-  const nights = days.slice(0, -1);
+  const nights = includeLastDay ? days : days.slice(0, -1);
 
   // Fetch all necessary data once for the entire range
-  const [pricesRes, holidaysRes, propertyRes] = await Promise.all([
+  const [pricesRes, holidaysRes, propertyRes, config] = await Promise.all([
     supabaseService
       .from('seasonal_pricing')
       .select('*')
@@ -156,12 +169,16 @@ export async function getPricingForRange(
       .select('date')
       .gte('date', format(subDays(start, 4), 'yyyy-MM-dd'))
       .lte('date', format(addDays(end, 4), 'yyyy-MM-dd')),
-    getPropertyBaseConfig(propertyId ? { id: propertyId } : undefined)
+    getPropertyBaseConfig(propertyId ? { id: propertyId } : undefined),
+    getLiveConfigServer()
   ]);
 
   const seasonalPrices = pricesRes.data || [];
   const holidaysSet = new Set(holidaysRes.data?.map(h => h.date) || []);
-  const basePrice = propertyRes?.base_price ?? 80000;
+  
+  // Prioritize system_config PROPERTY_RENT_VALUE over property table base_price
+  const rentValueRaw = config['PROPERTY_RENT_VALUE'];
+  const basePrice = rentValueRaw ? parseInt(rentValueRaw.replace(/\D/g, '')) : (propertyRes?.base_price ?? 80000);
 
   const breakdown = await Promise.all(nights.map(async (night) => {
     const details = await getPriceForDate(format(night, 'yyyy-MM-dd'), propertyId, {

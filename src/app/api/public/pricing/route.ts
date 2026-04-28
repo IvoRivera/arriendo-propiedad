@@ -31,7 +31,7 @@ export async function GET(request: NextRequest) {
     // 2. Fetch active and future seasonal prices (for this property OR global)
     let seasonalQuery = supabaseService
       .from('seasonal_pricing')
-      .select('start_date, end_date, price_per_night, season_name, priority, property_id')
+      .select('start_date, end_date, price_per_night, weekend_price, season_name, priority, property_id')
       .gte('end_date', new Date().toISOString().split('T')[0]);
     
     if (property?.id) {
@@ -50,13 +50,20 @@ export async function GET(request: NextRequest) {
       .eq('property_id', property?.id)
       .gte('date', new Date().toISOString().split('T')[0]);
 
+    // 4. Fetch future holidays
+    const { data: holidays } = await supabaseService
+      .from('holidays')
+      .select('date, name, type')
+      .gte('date', new Date().toISOString().split('T')[0]);
+
     return NextResponse.json({
       success: true,
       data: {
         property: property ? { id: property.id, name: property.name, slug: property.slug } : null,
         basePrice,
         seasonalPrices: seasonalPrices || [],
-        overrides: overrides || []
+        overrides: overrides || [],
+        holidays: holidays || []
       }
     });
   } catch (err: any) {

@@ -185,6 +185,7 @@ export const CoastalRequestModal: React.FC<CoastalRequestModalProps> = ({
   const [availabilityStatus, setAvailabilityStatus] = useState<'loading' | 'error' | 'success'>('loading');
   const [blockedDateStrings, setBlockedDateStrings] = useState<string[]>([]);
   const [seasonalPrices, setSeasonalPrices] = useState<SeasonalPricing[]>([]);
+  const [holidays, setHolidays] = useState<any[]>([]);
   const [basePrice, setBasePrice] = useState<number>(0);
   const [calculatedPricing, setCalculatedPricing] = useState<{ totalPrice: number, breakdown: any[] } | null>(null);
   const [activePicker, setActivePicker] = useState<'check_in' | 'check_out' | null>(null);
@@ -296,6 +297,7 @@ export const CoastalRequestModal: React.FC<CoastalRequestModalProps> = ({
           const data = await res.json();
           if (data.success) {
             setSeasonalPrices(data.data.seasonalPrices);
+            setHolidays(data.data.holidays || []);
             setBasePrice(data.data.basePrice);
           }
         } catch (e) {
@@ -327,7 +329,7 @@ export const CoastalRequestModal: React.FC<CoastalRequestModalProps> = ({
         const breakdown = [];
         const curr = new Date(start);
         for (let i = 0; i < nightsCount; i++) {
-          const { price, seasonName } = getPriceForDate(curr, seasonalPrices, basePrice);
+          const { price, seasonName } = getPriceForDate(curr, seasonalPrices, basePrice, holidays);
           total += price;
           breakdown.push({ date: format(curr, 'yyyy-MM-dd'), price, seasonName });
           curr.setDate(curr.getDate() + 1);
@@ -677,7 +679,7 @@ export const CoastalRequestModal: React.FC<CoastalRequestModalProps> = ({
                             DayButton: (props) => {
                               const { day, ...buttonProps } = props as any;
                               const { date } = day;
-                              const { price, isSeasonal } = getPriceForDate(date, seasonalPrices || [], basePrice || 0);
+                              const { price, isSeasonal, isHoliday } = getPriceForDate(date, seasonalPrices || [], basePrice || 0, holidays || []);
                               const formatted = price >= 1000
                                 ? new Intl.NumberFormat('es-CL').format(Math.floor(price / 1000)) + 'k'
                                 : price;
@@ -687,7 +689,7 @@ export const CoastalRequestModal: React.FC<CoastalRequestModalProps> = ({
                                   <div className="flex flex-col items-center justify-center w-full h-full pt-1">
                                     <span className="text-[10px] font-medium leading-none">{date.getDate()}</span>
                                     {price > 0 && (
-                                      <span className={`text-[7px] mt-0.5 leading-none font-bold tracking-tighter ${isSeasonal ? 'text-[#00628f]' : 'text-[#b5a99a]'}`}>
+                                      <span className={`text-[7px] mt-0.5 leading-none font-bold tracking-tighter ${isHoliday ? 'text-rose-500' : isSeasonal ? 'text-[#00628f]' : 'text-[#b5a99a]'}`}>
                                         ${formatted}
                                       </span>
                                     )}

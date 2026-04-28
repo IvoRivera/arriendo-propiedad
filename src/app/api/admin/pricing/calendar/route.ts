@@ -23,7 +23,7 @@ export async function GET(request: Request) {
   const end = format(endOfMonth(baseDate), 'yyyy-MM-dd');
 
   try {
-    const pricing = await getPricingForRange(start, end, propertyId);
+    const pricing = await getPricingForRange(start, end, propertyId, true);
     return NextResponse.json(pricing);
   } catch (err: any) {
     return NextResponse.json({ error: err.message }, { status: 500 });

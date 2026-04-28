@@ -3,6 +3,7 @@ import { verifyAdminRequest } from '@/lib/adminAuth';
 import { supabaseService } from '@/lib/supabaseServer';
 import { format, parseISO, eachDayOfInterval } from 'date-fns';
 import { getPriceForDate, isDateHoliday, isLongWeekend } from '@/lib/pricing-engine';
+import { getLiveConfigServer } from '@/lib/systemConfigServer';
 
 export async function POST(request: Request) {
   const auth = await verifyAdminRequest(request);
@@ -31,10 +32,25 @@ export async function POST(request: Request) {
 
   const rulesToInsert: any[] = [];
 
+  const config = await getLiveConfigServer();
+  const rentValueRaw = config['PROPERTY_RENT_VALUE'];
+  const basePrice = rentValueRaw ? parseInt(rentValueRaw.replace(/\D/g, '')) : 80000;
+
+  // Robust price calculation
+  const numValue = Number(value);
   const calculatePrice = (base: number) => {
-    if (priceMode === 'fixed') return value;
-    return base * (1 + value / 100);
+    if (priceMode === 'fixed') return numValue;
+    // Percentage: base + (base * value / 100)
+    const multiplier = 1 + (numValue / 100);
+    return Math.max(1, Math.round(base * multiplier)); // Ensure positive price
   };
+
+  const finalPrice = calculatePrice(basePrice);
+  const finalWeekendPrice = body.weekend_price ? calculatePrice(basePrice) : null; 
+
+  if (process.env.NODE_ENV === 'development') {
+    console.log(`[BulkApply] Mode: ${priceMode}, Value: ${numValue}, Base: ${basePrice}, Final: ${finalPrice}`);
+  }
 
   // Logic based on targetType
   if (targetType === 'customRange') {
@@ -43,8 +59,8 @@ export async function POST(request: Request) {
       start_date: startDate,
       end_date: endDate,
       season_name: name || 'Ajuste Especial',
-      price_per_night: value,
-      weekend_price: body.weekend_price || null,
+      price_per_night: finalPrice,
+      weekend_price: finalWeekendPrice,
       priority: priority
     });
   } else if (targetType === 'weekends') {
@@ -53,7 +69,8 @@ export async function POST(request: Request) {
       start_date: startDate,
       end_date: endDate,
       season_name: name || 'Ajuste Fines de Semana',
-      weekend_price: value,
+      price_per_night: basePrice, // Required by DB schema NOT NULL constraint
+      weekend_price: finalPrice,
       priority: priority
     });
   } else if (targetType === 'holidays') {
@@ -64,7 +81,7 @@ export async function POST(request: Request) {
         start_date: hDate,
         end_date: hDate,
         season_name: name || 'Feriado',
-        price_per_night: value,
+        price_per_night: finalPrice,
         priority: priority
       });
     });
@@ -82,7 +99,7 @@ export async function POST(request: Request) {
             start_date: currentRange[0],
             end_date: currentRange[currentRange.length - 1],
             season_name: name || 'Fin de Semana Largo',
-            price_per_night: value,
+            price_per_night: finalPrice,
             priority: priority
           });
           currentRange = [];
@@ -95,14 +112,18 @@ export async function POST(request: Request) {
         start_date: currentRange[0],
         end_date: currentRange[currentRange.length - 1],
         season_name: name || 'Fin de Semana Largo',
-        price_per_night: value,
+        price_per_night: finalPrice,
         priority: priority
       });
     }
   }
 
   if (rulesToInsert.length === 0) {
-    return NextResponse.json({ message: 'No dates matched criteria' });
+    return NextResponse.json({ 
+      success: true, 
+      inserted: 0, 
+      message: 'No se encontraron fechas que coincidan con los criterios (ej: no hay feriados en el rango)' 
+    });
   }
 
   const { error } = await supabaseService.from('seasonal_pricing').insert(rulesToInsert);

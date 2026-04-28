@@ -14,12 +14,16 @@ import {
   Info,
   CheckCircle2,
   AlertCircle,
+  ArrowLeft,
   Clock,
   TrendingUp,
   Settings,
-  ArrowRight
+  ArrowRight,
+  X
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
+import { supabase } from '@/lib/supabase';
+import Link from 'next/link';
 
 // Simple Modal Component
 const Modal = ({ isOpen, onClose, title, children }: any) => {
@@ -51,6 +55,7 @@ export default function PricingAdminPage() {
   const [isSeasonModalOpen, setIsSeasonModalOpen] = useState(false);
   const [selectedDay, setSelectedDay] = useState<any>(null);
   const [isDayModalOpen, setIsDayModalOpen] = useState(false);
+  const [basePrice, setBasePrice] = useState<number>(0);
 
   // Form states
   const [bulkForm, setBulkForm] = useState({
@@ -73,23 +78,54 @@ export default function PricingAdminPage() {
     priority: 10
   });
 
+  const [editingSeasonId, setEditingSeasonId] = useState<string | null>(null);
+  const [editSeasonForm, setEditSeasonForm] = useState<any | null>(null);
+
   const fetchData = async () => {
     setIsLoading(true);
     const monthStr = format(currentMonth, 'yyyy-MM');
+    const { data: { session } } = await supabase.auth.getSession();
+    const token = session?.access_token;
+
+    if (!token) {
+      toast.error('Sesión no encontrada. Por favor inicia sesión.');
+      setIsLoading(false);
+      return;
+    }
+
+    const headers = { 'Authorization': `Bearer ${token}` };
+
     try {
-      const [pricingRes, holidaysRes, seasonsRes] = await Promise.all([
-        fetch(`/api/admin/pricing/calendar?month=${monthStr}`),
-        fetch(`/api/admin/holidays?year=${format(currentMonth, 'yyyy')}`),
-        fetch('/api/admin/pricing/seasons')
+      const [pricingRes, holidaysRes, seasonsRes, configRes] = await Promise.all([
+        fetch(`/api/admin/pricing/calendar?month=${monthStr}`, { headers }),
+        fetch(`/api/admin/holidays?year=${format(currentMonth, 'yyyy')}`, { headers }),
+        fetch('/api/admin/pricing/seasons', { headers }),
+        supabase.from('system_config').select('value').eq('key', 'PROPERTY_RENT_VALUE').single()
       ]);
 
       const pricing = await pricingRes.json();
       const holidaysData = await holidaysRes.json();
       const seasonsData = await seasonsRes.json();
+      const configData = configRes.data;
       
-      setCalendarData(pricing.breakdown || []);
-      setHolidays(holidaysData || []);
-      setSeasons(seasonsData || []);
+      if (configData) {
+        setBasePrice(parseInt(configData.value.replace(/\D/g, '')));
+      }
+      
+      // Debugging
+      console.log('--- Debug: Pricing Data Loaded ---');
+      console.log('Holidays count:', holidaysData?.length);
+      console.log('First holiday:', holidaysData?.[0]);
+      console.log('First day breakdown:', pricing?.breakdown?.[0]);
+      
+      setCalendarData(pricing?.breakdown || []);
+      setHolidays(Array.isArray(holidaysData) ? holidaysData : []);
+      setSeasons(Array.isArray(seasonsData) ? seasonsData : []);
+
+
+      if (!pricingRes.ok) toast.error(pricing?.error || 'Error en calendario');
+      if (!holidaysRes.ok) toast.error(holidaysData?.error || 'Error en feriados');
+      if (!seasonsRes.ok) toast.error(seasonsData?.error || 'Error en temporadas');
     } catch (err) {
       toast.error('Error al cargar datos');
     } finally {
@@ -102,10 +138,16 @@ export default function PricingAdminPage() {
   }, [currentMonth]);
 
   const handleApplyBulk = async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    const token = session?.access_token;
+
     try {
       const res = await fetch('/api/admin/pricing/apply', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
         body: JSON.stringify({
           ...bulkForm,
           value: Number(bulkForm.value)
@@ -125,10 +167,16 @@ export default function PricingAdminPage() {
   };
 
   const handleSaveDayOverride = async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    const token = session?.access_token;
+
     try {
       const res = await fetch('/api/admin/pricing/apply', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
         body: JSON.stringify({
           startDate: selectedDay.date,
           endDate: selectedDay.date,
@@ -149,10 +197,61 @@ export default function PricingAdminPage() {
     }
   };
 
-  const handleDeleteSeason = async (id: string) => {
-    if (!confirm('¿Seguro que quieres eliminar esta regla?')) return;
+  const handleEditSeasonStart = (season: any) => {
+    setEditingSeasonId(season.id);
+    setEditSeasonForm({ ...season });
+  };
+
+  const handleEditSeasonCancel = () => {
+    setEditingSeasonId(null);
+    setEditSeasonForm(null);
+  };
+
+  const handleUpdateSeason = async () => {
+    if (!editSeasonForm) return;
+    const { data: { session } } = await supabase.auth.getSession();
+    const token = session?.access_token;
+
     try {
-      const res = await fetch(`/api/admin/pricing/seasons?id=${id}`, { method: 'DELETE' });
+      const res = await fetch('/api/admin/pricing/seasons', {
+        method: 'PATCH',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          id: editSeasonForm.id,
+          season_name: editSeasonForm.season_name,
+          start_date: editSeasonForm.start_date,
+          end_date: editSeasonForm.end_date,
+          price_per_night: Number(editSeasonForm.price_per_night),
+          weekend_price: editSeasonForm.weekend_price ? Number(editSeasonForm.weekend_price) : null
+        })
+      });
+
+      if (res.ok) {
+        toast.success('Regla actualizada');
+        setEditingSeasonId(null);
+        setEditSeasonForm(null);
+        fetchData();
+      } else {
+        const error = await res.json();
+        toast.error(error.error || 'Error al actualizar');
+      }
+    } catch (err) {
+      toast.error('Error de red');
+    }
+  };
+
+  const handleDeleteSeason = async (id: string) => {
+    const { data: { session } } = await supabase.auth.getSession();
+    const token = session?.access_token;
+
+    try {
+      const res = await fetch(`/api/admin/pricing/seasons?id=${id}`, { 
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
       if (res.ok) {
         toast.success('Regla eliminada');
         fetchData();
@@ -163,10 +262,16 @@ export default function PricingAdminPage() {
   };
 
   const handleSaveSeason = async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    const token = session?.access_token;
+
     try {
       const res = await fetch('/api/admin/pricing/apply', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
         body: JSON.stringify({
           startDate: seasonForm.startDate,
           endDate: seasonForm.endDate,
@@ -196,6 +301,13 @@ export default function PricingAdminPage() {
       {/* Header */}
       <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-end justify-between mb-16 gap-8">
         <div className="space-y-6">
+          <Link 
+            href="/admin"
+            className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.3em] text-[#2c2416]/40 hover:text-[#00628f] transition-colors group"
+          >
+            <ArrowLeft className="w-3 h-3 group-hover:-translate-x-1 transition-transform" />
+            Volver al Panel
+          </Link>
           <h1 className="text-5xl md:text-6xl font-serif italic tracking-tight leading-tight">
             Gestión de <span className="text-[#00628f]">Precios</span>
           </h1>
@@ -257,42 +369,83 @@ export default function PricingAdminPage() {
 
               {calendarData.map((day: any, i: number) => {
                 const date = parseISO(day.date);
-                const holiday = holidays.find(h => h.date === day.date);
+                const dateString = day.date; // YYYY-MM-DD
+                
+                // Look for holiday name in the holidays state - robust matching
+                const holidayInfo = holidays.find(h => {
+                  const hDate = typeof h.date === 'string' ? h.date.split('T')[0] : '';
+                  return hDate === dateString;
+                });
+                
+                const isHoliday = day.isHoliday || !!holidayInfo;
+                const holidayName = holidayInfo?.name || (isHoliday ? 'Feriado' : '');
+                
+                // Differentiate bridge holidays (Fri, Mon, Weekend) from isolated ones (Tue, Wed, Thu)
+                const dayOfWeek = date.getDay(); // 0=Sun, 1=Mon, ..., 6=Sat
+                const isBridgeHoliday = isHoliday && (dayOfWeek === 1 || dayOfWeek === 5 || dayOfWeek === 6);
                 
                 return (
                   <div 
-                    key={day.date}
+                    key={dateString}
                     onClick={() => {
                       setSelectedDay({ ...day, overridePrice: day.price });
                       setIsDayModalOpen(true);
                     }}
                     className={`
                       aspect-square p-3 rounded-xl border transition-all cursor-pointer group relative overflow-hidden
-                      ${isToday(date) ? 'border-[#00628f] bg-[#00628f]/5' : 'border-transparent bg-[#f5f0e8]/50 hover:bg-[#f5f0e8]'}
-                      ${day.isLongWeekend ? 'ring-2 ring-purple-500/20' : ''}
+                      ${isHoliday 
+                        ? isBridgeHoliday
+                          ? 'bg-rose-300/90 border-rose-400 hover:bg-rose-400 shadow-[inset_0_0_20px_rgba(244,63,94,0.2)]' 
+                          : 'bg-rose-100/60 border-rose-200 hover:bg-rose-200 shadow-[inset_0_0_20px_rgba(244,63,94,0.05)]'
+                        : isToday(date) 
+                          ? 'border-[#00628f] bg-[#00628f]/5' 
+                          : 'border-transparent bg-[#f5f0e8]/50 hover:bg-[#f5f0e8]'}
+                      ${day.isLongWeekend && !isHoliday ? 'ring-2 ring-purple-500/10 bg-purple-50/30' : ''}
                     `}
                   >
+                    {/* Holiday Badge (Floating) */}
+                    {isHoliday && (
+                      <div className="absolute top-0 right-0 p-1">
+                        <div title={holidayName} className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse"></div>
+                      </div>
+                    )}
+
                     {/* Day Number */}
-                    <span className={`text-xs font-bold ${isToday(date) ? 'text-[#00628f]' : 'text-[#2c2416]/40'}`}>
+                    <span className={`text-[10px] font-bold tracking-tighter ${
+                      isHoliday 
+                        ? isBridgeHoliday ? 'text-rose-900' : 'text-rose-500' 
+                        : isToday(date) ? 'text-[#00628f]' : 'text-[#2c2416]/30'
+                    }`}>
                       {format(date, 'd')}
                     </span>
 
                     {/* Price */}
                     <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                      <div className="text-base font-serif italic text-[#2c2416]">
+                      <div className={`text-base font-serif italic ${isHoliday ? 'text-rose-900 font-bold' : 'text-[#2c2416]'}`}>
                         ${(day.price / 1000).toFixed(0)}k
                       </div>
                     </div>
 
-                    {/* Indicators */}
-                    <div className="absolute bottom-2 right-2 flex gap-1">
-                      {holiday && (
-                        <div title={holiday.name} className="w-1.5 h-1.5 rounded-full bg-red-400"></div>
-                      )}
-                      {day.isWeekend && (
-                        <div className="w-1.5 h-1.5 rounded-full bg-[#00628f]"></div>
-                      )}
-                    </div>
+                    {/* Label/Badge for Holiday */}
+                    {isHoliday && (
+                      <div className="absolute bottom-1 left-2 right-2 truncate">
+                        <span title={holidayName} className="text-[7px] font-bold uppercase tracking-tight text-rose-500/80 leading-none">
+                          {holidayName}
+                        </span>
+                      </div>
+                    )}
+
+                    {/* Indicators for normal days */}
+                    {!isHoliday && (
+                      <div className="absolute bottom-2 right-2 flex gap-1">
+                        {day.isWeekend && (
+                          <div className="w-1.5 h-1.5 rounded-full bg-[#00628f]/40"></div>
+                        )}
+                        {day.isLongWeekend && (
+                          <div className="w-1.5 h-1.5 rounded-full bg-purple-400/40"></div>
+                        )}
+                      </div>
+                    )}
                   </div>
                 );
               })}
@@ -301,16 +454,19 @@ export default function PricingAdminPage() {
             {/* Legend */}
             <div className="mt-12 flex flex-wrap gap-8 pt-10 border-t border-[#f5f0e8] text-[10px] font-bold uppercase tracking-widest text-[#2c2416]/40">
               <div className="flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full bg-red-400"></div> Feriado
+                <div className="w-2.5 h-2.5 rounded-full bg-rose-400"></div> 🔴 Feriado Puente
               </div>
               <div className="flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full bg-[#00628f]"></div> Fin de semana
+                <div className="w-2.5 h-2.5 rounded-full bg-rose-200"></div> 💗 Feriado Suelto
               </div>
               <div className="flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full bg-purple-400"></div> Fin de semana largo
+                <div className="w-2.5 h-2.5 rounded-full bg-purple-500/40"></div> 🟣 Fin de semana largo (No feriado)
               </div>
               <div className="flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full border border-[#2c2416]/20"></div> Override manual
+                <div className="w-2.5 h-2.5 rounded-full bg-[#00628f]"></div> 🔵 Fin de semana (Vie-Sáb)
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-2.5 h-2.5 rounded-full border border-[#2c2416]/20"></div> ⚪ Día normal
               </div>
             </div>
           </div>
@@ -334,23 +490,113 @@ export default function PricingAdminPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[#f5f0e8]">
-                  {seasons.map(season => (
-                    <tr key={season.id} className="group hover:bg-[#f5f0e8]/30 transition-colors">
-                      <td className="py-6 px-8 font-semibold text-sm">{season.season_name}</td>
-                      <td className="py-6 px-8 text-xs text-[#2c2416]/50">
-                        {format(parseISO(season.start_date), 'dd MMM')} <ArrowRight className="inline w-3 h-3 mx-1 opacity-30" /> {format(parseISO(season.end_date), 'dd MMM')}
+                  {Array.isArray(seasons) && seasons.map(season => (
+                    <tr key={season.id} className={`${editingSeasonId === season.id ? 'bg-[#00628f]/5' : 'hover:bg-[#f5f0e8]/30'} transition-colors group`}>
+                      <td className="py-6 px-8">
+                        {editingSeasonId === season.id ? (
+                          <input 
+                            type="text"
+                            value={editSeasonForm?.season_name}
+                            onChange={e => setEditSeasonForm({...editSeasonForm, season_name: e.target.value})}
+                            className="w-full bg-white border border-[#f5f0e8] rounded-lg px-3 py-2 text-xs outline-none focus:border-[#00628f]"
+                          />
+                        ) : (
+                          <span className="font-semibold text-sm">{season.season_name}</span>
+                        )}
                       </td>
-                      <td className="py-6 px-8 font-serif italic text-lg">${(Number(season.price_per_night) / 1000).toFixed(0)}k</td>
-                      <td className="py-6 px-8 font-serif italic text-lg text-[#00628f]">
-                        {season.weekend_price ? `$${(Number(season.weekend_price) / 1000).toFixed(0)}k` : '-'}
+                      <td className="py-6 px-8">
+                        {editingSeasonId === season.id ? (
+                          <div className="flex flex-col gap-1">
+                            <input 
+                              type="date"
+                              value={editSeasonForm?.start_date}
+                              onChange={e => setEditSeasonForm({...editSeasonForm, start_date: e.target.value})}
+                              className="w-full bg-white border border-[#f5f0e8] rounded-lg px-2 py-1 text-[10px] outline-none"
+                            />
+                            <input 
+                              type="date"
+                              value={editSeasonForm?.end_date}
+                              onChange={e => setEditSeasonForm({...editSeasonForm, end_date: e.target.value})}
+                              className="w-full bg-white border border-[#f5f0e8] rounded-lg px-2 py-1 text-[10px] outline-none"
+                            />
+                          </div>
+                        ) : (
+                          <span className="text-xs text-[#2c2416]/50">
+                            {format(parseISO(season.start_date), 'dd MMM')} <ArrowRight className="inline w-3 h-3 mx-1 opacity-30" /> {format(parseISO(season.end_date), 'dd MMM')}
+                          </span>
+                        )}
+                      </td>
+                      <td className="py-6 px-8">
+                        {editingSeasonId === season.id ? (
+                          <div className="relative">
+                            <span className="absolute left-2 top-1/2 -translate-y-1/2 text-[10px] text-[#2c2416]/30">$</span>
+                            <input 
+                              type="number"
+                              value={editSeasonForm?.price_per_night}
+                              onChange={e => setEditSeasonForm({...editSeasonForm, price_per_night: e.target.value})}
+                              className="w-full bg-white border border-[#f5f0e8] rounded-lg pl-5 pr-2 py-2 text-xs outline-none"
+                            />
+                          </div>
+                        ) : (
+                          <span className="font-serif italic text-lg">${(Number(season.price_per_night) / 1000).toFixed(0)}k</span>
+                        )}
+                      </td>
+                      <td className="py-6 px-8">
+                        {editingSeasonId === season.id ? (
+                          <div className="relative">
+                            <span className="absolute left-2 top-1/2 -translate-y-1/2 text-[10px] text-[#2c2416]/30">$</span>
+                            <input 
+                              type="number"
+                              value={editSeasonForm?.weekend_price || ''}
+                              placeholder="Opcional"
+                              onChange={e => setEditSeasonForm({...editSeasonForm, weekend_price: e.target.value})}
+                              className="w-full bg-white border border-[#f5f0e8] rounded-lg pl-5 pr-2 py-2 text-xs outline-none"
+                            />
+                          </div>
+                        ) : (
+                          <span className="font-serif italic text-lg text-[#00628f]">
+                            {season.weekend_price ? `$${(Number(season.weekend_price) / 1000).toFixed(0)}k` : '-'}
+                          </span>
+                        )}
                       </td>
                       <td className="py-6 px-8 text-right">
-                        <button 
-                          onClick={() => handleDeleteSeason(season.id)}
-                          className="p-3 text-[#2c2416]/20 hover:text-red-500 hover:bg-red-50 rounded-full transition-all"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
+                        <div className="flex items-center justify-end gap-2">
+                          {editingSeasonId === season.id ? (
+                            <>
+                              <button 
+                                onClick={handleUpdateSeason}
+                                className="p-2 text-[#00628f] hover:bg-[#00628f]/10 rounded-full transition-all"
+                                title="Guardar"
+                              >
+                                <CheckCircle2 className="w-4 h-4" />
+                              </button>
+                              <button 
+                                onClick={handleEditSeasonCancel}
+                                className="p-2 text-[#2c2416]/20 hover:text-[#2c2416] hover:bg-[#f5f0e8] rounded-full transition-all"
+                                title="Cancelar"
+                              >
+                                <X className="w-4 h-4" />
+                              </button>
+                            </>
+                          ) : (
+                            <>
+                              <button 
+                                onClick={() => handleEditSeasonStart(season)}
+                                className="p-2 text-[#2c2416]/20 hover:text-[#00628f] hover:bg-[#00628f]/5 rounded-full transition-all"
+                                title="Editar"
+                              >
+                                <Edit2 className="w-4 h-4" />
+                              </button>
+                              <button 
+                                onClick={() => handleDeleteSeason(season.id)}
+                                className="p-2 text-[#2c2416]/20 hover:text-red-500 hover:bg-red-50 rounded-full transition-all"
+                                title="Eliminar"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            </>
+                          )}
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -368,6 +614,12 @@ export default function PricingAdminPage() {
               Resumen Tarifario
             </h3>
             <div className="space-y-6">
+              <div className="p-6 bg-[#f5f0e8]/50 rounded-xl">
+                <div className="text-[10px] text-[#2c2416]/40 uppercase tracking-widest font-bold mb-2">Precio Base (System)</div>
+                <div className="text-3xl font-serif italic text-[#6b7c4a]">
+                  ${(basePrice / 1000).toFixed(0)}k
+                </div>
+              </div>
               <div className="p-6 bg-[#f5f0e8]/50 rounded-xl">
                 <div className="text-[10px] text-[#2c2416]/40 uppercase tracking-widest font-bold mb-2">Promedio Mensual</div>
                 <div className="text-3xl font-serif italic">
@@ -567,9 +819,15 @@ export default function PricingAdminPage() {
 
             <button 
               onClick={async () => {
+                const { data: { session } } = await supabase.auth.getSession();
+                const token = session?.access_token;
+                
                 const res = await fetch('/api/admin/pricing/apply', {
                   method: 'POST',
-                  headers: { 'Content-Type': 'application/json' },
+                  headers: { 
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                  },
                   body: JSON.stringify({
                     startDate: selectedDay.date,
                     endDate: selectedDay.date,
