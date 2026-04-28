@@ -12,7 +12,8 @@ import {
   subMonths,
   isSameMonth,
   isFriday,
-  isSaturday
+  isSaturday,
+  isToday
 } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { ChevronLeft, ChevronRight, Star, Zap, Info } from 'lucide-react';
@@ -26,6 +27,7 @@ interface PricingCalendarProps {
   basePrice: number;
   onDateSelect?: (date: string) => void;
   onRangeSelect?: (start: string, end: string) => void;
+  showHolidays?: boolean;
 }
 
 export const PricingCalendar: React.FC<PricingCalendarProps> = ({ 
@@ -33,7 +35,8 @@ export const PricingCalendar: React.FC<PricingCalendarProps> = ({
   holidays, 
   basePrice,
   onDateSelect,
-  onRangeSelect
+  onRangeSelect,
+  showHolidays = true
 }) => {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [dragStart, setDragStart] = useState<string | null>(null);
@@ -123,7 +126,7 @@ export const PricingCalendar: React.FC<PricingCalendarProps> = ({
       {/* Calendar Viewport */}
       <div className="flex-1 min-w-0 max-w-[1200px] mx-auto xl:mx-0">
         <div className="flex items-center justify-between mb-8 px-4">
-          <h2 className="font-serif italic text-4xl text-primary-navy lowercase tracking-tight capitalize">
+          <h2 className="font-serif italic text-4xl text-primary-navy tracking-tight capitalize">
             {format(currentMonth, 'MMMM yyyy', { locale: es })}
           </h2>
           <div className="flex gap-3">
@@ -143,9 +146,12 @@ export const PricingCalendar: React.FC<PricingCalendarProps> = ({
         </div>
 
         <div className="overflow-x-auto pb-4 scrollbar-hide">
-          <div className="min-w-[800px] grid grid-cols-7 gap-px bg-sand-dark rounded-[32px] overflow-hidden border border-sand-dark shadow-xl">
+          <div className={`
+            grid grid-cols-7 gap-px bg-sand-dark rounded-[20px] md:rounded-[32px] overflow-hidden border border-sand-dark shadow-xl
+            ${!showHolidays ? 'max-w-full' : ''}
+          `}>
             {['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'].map(day => (
-              <div key={day} className="bg-sand-light py-5 text-center text-[10px] font-bold text-sand-dark uppercase tracking-[0.2em] mix-blend-multiply">
+              <div key={day} className="bg-sand-light py-2 md:py-5 text-center text-[8px] md:text-[10px] font-bold text-sand-dark uppercase tracking-[0.1em] md:tracking-[0.2em] mix-blend-multiply">
                 {day}
               </div>
             ))}
@@ -156,88 +162,92 @@ export const PricingCalendar: React.FC<PricingCalendarProps> = ({
               const { price, source, isHoliday, holidayName, isBridge, ruleColor, ruleBorderColor } = getDayDetails(day);
               const isSelected = isInSelection(dateStr);
               const isHovered = hoveredDate === dateStr;
+              const isTodayDate = isToday(day);
 
               return (
-                <div 
+                <div
                   key={idx}
                   onMouseDown={() => !isOutsideMonth && handleMouseDown(dateStr)}
                   onMouseEnter={() => !isOutsideMonth && handleMouseEnter(dateStr)}
                   onMouseUp={handleMouseUp}
+                  onDoubleClick={() => !isOutsideMonth && onDateSelect?.(dateStr)}
                   style={{ 
                     backgroundColor: !isOutsideMonth ? (isSelected ? '#00285515' : ruleColor || '#ffffff') : '#f8f5f0',
                   }}
                   className={`
-                    aspect-[1.1] min-h-[140px] p-4 flex flex-col transition-all duration-300 relative group
+                    aspect-square min-w-0 w-full p-1 md:p-3 flex flex-col transition-all duration-300 relative group overflow-hidden border-b border-r border-sand-dark/20
                     ${isOutsideMonth ? 'opacity-40' : 'cursor-crosshair hover:z-10'}
                     ${isSelected ? 'ring-inset ring-2 ring-primary-navy' : ''}
-                    ${isHovered && !isOutsideMonth ? 'shadow-2xl scale-[1.02] z-20' : ''}
+                    ${isTodayDate && !isOutsideMonth ? 'ring-inset ring-2 ring-warm-gold/50 bg-warm-gold/5' : ''}
+                    ${isHovered && !isOutsideMonth ? 'shadow-inner bg-sand-light/50' : ''}
                   `}
                 >
                   {/* Top Bar: Number & Holiday Icon */}
-                  <div className="flex justify-between items-start mb-2">
+                  <div className="flex justify-between items-start mb-auto">
                     <span className={`
-                      text-sm font-semibold 
-                      ${isOutsideMonth ? 'text-[#c2bcaf]' : isHoliday ? 'text-primary-navy scale-110' : 'text-sand-dark'}
-                      transition-transform duration-300
+                      text-[9px] md:text-xs font-bold 
+                      ${isOutsideMonth ? 'text-sand-dark/30' : isHoliday ? 'text-primary-navy font-black' : 'text-primary-navy/60'}
+                      ${isTodayDate && !isOutsideMonth ? 'bg-warm-gold text-white px-1.5 py-0.5 rounded-md -ml-1' : ''}
                     `}>
                       {format(day, 'd')}
                     </span>
-                    {isHoliday && !isOutsideMonth && (
-                      <div className="bg-primary-navy/5 p-1 rounded-lg">
-                        <Star className="w-3 h-3 text-primary-navy fill-primary-navy/20" />
+                    
+                    {/* Season Indicator (Mobile: Dot, Desktop: Badge) */}
+                    {!isOutsideMonth && (
+                      <div className="flex items-center gap-1">
+                        {/* Mobile Dot */}
+                        <div 
+                          className="w-1.5 h-1.5 rounded-full md:hidden shrink-0 shadow-sm"
+                          style={{ backgroundColor: ruleBorderColor || '#9a8a78' }}
+                          title={source}
+                        />
+                        {/* Desktop Badge */}
+                        <div className={`
+                          hidden md:flex items-center gap-1 px-1.5 py-0.5 rounded-full 
+                          bg-white/60 border border-white/40 shadow-sm
+                          max-w-[80px] lg:max-w-[100px]
+                        `}>
+                          <div 
+                            className="w-1.5 h-1.5 rounded-full shrink-0" 
+                            style={{ backgroundColor: ruleBorderColor || '#9a8a78' }} 
+                          />
+                          <span className="text-[9px] font-bold text-primary-navy/80 uppercase tracking-tighter line-clamp-2 leading-tight">
+                            {source}
+                          </span>
+                        </div>
                       </div>
                     )}
                   </div>
                   
-                  {/* Content: Season Label & Price */}
+                  {/* Bottom Content: Price & Bridge */}
                   {!isOutsideMonth && (
-                    <div className="flex-1 flex flex-col justify-between gap-1">
-                      {/* Season Label (Glassmorphism) */}
-                      <div className={`
-                        hidden md:flex items-center gap-1.5 px-2 py-1 rounded-full 
-                        backdrop-blur-sm bg-white/40 border border-white/20 shadow-sm
-                        transition-all duration-500 group-hover:bg-white/60
-                        max-w-full
-                      `}>
-                        <div 
-                          className="w-1.5 h-1.5 rounded-full shrink-0" 
-                          style={{ backgroundColor: ruleBorderColor || '#9a8a78' }} 
-                        />
-                        <span className="text-[9px] font-bold text-[#4a453e] uppercase tracking-tighter truncate">
-                          {source}
-                        </span>
-                      </div>
-
-                      {/* Price Section */}
-                      <div className="flex flex-col items-end overflow-hidden">
-                        <span className="text-xl font-serif italic text-primary-navy leading-none mb-1 truncate w-full text-right">
-                          ${price.toLocaleString()}
-                        </span>
-                        
-                        {/* Mobile Indicator */}
-                        <div className="md:hidden">
-                          <Info className="w-3 h-3 text-primary-navy/30" />
+                    <div className="flex flex-col items-end gap-0.5 mt-auto">
+                      {isHoliday && (
+                        <Star className="w-2.5 h-2.5 text-primary-navy fill-primary-navy/20 mb-0.5" />
+                      )}
+                      
+                      <span className="text-[9px] md:text-sm lg:text-base font-serif italic text-primary-navy leading-none truncate w-full text-right">
+                        ${price.toLocaleString()}
+                      </span>
+                      
+                      {isBridge && (
+                        <div className="flex items-center gap-0.5 bg-primary-navy/10 px-0.5 md:px-1 rounded-sm">
+                          <Zap className="w-1.5 h-1.5 md:w-2 md:h-2 text-primary-navy fill-primary-navy" />
+                          <span className="hidden xs:inline text-[7px] md:text-[8px] text-primary-navy font-bold uppercase tracking-tighter">Puente</span>
                         </div>
-
-                        {/* Bridge Tag */}
-                        {isBridge && (
-                          <div className="flex items-center gap-1 bg-primary-navy/5 px-2 py-0.5 rounded-full border border-primary-navy/10 mt-1">
-                            <Zap className="w-2.5 h-2.5 text-primary-navy fill-primary-navy" />
-                            <span className="text-[8px] text-primary-navy font-bold uppercase tracking-tighter">Puente</span>
-                          </div>
-                        )}
-                      </div>
+                      )}
                     </div>
                   )}
 
-                  {/* Tooltip on Hover */}
+                  {/* Tooltip on Hover - Simplified */}
                   {isHovered && !isOutsideMonth && (holidayName || source !== "Base") && (
-                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 px-3 py-2 bg-primary-navy text-white text-[10px] font-medium rounded-xl shadow-2xl z-50 whitespace-nowrap animate-in fade-in zoom-in duration-200">
-                      <div className="flex items-center gap-2">
-                        {isHoliday && <Star className="w-3 h-3 fill-white" />}
+                    <div className="absolute inset-0 bg-primary-navy/90 backdrop-blur-sm flex flex-col items-center justify-center p-2 text-center z-50 animate-in fade-in duration-200">
+                      <span className="text-[8px] font-bold text-sand-light uppercase tracking-widest mb-1 opacity-60">
+                        {isHoliday ? 'Feriado' : 'Temporada'}
+                      </span>
+                      <span className="text-[10px] font-medium text-white line-clamp-2 leading-tight px-1">
                         {holidayName || source}
-                      </div>
-                      <div className="absolute top-full left-1/2 -translate-x-1/2 border-[6px] border-transparent border-t-primary-navy" />
+                      </span>
                     </div>
                   )}
                 </div>
@@ -247,13 +257,15 @@ export const PricingCalendar: React.FC<PricingCalendarProps> = ({
         </div>
       </div>
 
-      {/* Lateral Info */}
-      <div className="xl:w-72 shrink-0 h-fit lg:sticky lg:top-8 bg-white/50 backdrop-blur-md rounded-[32px] p-6 border border-sand-dark shadow-sm">
-        <h3 className="text-sm font-bold text-primary-navy uppercase tracking-widest mb-6 border-b border-sand-dark pb-4">
-          Feriados del Mes
-        </h3>
-        <HolidaySidebar holidays={holidays} currentMonth={currentMonth} />
-      </div>
+      {/* Lateral Info (Conditional) */}
+      {showHolidays && (
+        <div className="xl:w-72 shrink-0 h-fit lg:sticky lg:top-8 bg-white/50 backdrop-blur-md rounded-[32px] p-6 border border-sand-dark shadow-sm animate-in slide-in-from-right duration-500">
+          <h3 className="text-[10px] font-bold text-primary-navy uppercase tracking-widest mb-6 border-b border-sand-dark pb-4 opacity-60">
+            Feriados del Mes
+          </h3>
+          <HolidaySidebar holidays={holidays} currentMonth={currentMonth} />
+        </div>
+      )}
     </div>
   );
 };

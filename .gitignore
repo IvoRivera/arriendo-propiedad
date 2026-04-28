@@ -2,7 +2,6 @@
 .agent/
 .agents/
 .gemini/
-.gsd/
 scratch/
 adapters/
 gsd-template/

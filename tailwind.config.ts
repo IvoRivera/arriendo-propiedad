@@ -12,6 +12,9 @@ const config: Config = {
         sans: ["var(--font-inter)", "system-ui", "sans-serif"],
         serif: ["var(--font-newsreader)", "serif"],
       },
+      screens: {
+        xs: "480px",
+      },
       colors: {
         pine: "#6b7c4a",
         "warm-gold": "#c8883a",

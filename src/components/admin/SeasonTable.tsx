@@ -32,7 +32,7 @@ export const SeasonTable: React.FC<SeasonTableProps> = ({
   return (
     <div className="bg-white border border-sand-dark rounded-[32px] shadow-sm overflow-hidden border-separate">
       <div className="overflow-x-auto">
-        <table className="w-full text-left border-collapse">
+        <table className="hidden md:table w-full text-left border-collapse">
           <thead>
             <tr className="bg-sand-light/50 border-b border-sand-dark">
               <th className="px-5 py-5 text-[10px] font-bold uppercase tracking-widest text-sand-dark mix-blend-multiply">Temporada</th>
@@ -211,6 +211,74 @@ export const SeasonTable: React.FC<SeasonTableProps> = ({
             )}
           </tbody>
         </table>
+
+        {/* Mobile Vertical Cards */}
+        <div className="flex flex-col md:hidden divide-y divide-[#e2d9cc]/30">
+          {seasonalPrices.length === 0 ? (
+            <div className="px-6 py-12 text-center text-[#6b5d4f] italic font-light">
+              No hay reglas de temporada configuradas actualmente.
+            </div>
+          ) : (
+            seasonalPrices.map((rule) => (
+              <div key={`mobile-${rule.id}`} className="p-5 flex flex-col gap-4">
+                <div className="flex items-start justify-between gap-4">
+                  <div>
+                    <h3 className="font-bold text-primary-navy text-sm mb-1">{rule.season_name}</h3>
+                    <div className="flex items-center gap-2 text-primary-navy/60 text-xs font-light">
+                      <Calendar className="w-3.5 h-3.5 text-sand-dark" />
+                      <span>{rule.start_date} → {rule.end_date}</span>
+                    </div>
+                  </div>
+                  <span className={`px-2.5 py-1 rounded-full text-[9px] font-bold uppercase tracking-widest shrink-0 ${
+                    rule.priority > 0 
+                      ? 'bg-primary-navy text-white' 
+                      : 'bg-white text-sand-dark border border-sand-dark'
+                  }`}>
+                    P{rule.priority}
+                  </span>
+                </div>
+                
+                <div className="flex items-center justify-between border-t border-sand-dark/30 pt-4">
+                  <div className="flex flex-col">
+                    <span className="text-[10px] uppercase tracking-widest text-sand-dark font-bold mb-0.5">Precio</span>
+                    <span className="font-serif italic text-xl text-primary-navy">{formatCurrency(rule.price_per_night)}</span>
+                  </div>
+                  <div className="flex flex-col items-end">
+                    <span className="text-[10px] uppercase tracking-widest text-sand-dark font-bold mb-0.5">Fin de Semana</span>
+                    <span className="font-serif italic text-lg text-primary-navy/70">{rule.weekend_price ? formatCurrency(rule.weekend_price) : '—'}</span>
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between mt-1">
+                  <div className="flex items-center gap-2">
+                    <div 
+                      className="w-4 h-4 rounded-full border border-black/5 shadow-sm" 
+                      style={{ backgroundColor: rule.color_hex || '#00628f' }}
+                    />
+                    <span className="text-[9px] font-bold uppercase tracking-tighter text-sand-dark">
+                      {PRICING_COLORS.find(c => c.hex === rule.color_hex)?.name || 'Especial'}
+                    </span>
+                  </div>
+                  
+                  <div className="flex items-center gap-1">
+                    <button 
+                      onClick={() => onEditStart(rule)}
+                      className="p-2 text-sand-dark hover:text-primary-navy bg-sand-light/50 hover:bg-sand-light rounded-xl transition-all"
+                    >
+                      <Edit2 className="w-4 h-4" />
+                    </button>
+                    <button 
+                      onClick={() => onDeleteRule(rule.id)}
+                      className="p-2 text-sand-dark hover:text-rose-500 bg-sand-light/50 hover:bg-rose-50 rounded-xl transition-all"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
       </div>
     </div>
   );

@@ -31,7 +31,11 @@ export function PricingManager() {
   const [activeTab, setActiveTab] = useState<ActiveTab>('calendar');
   const [sidebarMode, setSidebarMode] = useState<SidebarMode>('idle');
   const [showHolidays, setShowHolidays] = useState(true);
-  const [showSidebar, setShowSidebar] = useState(true);
+  const [pendingAction, setPendingAction] = useState<{ 
+    type: 'date' | 'range', 
+    start: string, 
+    end?: string 
+  } | null>(null);
   const [sidebarData, setSidebarData] = useState<any>({
     season_name: "",
     start_date: "",
@@ -58,7 +62,6 @@ export function PricingManager() {
       if (error) throw error;
       
       setSidebarMode('idle');
-      setShowSidebar(false);
       await fetchData();
     } catch (error) {
       console.error('Error adding rule:', error);
@@ -86,7 +89,6 @@ export function PricingManager() {
 
       if (error) throw error;
       setSidebarMode('idle');
-      setShowSidebar(false);
       await fetchData();
     } catch (error) {
       console.error('Error updating rule:', error);
@@ -101,7 +103,6 @@ export function PricingManager() {
       const { error } = await supabaseAdmin.from('seasonal_pricing').delete().eq('id', id);
       if (error) throw error;
       setSidebarMode('idle');
-      setShowSidebar(false);
       await fetchData();
     } catch (error) {
       console.error('Error deleting rule:', error);
@@ -117,31 +118,30 @@ export function PricingManager() {
   };
 
   const handleDateSelect = (date: string) => {
-    setSidebarData({
-      season_name: "",
-      start_date: date,
-      end_date: date,
-      price_per_night: basePrice.toString(),
-      weekend_price: "",
-      priority: calculateNextPriority(date, date),
-      color_hex: "#D9C2A3"
-    });
-    setSidebarMode('create');
-    setShowSidebar(true);
+    setPendingAction({ type: 'date', start: date });
   };
 
   const handleRangeSelect = (start: string, end: string) => {
+    setPendingAction({ type: 'range', start, end });
+  };
+
+  const confirmPendingAction = () => {
+    if (!pendingAction) return;
+
+    const { start, end, type } = pendingAction;
+    const finalEnd = type === 'date' ? start : end!;
+
     setSidebarData({
       season_name: "",
       start_date: start,
-      end_date: end,
+      end_date: finalEnd,
       price_per_night: basePrice.toString(),
       weekend_price: "",
-      priority: calculateNextPriority(start, end),
+      priority: calculateNextPriority(start, finalEnd),
       color_hex: "#D9C2A3"
     });
     setSidebarMode('create');
-    setShowSidebar(true);
+    setPendingAction(null);
   };
 
 
@@ -200,12 +200,10 @@ export function PricingManager() {
       weekend_price: rule.weekend_price?.toString() || ""
     });
     setSidebarMode('edit');
-    setShowSidebar(true);
   };
 
   const handleSidebarCancel = () => {
     setSidebarMode('idle');
-    setShowSidebar(false);
   };
 
   if (isLoading) {
@@ -232,10 +230,10 @@ export function PricingManager() {
         onQuickAction={handleQuickAction}
       />
 
-      {/* 2. Main Workspace (2 Columns) */}
-      <div className="flex flex-col lg:flex-row gap-8 items-start min-h-[800px]">
-        {/* Left Column: Viewport (Dynamic Width) */}
-        <div className={`space-y-8 transition-all duration-500 ${showSidebar ? 'lg:w-[70%]' : 'w-full'}`}>
+      {/* 2. Main Workspace */}
+      <div className="min-h-[800px]">
+        {/* Full Width Column */}
+        <div className="space-y-8">
           
           {/* View Tabs & Toggles */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -260,7 +258,7 @@ export function PricingManager() {
             ))}
           </div>
 
-          {/* Sidebar Toggles (Only in Calendar Tab) */}
+          {/* Feriados Toggle Only */}
           {activeTab === 'calendar' && (
             <div className="flex items-center gap-4 px-2">
               <button 
@@ -271,15 +269,6 @@ export function PricingManager() {
                   <div className={`absolute top-0.5 w-3 h-3 rounded-full bg-white transition-all ${showHolidays ? 'right-0.5' : 'left-0.5'}`} />
                 </div>
                 Feriados
-              </button>
-              <button 
-                onClick={() => setShowSidebar(!showSidebar)}
-                className={`flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest transition-all ${showSidebar ? 'text-primary-navy' : 'text-primary-navy/30'}`}
-              >
-                <div className={`w-8 h-4 rounded-full relative transition-colors ${showSidebar ? 'bg-primary-navy' : 'bg-sand-dark'}`}>
-                  <div className={`absolute top-0.5 w-3 h-3 rounded-full bg-white transition-all ${showSidebar ? 'right-0.5' : 'left-0.5'}`} />
-                </div>
-                Editor
               </button>
             </div>
           )}
@@ -322,23 +311,30 @@ export function PricingManager() {
           </div>
         </div>
 
-        {/* Right Column: Sidebar Editor (Conditional) */}
+        {/* Sidebar Editor (Modal Mode) */}
         <AnimatePresence>
-          {showSidebar && (
+          {sidebarMode !== 'idle' && (
             <motion.div 
-              initial={{ opacity: 0, scale: 0.95, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="fixed inset-0 z-[100] flex items-start justify-center p-4 bg-primary-navy/40 backdrop-blur-[20px] overflow-y-auto lg:sticky lg:z-0 lg:flex lg:items-start lg:justify-start lg:p-0 lg:bg-transparent lg:backdrop-blur-none lg:w-[30%] lg:top-8 lg:h-fit lg:min-h-[700px]"
+              key="pricing-modal-overlay"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 z-[99999] flex items-center justify-center bg-black/60 backdrop-blur-md overflow-y-auto py-6 sm:py-12 px-4 sm:px-6"
             >
-              {/* Backdrop (Mobile only) */}
+              {/* Backdrop */}
               <div 
-                className="fixed inset-0 lg:hidden cursor-pointer"
-                onClick={() => setShowSidebar(false)}
+                className="fixed inset-0 cursor-default"
+                onClick={handleSidebarCancel}
               />
               
-              {/* Modal/Sidebar Content */}
-              <div className="relative w-full max-w-2xl lg:max-w-none h-auto bg-white rounded-[12px] lg:rounded-[12px] shadow-2xl lg:shadow-none border border-sand-dark/15 overflow-hidden flex flex-col z-10 my-8 lg:my-0">
+              {/* Modal Card */}
+              <motion.div 
+                initial={{ opacity: 0, scale: 0.9, y: 40 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.9, y: 40 }}
+                transition={{ type: "spring", damping: 25, stiffness: 300 }}
+                className="relative w-full max-w-2xl bg-[#faf7f2] rounded-[32px] sm:rounded-[40px] shadow-2xl overflow-hidden flex flex-col z-10 my-auto"
+              >
                 <PricingSidebar 
                   mode={sidebarMode}
                   data={sidebarData}
@@ -348,11 +344,56 @@ export function PricingManager() {
                   onCancel={handleSidebarCancel}
                   isSaving={isSaving}
                 />
-              </div>
+              </motion.div>
             </motion.div>
           )}
         </AnimatePresence>
       </div>
+
+      {/* Selection Confirmation Prompt */}
+      <AnimatePresence>
+        {pendingAction && (
+          <motion.div 
+            key="selection-confirm-overlay"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+          >
+            {/* Click backdrop to cancel */}
+            <div className="fixed inset-0" onClick={() => setPendingAction(null)} />
+            
+            <motion.div 
+              key="selection-confirm-prompt"
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              className="relative w-full max-w-md bg-primary-navy/95 text-white p-8 rounded-[40px] shadow-2xl border border-white/10 backdrop-blur-xl flex flex-col gap-6"
+            >
+              <div className="space-y-2 text-center">
+                <p className="text-[10px] font-bold uppercase tracking-[0.25em] text-warm-gold/80">Selección Detectada</p>
+                <p className="text-xl font-serif italic text-sand-light/90 leading-tight">
+                  ¿Deseas agregar una regla en la {pendingAction?.type === 'date' ? 'fecha seleccionada' : 'rango seleccionado'}?
+                </p>
+              </div>
+              <div className="flex flex-col sm:flex-row gap-3">
+                <button 
+                  onClick={confirmPendingAction}
+                  className="flex-1 py-4 bg-warm-gold text-primary-navy rounded-full text-[10px] font-bold uppercase tracking-widest hover:brightness-110 active:scale-95 transition-all shadow-lg"
+                >
+                  Confirmar y Editar
+                </button>
+                <button 
+                  onClick={() => setPendingAction(null)}
+                  className="flex-1 py-4 bg-white/5 text-white rounded-full text-[10px] font-bold uppercase tracking-widest hover:bg-white/10 active:scale-95 transition-all border border-white/10"
+                >
+                  Cancelar
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
