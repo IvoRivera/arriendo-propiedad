@@ -527,7 +527,7 @@ export default function PricingAdminPage() {
               type="number" 
               className="w-full bg-[#f5f0e8] rounded-xl px-5 py-3 focus:bg-white transition-all outline-none text-sm border-none shadow-inner"
               value={seasonForm.priority}
-              onChange={e => setSeasonForm({...seasonForm, priority: e.target.value})}
+              onChange={e => setSeasonForm({...seasonForm, priority: Number(e.target.value)})}
             />
           </div>
 

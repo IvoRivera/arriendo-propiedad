@@ -3,8 +3,8 @@ import { supabaseService } from '@/lib/supabaseServer';
 import { verifyAdminRequest } from '@/lib/adminAuth';
 
 export async function GET(request: Request) {
-  const auth = await verifyAdminRequest();
-  if (!auth.isValid) {
+  const auth = await verifyAdminRequest(request);
+  if (!auth.success) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
@@ -21,8 +21,8 @@ export async function GET(request: Request) {
 }
 
 export async function DELETE(request: Request) {
-  const auth = await verifyAdminRequest();
-  if (!auth.isValid) {
+  const auth = await verifyAdminRequest(request);
+  if (!auth.success) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 

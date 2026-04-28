@@ -9,8 +9,8 @@ export async function GET(request: Request) {
   const propertyId = searchParams.get('propertyId') || undefined;
 
   // Verify admin access
-  const auth = await verifyAdminRequest();
-  if (!auth.isValid) {
+  const auth = await verifyAdminRequest(request);
+  if (!auth.success) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 

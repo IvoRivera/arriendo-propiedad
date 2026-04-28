@@ -5,8 +5,8 @@ import { format, parseISO, eachDayOfInterval } from 'date-fns';
 import { getPriceForDate } from '@/lib/pricing-engine';
 
 export async function POST(request: Request) {
-  const auth = await verifyAdminRequest();
-  if (!auth.isValid) {
+  const auth = await verifyAdminRequest(request);
+  if (!auth.success) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
