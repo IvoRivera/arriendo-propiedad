@@ -7,11 +7,13 @@ import { usePricingData } from "@/hooks/usePricingData";
 import { BasePriceDisplay } from "./BasePriceDisplay";
 import { SeasonTable } from "./SeasonTable";
 import { RuleForm } from "./RuleForm";
+import { PricingCalendar } from "./PricingCalendar";
 
 export function PricingManager() {
   const {
     basePrice,
     seasonalPrices,
+    holidays,
     isLoading,
     isSaving,
     setIsSaving,
@@ -109,10 +111,19 @@ export function PricingManager() {
 
   return (
     <div className="max-w-7xl mx-auto space-y-12 pb-20">
-      {/* 1. Base Price Display */}
+      {/* 1. Base Price Context */}
       <BasePriceDisplay basePrice={basePrice} />
 
-      {/* 2. Rule Form */}
+      {/* 2. Visual Calendar View */}
+      <div className="mb-12">
+        <PricingCalendar 
+          seasonalPrices={seasonalPrices} 
+          holidays={holidays} 
+          basePrice={basePrice} 
+        />
+      </div>
+
+      {/* 3. Rule Form */}
       <RuleForm 
         newRule={newRule}
         isSaving={isSaving}

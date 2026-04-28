@@ -13,13 +13,13 @@
     - [x] 1.4: Public API Parity (Refactor Pricing GET) ✅
 
 ## Milestone 2: UI/UX & Polish
-**Status**: 🏗️ In Progress
+**Status**: ✅ Complete
 
 ### Phase 2.1: Advanced Pricing Calendar
 - **Goal**: Integrate a visual calendar into the Pricing Manager to highlight seasonal periods, holidays, and bridge weekends.
 - **Plans**:
-    - [ ] 2.1: Calendar Foundation (Data & Layout) ⏳
-    - [ ] 2.2: Visual Intelligence (Holiday Sidebar & Highlighting) ⏳
+    - [x] 2.1: Calendar Foundation (Data & Layout) ✅
+    - [x] 2.2: Visual Intelligence (Holiday Sidebar & Highlighting) ✅
 
 - [ ] Implement consistent styling across all admin pages.
 - [ ] Enhance mobile responsiveness.

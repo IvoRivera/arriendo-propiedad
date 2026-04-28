@@ -16,6 +16,17 @@ const config: Config = {
         pine: "#6b7c4a",
         sand: "#f5f0e8",
         "warm-gold": "#c8883a",
+        primary: {
+          DEFAULT: "#00628f",
+          container: "#007cb3",
+        },
+        surface: {
+          DEFAULT: "#faf7f2",
+          "container-low": "#f5f0e8",
+          "container": "#eeeae3",
+          "container-high": "#e7e2da",
+          "container-highest": "#dfd9cf",
+        }
       },
     },
   },

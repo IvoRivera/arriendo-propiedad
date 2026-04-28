@@ -1,7 +1,7 @@
 import { format, isFriday, isSaturday, isSunday, addDays, subDays, startOfMonth, endOfMonth, eachDayOfInterval } from 'date-fns';
 import { supabaseService } from './supabaseServer';
 import { getPropertyBaseConfig, getLiveConfigServer } from './systemConfigServer';
-import { parseSafeISO, toISODate } from './date-utils';
+import { parseSafeISO, toISODate, isDateHoliday, isLongWeekend } from './date-utils';
 import { CONFIG_KEYS } from './constants';
 import { parseBasePrice } from './pricing-utils';
 
@@ -13,36 +13,6 @@ export interface PricingDetails {
   isWeekend: boolean;
   isLongWeekend: boolean;
   rulePriority: number;
-}
-
-/**
- * Checks if a date is a holiday based on a provided set of holiday dates (YYYY-MM-DD).
- */
-export function isDateHoliday(date: Date, holidaysSet: Set<string>): boolean {
-  return holidaysSet.has(toISODate(date));
-}
-
-/**
- * Checks if a date is part of a long weekend (puente).
- * Sábado: lunes siguiente es feriado O viernes anterior fue feriado.
- * Domingo: lunes siguiente es feriado O viernes anterior fue feriado.
- * Excluir si la fecha misma ya es feriado.
- */
-export function isLongWeekend(date: Date, holidaysSet: Set<string>): boolean {
-  if (isDateHoliday(date, holidaysSet)) return false;
-
-  const isSat = isSaturday(date);
-  const isSun = isSunday(date);
-
-  if (!isSat && !isSun) return false;
-
-  const prevFriday = isSat ? subDays(date, 1) : subDays(date, 2);
-  const nextMonday = isSun ? addDays(date, 1) : addDays(date, 2);
-
-  const hasPrevFridayHoliday = isDateHoliday(prevFriday, holidaysSet);
-  const hasNextMondayHoliday = isDateHoliday(nextMonday, holidaysSet);
-
-  return hasPrevFridayHoliday || hasNextMondayHoliday;
 }
 
 /**
