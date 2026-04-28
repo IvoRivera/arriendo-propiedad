@@ -14,11 +14,16 @@ const config: Config = {
       },
       colors: {
         pine: "#6b7c4a",
-        sand: "#f5f0e8",
         "warm-gold": "#c8883a",
         primary: {
           DEFAULT: "#00628f",
           container: "#007cb3",
+          navy: "#002855",
+        },
+        sand: {
+          light: "#fdfbf7",
+          DEFAULT: "#f5f0e8",
+          dark: "#e2d9cc",
         },
         surface: {
           DEFAULT: "#faf7f2",

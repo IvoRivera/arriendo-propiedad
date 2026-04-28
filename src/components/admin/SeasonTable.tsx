@@ -30,18 +30,18 @@ export const SeasonTable: React.FC<SeasonTableProps> = ({
   setEditForm
 }) => {
   return (
-    <div className="bg-white border border-[#e2d9cc] rounded-[32px] shadow-sm overflow-hidden border-separate">
+    <div className="bg-white border border-sand-dark rounded-[32px] shadow-sm overflow-hidden border-separate">
       <div className="overflow-x-auto">
         <table className="w-full text-left border-collapse">
           <thead>
-            <tr className="bg-[#faf7f2]/50 border-b border-[#e2d9cc]">
-              <th className="px-8 py-5 text-[10px] font-bold uppercase tracking-widest text-[#9a8a78]">Temporada</th>
-              <th className="px-8 py-5 text-[10px] font-bold uppercase tracking-widest text-[#9a8a78]">Periodo</th>
-              <th className="px-8 py-5 text-[10px] font-bold uppercase tracking-widest text-[#9a8a78]">Semana</th>
-              <th className="px-8 py-5 text-[10px] font-bold uppercase tracking-widest text-[#9a8a78]">Fin de Semana</th>
-              <th className="px-8 py-5 text-[10px] font-bold uppercase tracking-widest text-[#9a8a78]">Color</th>
-              <th className="px-8 py-5 text-[10px] font-bold uppercase tracking-widest text-[#9a8a78]">Prioridad</th>
-              <th className="px-8 py-5 text-right"></th>
+            <tr className="bg-sand-light/50 border-b border-sand-dark">
+              <th className="px-5 py-5 text-[10px] font-bold uppercase tracking-widest text-sand-dark mix-blend-multiply">Temporada</th>
+              <th className="px-5 py-5 text-[10px] font-bold uppercase tracking-widest text-sand-dark mix-blend-multiply">Periodo</th>
+              <th className="px-5 py-5 text-[10px] font-bold uppercase tracking-widest text-sand-dark mix-blend-multiply">Semana</th>
+              <th className="px-5 py-5 text-[10px] font-bold uppercase tracking-widest text-sand-dark mix-blend-multiply">Fin de Semana</th>
+              <th className="px-5 py-5 text-[10px] font-bold uppercase tracking-widest text-sand-dark mix-blend-multiply">Color</th>
+              <th className="px-5 py-5 text-[10px] font-bold uppercase tracking-widest text-sand-dark mix-blend-multiply">Prioridad</th>
+              <th className="px-5 py-5 text-right"></th>
             </tr>
           </thead>
           <tbody className="divide-y divide-[#e2d9cc]/30">
@@ -54,75 +54,75 @@ export const SeasonTable: React.FC<SeasonTableProps> = ({
             ) : (
               seasonalPrices.map((rule) => (
                 <tr key={rule.id} className={`${editingId === rule.id ? 'bg-[#6b7c4a]/5' : 'hover:bg-[#faf7f2]/30'} transition-colors group`}>
-                  <td className="px-8 py-5">
+                  <td className="px-5 py-5">
                     {editingId === rule.id ? (
                       <input 
                         type="text"
                         value={editForm?.season_name}
                         onChange={e => setEditForm(f => f ? {...f, season_name: e.target.value} : null)}
-                        className="w-full bg-white border border-[#e2d9cc] rounded-lg px-3 py-2 text-xs outline-none focus:border-[#6b7c4a]"
+                        className="w-full bg-white border border-sand-dark rounded-lg px-3 py-2 text-xs outline-none focus:border-primary-navy"
                       />
                     ) : (
-                      <span className="font-medium text-[#2c2416] group-hover:text-[#6b7c4a] transition-colors">{rule.season_name}</span>
+                      <span className="font-medium text-primary-navy group-hover:text-primary transition-colors">{rule.season_name}</span>
                     )}
                   </td>
-                  <td className="px-8 py-5">
+                  <td className="px-5 py-5">
                     {editingId === rule.id ? (
                       <div className="flex flex-col gap-2">
                         <input 
                           type="date"
                           value={editForm?.start_date}
                           onChange={e => setEditForm(f => f ? {...f, start_date: e.target.value} : null)}
-                          className="w-full bg-white border border-[#e2d9cc] rounded-lg px-2 py-1 text-[10px] outline-none"
+                          className="w-full bg-white border border-sand-dark rounded-lg px-2 py-1 text-[10px] outline-none"
                         />
                         <input 
                           type="date"
                           value={editForm?.end_date}
                           onChange={e => setEditForm(f => f ? {...f, end_date: e.target.value} : null)}
-                          className="w-full bg-white border border-[#e2d9cc] rounded-lg px-2 py-1 text-[10px] outline-none"
+                          className="w-full bg-white border border-sand-dark rounded-lg px-2 py-1 text-[10px] outline-none"
                         />
                       </div>
                     ) : (
-                      <div className="flex items-center gap-3 text-[#6b5d4f] text-sm font-light">
-                        <Calendar className="w-3.5 h-3.5 text-[#9a8a78]" />
-                        <span>{rule.start_date} → {rule.end_date}</span>
+                      <div className="flex items-center gap-3 text-primary-navy/60 text-sm font-light">
+                        <Calendar className="w-3.5 h-3.5 text-sand-dark" />
+                        <span className="whitespace-nowrap">{rule.start_date} → {rule.end_date}</span>
                       </div>
                     )}
                   </td>
-                  <td className="px-8 py-5">
+                  <td className="px-5 py-5">
                     {editingId === rule.id ? (
                       <div className="relative">
-                        <span className="absolute left-2 top-1/2 -translate-y-1/2 text-[10px] text-[#9a8a78]">$</span>
+                        <span className="absolute left-2 top-1/2 -translate-y-1/2 text-[10px] text-sand-dark">$</span>
                         <input 
                           type="number"
                           value={editForm?.price_per_night}
                           onChange={e => setEditForm(f => f ? {...f, price_per_night: Number(e.target.value)} : null)}
-                          className="w-full bg-white border border-[#e2d9cc] rounded-lg pl-5 pr-2 py-2 text-xs outline-none"
+                          className="w-full bg-white border border-sand-dark rounded-lg pl-5 pr-2 py-2 text-xs outline-none"
                         />
                       </div>
                     ) : (
-                      <span className="font-serif italic text-lg text-[#2c2416]">{formatCurrency(rule.price_per_night)}</span>
+                      <span className="font-serif italic text-lg text-primary-navy whitespace-nowrap">{formatCurrency(rule.price_per_night)}</span>
                     )}
                   </td>
-                  <td className="px-8 py-5">
+                  <td className="px-5 py-5">
                     {editingId === rule.id ? (
                       <div className="relative">
-                        <span className="absolute left-2 top-1/2 -translate-y-1/2 text-[10px] text-[#9a8a78]">$</span>
+                        <span className="absolute left-2 top-1/2 -translate-y-1/2 text-[10px] text-sand-dark">$</span>
                         <input 
                           type="number"
                           value={editForm?.weekend_price || ''}
                           placeholder="Opcional"
                           onChange={e => setEditForm(f => f ? {...f, weekend_price: e.target.value ? Number(e.target.value) : null} : null)}
-                          className="w-full bg-white border border-[#e2d9cc] rounded-lg pl-5 pr-2 py-2 text-xs outline-none"
+                          className="w-full bg-white border border-sand-dark rounded-lg pl-5 pr-2 py-2 text-xs outline-none"
                         />
                       </div>
                     ) : (
-                      <span className="font-serif italic text-lg text-[#6b7c4a]">
+                      <span className="font-serif italic text-lg text-primary-navy/70 whitespace-nowrap">
                         {rule.weekend_price ? formatCurrency(rule.weekend_price) : '—'}
                       </span>
                     )}
                   </td>
-                  <td className="px-8 py-5">
+                  <td className="px-5 py-5">
                     {editingId === rule.id ? (
                       <div className="flex flex-wrap gap-1.5 w-32">
                         {PRICING_COLORS.map((c) => (
@@ -130,7 +130,7 @@ export const SeasonTable: React.FC<SeasonTableProps> = ({
                             key={c.hex}
                             type="button"
                             onClick={() => setEditForm(f => f ? {...f, color_hex: c.hex} : null)}
-                            className={`w-6 h-6 rounded-full border shadow-sm transition-all ${editForm?.color_hex === c.hex ? 'ring-2 ring-[#6b7c4a] ring-offset-1 scale-110' : 'opacity-40 hover:opacity-100'}`}
+                            className={`w-6 h-6 rounded-full border shadow-sm transition-all ${editForm?.color_hex === c.hex ? 'ring-2 ring-primary-navy ring-offset-1 scale-110' : 'opacity-40 hover:opacity-100'}`}
                             style={{ backgroundColor: c.hex }}
                             title={c.name}
                           />
@@ -142,45 +142,45 @@ export const SeasonTable: React.FC<SeasonTableProps> = ({
                           className="w-4 h-4 rounded-full border border-black/5 shadow-sm" 
                           style={{ backgroundColor: rule.color_hex || '#00628f' }}
                         />
-                        <span className="text-[9px] font-bold uppercase tracking-tighter text-[#9a8a78]">
+                        <span className="text-[9px] font-bold uppercase tracking-tighter text-sand-dark whitespace-nowrap">
                           {PRICING_COLORS.find(c => c.hex === rule.color_hex)?.name || 'Especial'}
                         </span>
                       </div>
                     )}
                   </td>
-                  <td className="px-8 py-5">
+                  <td className="px-5 py-5">
                     {editingId === rule.id ? (
                       <input 
                         type="number"
                         value={editForm?.priority}
                         onChange={e => setEditForm(f => f ? {...f, priority: Number(e.target.value)} : null)}
-                        className="w-16 bg-white border border-[#e2d9cc] rounded-lg px-2 py-2 text-xs outline-none"
+                        className="w-16 bg-white border border-sand-dark rounded-lg px-2 py-2 text-xs outline-none"
                       />
                     ) : (
                       <span className={`px-2.5 py-1 rounded-full text-[9px] font-bold uppercase tracking-widest ${
                         rule.priority > 0 
-                          ? 'bg-[#6b7c4a] text-white' 
-                          : 'bg-white text-[#9a8a78] border border-[#e2d9cc]'
+                          ? 'bg-primary-navy text-white' 
+                          : 'bg-white text-sand-dark border border-sand-dark'
                       }`}>
                         P{rule.priority}
                       </span>
                     )}
                   </td>
-                  <td className="px-8 py-5 text-right">
+                  <td className="px-5 py-5 text-right">
                     <div className="flex items-center justify-end gap-2">
                       {editingId === rule.id ? (
                         <>
                           <button 
                             onClick={onUpdateRule}
                             disabled={isSaving}
-                            className="p-2 text-[#6b7c4a] hover:bg-[#6b7c4a]/10 rounded-xl transition-all"
+                            className="p-2 text-primary-navy hover:bg-primary-navy/10 rounded-xl transition-all"
                             title="Guardar cambios"
                           >
                             <Save className="w-4 h-4" />
                           </button>
                           <button 
                             onClick={onEditCancel}
-                            className="p-2 text-[#9a8a78] hover:bg-gray-100 rounded-xl transition-all"
+                            className="p-2 text-sand-dark hover:bg-sand-light rounded-xl transition-all"
                             title="Cancelar"
                           >
                             <X className="w-4 h-4" />
@@ -190,14 +190,14 @@ export const SeasonTable: React.FC<SeasonTableProps> = ({
                         <>
                           <button 
                             onClick={() => onEditStart(rule)}
-                            className="p-2 text-[#9a8a78] hover:text-[#6b7c4a] hover:bg-[#6b7c4a]/5 rounded-xl transition-all"
+                            className="p-2 text-sand-dark hover:text-primary-navy hover:bg-primary-navy/5 rounded-xl transition-all"
                             title="Editar regla"
                           >
                             <Edit2 className="w-4 h-4" />
                           </button>
                           <button 
                             onClick={() => onDeleteRule(rule.id)}
-                            className="p-2 text-[#9a8a78] hover:text-rose-500 hover:bg-rose-50 rounded-xl transition-all"
+                            className="p-2 text-sand-dark hover:text-rose-500 hover:bg-rose-50 rounded-xl transition-all"
                             title="Eliminar regla"
                           >
                             <Trash2 className="w-4 h-4" />
