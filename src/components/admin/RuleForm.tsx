@@ -11,6 +11,7 @@ interface RuleFormProps {
     weekend_price: string;
     season_name: string;
     priority: number;
+    color_hex: string;
   };
   isSaving: boolean;
   setNewRule: React.Dispatch<React.SetStateAction<any>>;
@@ -118,7 +119,20 @@ export const RuleForm: React.FC<RuleFormProps> = ({
             />
           </div>
 
-          <div className="flex items-end lg:col-span-3">
+          <div className="space-y-2">
+            <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#9a8a78] ml-1 flex">Color en Calendario</label>
+            <div className="flex gap-3 items-center">
+              <input 
+                type="color" 
+                value={newRule.color_hex}
+                onChange={e => setNewRule({...newRule, color_hex: e.target.value})}
+                className="w-16 h-14 bg-[#faf7f2]/50 border border-[#e2d9cc] rounded-2xl cursor-pointer p-1" 
+              />
+              <span className="text-[10px] text-[#9a8a78] font-mono uppercase">{newRule.color_hex}</span>
+            </div>
+          </div>
+
+          <div className="flex items-end lg:col-span-2">
             <button 
               type="submit" 
               disabled={isSaving}

@@ -28,7 +28,8 @@ export function PricingManager() {
     price_per_night: "",
     weekend_price: "",
     season_name: "",
-    priority: 0
+    priority: 0,
+    color_hex: "#00628f"
   });
 
   const handleAddRule = async (e: React.FormEvent) => {
@@ -41,7 +42,8 @@ export function PricingManager() {
         end_date: newRule.end_date,
         price_per_night: Number(newRule.price_per_night),
         weekend_price: newRule.weekend_price ? Number(newRule.weekend_price) : null,
-        priority: newRule.priority
+        priority: newRule.priority,
+        color_hex: newRule.color_hex
       });
 
       if (error) throw error;
@@ -52,7 +54,8 @@ export function PricingManager() {
         price_per_night: "",
         weekend_price: "",
         season_name: "",
-        priority: 0
+        priority: 0,
+        color_hex: "#00628f"
       });
       await fetchData();
     } catch (error) {
@@ -86,7 +89,8 @@ export function PricingManager() {
           end_date: editForm.end_date,
           price_per_night: editForm.price_per_night,
           weekend_price: editForm.weekend_price,
-          priority: editForm.priority
+          priority: editForm.priority,
+          color_hex: editForm.color_hex
         })
         .eq('id', editingId);
 
@@ -99,6 +103,15 @@ export function PricingManager() {
     } finally {
       setIsSaving(false);
     }
+  };
+
+  const handleDateSelect = (date: string) => {
+    setNewRule(prev => ({
+      ...prev,
+      start_date: date,
+      end_date: date
+    }));
+    document.getElementById('rule-form')?.scrollIntoView({ behavior: 'smooth' });
   };
 
   if (isLoading) {
@@ -120,16 +133,19 @@ export function PricingManager() {
           seasonalPrices={seasonalPrices} 
           holidays={holidays} 
           basePrice={basePrice} 
+          onDateSelect={handleDateSelect}
         />
       </div>
 
       {/* 3. Rule Form */}
-      <RuleForm 
-        newRule={newRule}
-        isSaving={isSaving}
-        setNewRule={setNewRule}
-        onAddRule={handleAddRule}
-      />
+      <div id="rule-form">
+        <RuleForm 
+          newRule={newRule}
+          isSaving={isSaving}
+          setNewRule={setNewRule}
+          onAddRule={handleAddRule}
+        />
+      </div>
 
       {/* 3. Season Table */}
       <div className="space-y-6">

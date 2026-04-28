@@ -24,8 +24,8 @@
 ### Phase 2.2: Calendar Interaction & Customization
 - **Goal**: Add custom colors per rule, interactive day selection, and priority-aware calendar display.
 - **Plans**:
-    - [ ] 2.3: Data Layer & Color Support ⏳
-    - [ ] 2.4: Selection & Priority Logic ⏳
+    - [x] 2.3: Data Layer & Color Support ✅
+    - [x] 2.4: Selection & Priority Logic ✅
 
 - [ ] Implement consistent styling across all admin pages.
 - [ ] Enhance mobile responsiveness.

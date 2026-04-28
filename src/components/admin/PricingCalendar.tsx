@@ -26,12 +26,14 @@ interface PricingCalendarProps {
   seasonalPrices: SeasonalPricing[];
   holidays: { date: string, name: string }[];
   basePrice: number;
+  onDateSelect?: (date: string) => void;
 }
 
 export const PricingCalendar: React.FC<PricingCalendarProps> = ({ 
   seasonalPrices, 
   holidays, 
-  basePrice 
+  basePrice,
+  onDateSelect
 }) => {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const holidaysSet = new Set(holidays.map(h => h.date));
@@ -67,6 +69,7 @@ export const PricingCalendar: React.FC<PricingCalendarProps> = ({
     let price = basePrice;
     let source = "Base";
     let ruleColor = "";
+    let ruleBorderColor = "";
 
     if (bestRule) {
       const stdPrice = Number(bestRule.price_per_night);
@@ -75,12 +78,14 @@ export const PricingCalendar: React.FC<PricingCalendarProps> = ({
       
       price = isActualWkd ? wkdPrice : stdPrice;
       source = bestRule.season_name;
-      // Soft, non-saturated color based on priority or index
-      // Using a subtle primary tint for active rules
-      ruleColor = "bg-primary/10"; 
+      
+      // Use custom color with opacity for background
+      const baseColor = bestRule.color_hex || '#00628f';
+      ruleColor = `${baseColor}1a`; // 10% opacity
+      ruleBorderColor = baseColor;
     }
 
-    return { price, source, isHoliday, isBridge, isWkd, ruleColor };
+    return { price, source, isHoliday, isBridge, isWkd, ruleColor, ruleBorderColor };
   };
 
   return (
@@ -118,18 +123,23 @@ export const PricingCalendar: React.FC<PricingCalendarProps> = ({
           {/* Days */}
           {calendarDays.map((day, idx) => {
             const isOutsideMonth = !isSameMonth(day, monthStart);
-            const { price, source, isHoliday, isBridge, isWkd, ruleColor } = getDayDetails(day);
+            const { price, source, isHoliday, isBridge, isWkd, ruleColor, ruleBorderColor } = getDayDetails(day);
+            const dateStr = toISODate(day);
             
             return (
               <div 
                 key={idx}
+                onClick={() => !isOutsideMonth && onDateSelect?.(dateStr)}
+                style={{ 
+                  backgroundColor: !isOutsideMonth && ruleColor ? ruleColor : undefined,
+                  boxShadow: !isOutsideMonth && ruleBorderColor ? `inset 0 0 0 1px ${ruleBorderColor}4d` : undefined
+                }}
                 className={`
                   min-h-[110px] p-2 flex flex-col gap-1 transition-all duration-300 group
-                  ${isOutsideMonth ? 'bg-surface/50 opacity-30' : 'bg-surface-container-low'}
-                  ${isWkd && !isOutsideMonth ? 'bg-surface-container' : ''}
-                  ${isBridge && !isOutsideMonth ? 'bg-primary/[0.03]' : ''}
-                  ${ruleColor && !isOutsideMonth ? 'ring-1 ring-inset ring-primary/20' : ''}
-                  ${isHoliday && !isOutsideMonth ? 'bg-primary/5' : ''}
+                  ${isOutsideMonth ? 'bg-surface/50 opacity-30' : 'bg-surface-container-low cursor-pointer hover:bg-surface-container-high'}
+                  ${isWkd && !isOutsideMonth && !ruleColor ? 'bg-surface-container' : ''}
+                  ${isBridge && !isOutsideMonth && !ruleColor ? 'bg-primary/[0.03]' : ''}
+                  ${isHoliday && !isOutsideMonth && !ruleColor ? 'bg-primary/5' : ''}
                 `}
               >
                 <div className="flex justify-between items-start">
@@ -143,7 +153,10 @@ export const PricingCalendar: React.FC<PricingCalendarProps> = ({
                 
                 {!isOutsideMonth && (
                   <div className="mt-auto flex flex-col items-end">
-                    <span className="text-[9px] text-primary/40 uppercase font-bold tracking-tighter opacity-0 group-hover:opacity-100 transition-opacity">
+                    <span 
+                      className="text-[9px] uppercase font-bold tracking-tighter opacity-0 group-hover:opacity-100 transition-opacity truncate max-w-full"
+                      style={{ color: ruleBorderColor || 'var(--primary)' }}
+                    >
                       {source}
                     </span>
                     <span className={`text-sm font-semibold ${ruleColor ? 'text-primary' : 'text-foreground/70'}`}>

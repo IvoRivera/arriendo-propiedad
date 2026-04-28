@@ -13,6 +13,7 @@ export const PricingUpdateSchema = z.object({
   propertyId: z.string().optional(),
   name: z.string().optional(),
   priority: z.number().default(999),
+  color_hex: z.string().optional(),
 });
 
 export type PricingUpdate = z.infer<typeof PricingUpdateSchema>;
@@ -26,4 +27,5 @@ export interface SeasonalPricing {
   season_name: string;
   priority: number;
   property_id?: string;
+  color_hex?: string;
 }

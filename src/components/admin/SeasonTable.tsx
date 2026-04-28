@@ -38,6 +38,7 @@ export const SeasonTable: React.FC<SeasonTableProps> = ({
               <th className="px-8 py-5 text-[10px] font-bold uppercase tracking-widest text-[#9a8a78]">Periodo</th>
               <th className="px-8 py-5 text-[10px] font-bold uppercase tracking-widest text-[#9a8a78]">Semana</th>
               <th className="px-8 py-5 text-[10px] font-bold uppercase tracking-widest text-[#9a8a78]">Fin de Semana</th>
+              <th className="px-8 py-5 text-[10px] font-bold uppercase tracking-widest text-[#9a8a78]">Color</th>
               <th className="px-8 py-5 text-[10px] font-bold uppercase tracking-widest text-[#9a8a78]">Prioridad</th>
               <th className="px-8 py-5 text-right"></th>
             </tr>
@@ -118,6 +119,24 @@ export const SeasonTable: React.FC<SeasonTableProps> = ({
                       <span className="font-serif italic text-lg text-[#6b7c4a]">
                         {rule.weekend_price ? formatCurrency(rule.weekend_price) : '—'}
                       </span>
+                    )}
+                  </td>
+                  <td className="px-8 py-5">
+                    {editingId === rule.id ? (
+                      <input 
+                        type="color"
+                        value={editForm?.color_hex || '#00628f'}
+                        onChange={e => setEditForm(f => f ? {...f, color_hex: e.target.value} : null)}
+                        className="w-10 h-10 bg-white border border-[#e2d9cc] rounded-lg cursor-pointer p-0.5"
+                      />
+                    ) : (
+                      <div className="flex items-center gap-2">
+                        <div 
+                          className="w-4 h-4 rounded-full border border-black/5 shadow-sm" 
+                          style={{ backgroundColor: rule.color_hex || '#00628f' }}
+                        />
+                        <span className="text-[9px] font-mono text-[#9a8a78] uppercase">{rule.color_hex || '#00628f'}</span>
+                      </div>
                     )}
                   </td>
                   <td className="px-8 py-5">
