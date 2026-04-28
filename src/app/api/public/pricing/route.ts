@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseService } from '@/lib/supabaseServer';
-import { getLiveConfigServer, getPropertyBaseConfig, validatePropertyRentValue } from '@/lib/systemConfigServer';
+import { getLiveConfigServer, getPropertyBaseConfig } from '@/lib/systemConfigServer';
 import { validateSchema } from '@/lib/schemaValidator';
+import { parseBasePrice } from '@/lib/pricing-engine';
 
 export async function GET(request: NextRequest) {
   try {
@@ -24,9 +25,8 @@ export async function GET(request: NextRequest) {
       getLiveConfigServer()
     ]);
     
-    // Prioritize PROPERTY_RENT_VALUE from system_config (Admin Panel) as requested
-    const globalBasePrice = liveConfig['PROPERTY_RENT_VALUE'];
-    const basePrice = validatePropertyRentValue(globalBasePrice ?? property?.base_price ?? 80000);
+    // Use centralized base price parsing
+    const basePrice = parseBasePrice(liveConfig['PROPERTY_RENT_VALUE'] ?? property?.base_price);
 
     // 2. Fetch active and future seasonal prices (for this property OR global)
     let seasonalQuery = supabaseService

@@ -8,7 +8,7 @@ import { BasePriceDisplay } from "./BasePriceDisplay";
 import { SeasonTable } from "./SeasonTable";
 import { RuleForm } from "./RuleForm";
 
-export default function PricingManager() {
+export function PricingManager() {
   const {
     basePrice,
     seasonalPrices,
