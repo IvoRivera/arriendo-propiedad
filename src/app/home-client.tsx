@@ -20,9 +20,11 @@ interface HomeClientProps {
 export function HomeClient({ dynamicImages, property }: HomeClientProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedDates, setSelectedDates] = useState<{ checkIn: Date; checkOut: Date } | null>(null);
+  const [modalKey, setModalKey] = useState(0);
 
   const openModal = (dates?: { checkIn: Date; checkOut: Date }) => {
     if (dates) setSelectedDates(dates);
+    setModalKey(prev => prev + 1);
     setIsModalOpen(true);
   };
 
@@ -61,6 +63,7 @@ export function HomeClient({ dynamicImages, property }: HomeClientProps) {
 
       {/* MODAL SYSTEM — Powered by Portals for absolute mobile stability */}
       <CoastalRequestModal 
+        key={modalKey}
         isOpen={isModalOpen} 
         onClose={closeModal} 
         initialDates={selectedDates}

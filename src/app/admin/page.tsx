@@ -4,7 +4,7 @@ import React, { useEffect, useState } from "react";
 import type { User as SupabaseUser } from "@supabase/supabase-js";
 import { supabaseAdmin } from "@/lib/supabase";
 import { useRouter } from "next/navigation";
-import { XCircle, Calendar, LogOut, RefreshCw, Archive, ArchiveRestore, Eye, Filter, User, AlertCircle, Settings, Inbox as InboxIcon, DollarSign, Image as ImageIcon } from "lucide-react";
+import { XCircle, Calendar, LogOut, RefreshCw, Archive, ArchiveRestore, Eye, Filter, User, AlertCircle, Settings, Inbox as InboxIcon, DollarSign, Image as ImageIcon, Mail, Users, Briefcase, Share2 } from "lucide-react";
 import { SystemConfigPanel } from "@/components/admin/SystemConfigPanel";
 import { DateBlockingManager } from "@/components/admin/DateBlockingManager";
 import { PricingManager } from "@/components/admin/PricingManager";
@@ -317,7 +317,36 @@ export default function AdminPage() {
                             <div className="w-12 h-12 bg-[#faf7f2] rounded-2xl flex items-center justify-center text-[#6b7c4a] border border-[#e2d9cc]/30"><User className="w-6 h-6" /></div>
                             <div>
                               <h3 className="text-xl font-serif italic text-[#2c2416]">{req.full_name}</h3>
-                              <p className="text-[#6b5d4f] text-sm">{req.check_in} — {req.check_out} | {req.phone}</p>
+                              <div className="flex flex-wrap items-center gap-x-4 gap-y-2 mt-1">
+                                <p className="text-[#6b5d4f] text-sm flex items-center gap-1.5">
+                                  <Calendar className="w-3.5 h-3.5" />
+                                  {req.check_in} — {req.check_out}
+                                </p>
+                                <p className="text-[#6b5d4f] text-sm flex items-center gap-1.5">
+                                  <Mail className="w-3.5 h-3.5" />
+                                  {req.email}
+                                </p>
+                                <p className="text-[#6b5d4f] text-sm font-medium">| {req.phone}</p>
+                              </div>
+                              
+                              <div className="flex flex-wrap items-center gap-4 mt-3 pt-3 border-t border-[#e2d9cc]/30">
+                                <div className="flex items-center gap-1.5 px-2.5 py-1 bg-[#faf7f2] rounded-lg border border-[#e2d9cc]/50">
+                                  <Users className="w-3.5 h-3.5 text-[#6b7c4a]" />
+                                  <span className="text-[11px] font-semibold text-[#6b5d4f]">{req.guests_count} Huéspedes</span>
+                                </div>
+                                {req.trip_reason && (
+                                  <div className="flex items-center gap-1.5 px-2.5 py-1 bg-[#faf7f2] rounded-lg border border-[#e2d9cc]/50">
+                                    <Briefcase className="w-3.5 h-3.5 text-[#6b7c4a]" />
+                                    <span className="text-[11px] font-semibold text-[#6b5d4f]">{req.trip_reason}</span>
+                                  </div>
+                                )}
+                                {req.referred_by && (
+                                  <div className="flex items-center gap-1.5 px-2.5 py-1 bg-[#faf7f2] rounded-lg border border-[#e2d9cc]/50">
+                                    <Share2 className="w-3.5 h-3.5 text-[#6b7c4a]" />
+                                    <span className="text-[11px] font-semibold text-[#6b5d4f]">Vía: {req.referred_by}</span>
+                                  </div>
+                                )}
+                              </div>
                             </div>
                           </div>
                         </div>

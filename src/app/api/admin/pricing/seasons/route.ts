@@ -1,0 +1,46 @@
+import { NextResponse } from 'next/server';
+import { supabaseService } from '@/lib/supabaseServer';
+import { verifyAdminRequest } from '@/lib/adminAuth';
+
+export async function GET(request: Request) {
+  const auth = await verifyAdminRequest();
+  if (!auth.isValid) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  const { data, error } = await supabaseService
+    .from('seasonal_pricing')
+    .select('*')
+    .order('start_date', { ascending: true });
+
+  if (error) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+
+  return NextResponse.json(data);
+}
+
+export async function DELETE(request: Request) {
+  const auth = await verifyAdminRequest();
+  if (!auth.isValid) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  const { searchParams } = new URL(request.url);
+  const id = searchParams.get('id');
+
+  if (!id) {
+    return NextResponse.json({ error: 'ID is required' }, { status: 400 });
+  }
+
+  const { error } = await supabaseService
+    .from('seasonal_pricing')
+    .delete()
+    .eq('id', id);
+
+  if (error) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+
+  return NextResponse.json({ success: true });
+}

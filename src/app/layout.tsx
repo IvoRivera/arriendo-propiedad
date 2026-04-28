@@ -39,6 +39,8 @@ export const metadata: Metadata = {
 
 import { ConfigProvider } from "@/components/providers/ConfigProvider";
 
+import { Toaster } from 'react-hot-toast';
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -64,7 +66,9 @@ export default function RootLayout({
         <ConfigProvider>
           {children}
         </ConfigProvider>
+        <Toaster position="bottom-right" />
       </body>
     </html>
   );
 }
+
