@@ -1,35 +1,35 @@
 # Project State
 
 ## Current Position
-- **Phase**: 4 (Mobile Responsiveness & UX Polish)
-- **Task**: Completed mobile-first redesign and design system alignment.
-- **Status**: Active (resumed 2026-04-28 18:08)
+- **Phase**: 4 (Mobile Responsiveness & UX Polish) / 5 (Advanced Tools)
+- **Task**: Finalized modal UX and interactive selection flow.
+- **Status**: Paused at 2026-04-28 22:38
 
 ## Last Session Summary
-Transformed the administrative pricing module into a high-fidelity, dual-column productivity workspace with a "Navy & Sand" premium aesthetic.
+Transitioned the pricing dashboard from a sidebar-toggle layout to a premium unified modal experience with an interactive confirmation flow.
 
 ### Key Accomplishments:
-- **Mobile-First Redesign**: Transformed the sidebar into a high-fidelity centered modal for mobile devices.
-- **Scrolling Fix**: Adopted an `items-start` + `overflow-y-auto` parent pattern for the modal to ensure accessibility on small screens.
-- **Design System Alignment**: Fully implemented `docs/design/DESIGN.md` rules:
-    - **Capsule Buttons**: Interactive elements updated to `rounded-full`.
-    - **Primary Gradient**: Actions use the brand-specific `#00628f → #007cb3` gradient.
-    - **Sanctuary Aesthetic**: 20px backdrop blur and soft 12px container radius.
-    - **Tonal Surfaces**: Warm surface tones (`#fdfbf7`) for inputs with ghost borders.
-- **Framework Upgrade**: Upgraded Next.js to `v15.5.15` to resolve compilation and cache manifest issues.
+- **Unified Modal Experience**: Both mobile and desktop now use a centered full-screen modal for price management, aligning with `CoastalRequestModal.tsx`.
+- **Selection Confirmation Flow**: Added a "Selection Detected" confirmation prompt that appears in the center of the screen after a single click/tap on the calendar, preventing accidental modal opens.
+- **Visual Polish**: 
+    - Added a focus backdrop (`backdrop-blur-sm`) during selection confirmation.
+    - Updated `PricingSidebar` aesthetics with high-fidelity Serif typography and earthy tones.
+- **Technical Stability**: 
+    - Fixed `TypeError: Cannot read properties of undefined (reading 'definition')` by adding unique keys to `motion` components and guarding against null state during exit animations.
+    - Cleaned up redundant `showSidebar` logic in `PricingManager`.
 
 ## In-Progress Work
-- Ready for Phase 5: Historical Tracking & Bulk Tools.
-- Files modified: `src/components/admin/PricingManager.tsx`, `src/components/admin/PricingSidebar.tsx`, `package.json`.
-- Tests status: Build successful (`npm run build`). Bug fixed: Redundant Tailwind classes and Cross-Origin mobile access in `next.config.ts`. Fresh build cache required.
+- Ready for Phase 5 implementation.
+- Files modified: `src/components/admin/PricingManager.tsx`, `src/components/admin/PricingCalendar.tsx`, `src/components/admin/PricingSidebar.tsx`.
+- Tests status: Build successful (`npm run build`).
 
 ## Context Dump
 ### Decisions Made
-- **Modal Scrolling Pattern**: Switched from fixed-height internal scrolling to full-page overlay scrolling for mobile modals to prevent layout clipping.
-- **Capsule Hierarchy**: Adhered to the rule that all interactive elements must be capsules (`rounded-full`), while content containers remain soft-rectangles (`12px`).
+- **Centralized Interaction**: Decided to use a centered prompt instead of a bottom bar to ensure visibility across all devices and follow the project's centered-modal pattern.
+- **Confirmation Trigger**: Restored single-click detection but gated it behind a confirmation step to balance speed of use with accidental trigger prevention.
 
 ### Approaches Tried
-- **Internal Scroll**: Initially tried `max-h-[90vh]` on mobile, but it caused issues on small devices. Switched to `items-start` on the parent overlay.
+- **Double-Click Only**: Attempted double-click activation for desktop, but reverted to single-click + confirmation based on user feedback for a more consistent cross-device experience.
 
 ## Next Steps
 1. **Audit History Log**: Implement the tracking feature for pricing rule changes in the "Historial" tab.

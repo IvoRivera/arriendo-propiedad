@@ -1,5 +1,28 @@
 # Project Journal
 
+## Session: 2026-04-28 18:30
+
+### Objective
+Modernize the pricing dashboard by transitioning to a unified modal-based UX and implementing a safe selection flow.
+
+### Accomplished
+- [x] Unified sidebar/modal logic into a single centered experience.
+- [x] Implemented selection confirmation prompt centered on screen with focus backdrop.
+- [x] Fixed Framer Motion build-time errors (keys/null-guards).
+- [x] Restored single-click interaction with confirmation gating.
+
+### Verification
+- [x] Build successful (`npm run build`).
+- [x] Verified mobile-first layout with `items-center` positioning.
+- [x] Checked cross-origin dev configuration in `next.config.ts`.
+
+### Paused Because
+Session end / Task complete.
+
+### Handoff Notes
+The foundation for Phase 5 (Advanced Tools) is ready. The interaction model is now stable and consistent across desktop and mobile.
+
+
 ## Session: 2026-04-28 16:30
 
 ### Objective
