@@ -63,5 +63,5 @@ tmp/
 !supabase/migrations/*.sql
 
 # Internal Docs
-docs/
+docs/assets/
 scripts/test-resend.ts
