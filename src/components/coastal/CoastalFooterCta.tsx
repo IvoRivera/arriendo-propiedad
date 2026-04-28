@@ -1,3 +1,4 @@
+"use client";
 // CoastalFooterCta.tsx — Final CTA and footer bar
 // data-stitch-id: footer-cta-section
 

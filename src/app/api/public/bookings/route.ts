@@ -105,9 +105,13 @@ export async function POST(req: Request) {
     
     // We pass the full data so the notification route can use the snapshotted price
     if (host) {
+      const internalSecret = process.env.INTERNAL_SECRET;
       fetch(`${protocol}://${host}/api/notify-new-request`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'x-internal-secret': internalSecret || ''
+        },
         body: JSON.stringify(data),
       }).catch(err => console.error('[BookingsAPI] Notification trigger failed:', err));
     }

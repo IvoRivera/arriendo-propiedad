@@ -1,5 +1,5 @@
-import { createClient } from '@supabase/supabase-js';
 import { NextResponse } from 'next/server';
+import { verifyAdminRequest } from '@/lib/adminAuth';
 
 export async function GET(req: Request) {
   try {
@@ -10,15 +10,12 @@ export async function GET(req: Request) {
       return NextResponse.json({ error: 'User ID is required' }, { status: 400 });
     }
 
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-    const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-
-    if (!supabaseServiceKey) {
-      return NextResponse.json({ error: 'Service role key not configured' }, { status: 500 });
+    const auth = await verifyAdminRequest(req);
+    if (!auth.success) {
+      return NextResponse.json({ success: false, error: auth.error }, { status: auth.status });
     }
 
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
-
+    const { client: supabase } = auth;
     const { data: { user }, error } = await supabase.auth.admin.getUserById(userId);
 
     if (error || !user) {

@@ -1,44 +1,26 @@
+import 'server-only';
 import { supabaseService, createSessionClient } from './supabaseServer';
+import { SupabaseClient, User } from '@supabase/supabase-js';
 
 /**
  * Shared Admin Authentication Logic
- * Handles whitelist caching and configuration validation.
+ * Handles whitelist verification from environment variables.
  */
 
-let cachedAdmins: string[] = [];
-let lastFetch = 0;
-const CACHE_TTL = 60000; // 1 minute memory cache
+type AdminAuthResult = 
+  | { success: true; mode: 'SYSTEM'; client: SupabaseClient }
+  | { success: true; mode: 'USER'; user: User; client: SupabaseClient; userEmail: string }
+  | { success: false; error: string; status: number };
 
 export async function getAdminEmails(): Promise<string[]> {
-  const now = Date.now();
+  const envEmails = process.env.ALLOWED_ADMIN_EMAILS;
   
-  // Return cached version if still valid
-  if (now - lastFetch < CACHE_TTL && cachedAdmins.length > 0) {
-    return cachedAdmins;
-  }
-
-  try {
-    const { data, error } = await supabaseService
-      .from('system_config')
-      .select('value')
-      .eq('key', 'ALLOWED_ADMIN_EMAILS')
-      .single();
-
-    if (error || !data) {
-      console.error('[AdminAuth] CRITICAL: ALLOWED_ADMIN_EMAILS not configured in system_config table');
-      return [];
-    }
-
-    // Update cache
-    cachedAdmins = data.value.split(',').map((e: string) => e.trim()).filter(Boolean);
-    lastFetch = now;
-    
-    console.log(`[AdminAuth] Whitelist updated. Total admins: ${cachedAdmins.length}`);
-    return cachedAdmins;
-  } catch (err) {
-    console.error('[AdminAuth] Unexpected error fetching admin whitelist:', err);
+  if (!envEmails) {
+    console.error('[AdminAuth] CRITICAL: ALLOWED_ADMIN_EMAILS not configured in environment variables');
     return [];
   }
+
+  return envEmails.split(',').map(e => e.trim()).filter(Boolean);
 }
 
 /**
@@ -47,17 +29,15 @@ export async function getAdminEmails(): Promise<string[]> {
  * 1. INTERNAL_SECRET via 'x-internal-key' header
  * 2. User JWT via 'Authorization: Bearer <token>' + Whitelist check
  */
-import { SupabaseClient, User } from '@supabase/supabase-js';
-
-type AdminAuthResult = 
-  | { success: true; mode: 'SYSTEM'; client: SupabaseClient }
-  | { success: true; mode: 'USER'; user: User; client: SupabaseClient }
-  | { success: false; error: string; status: number };
-
 export async function verifyAdminRequest(req: Request): Promise<AdminAuthResult> {
-  const internalKey = req.headers.get('x-internal-key');
+  const internalKey = req.headers.get('x-internal-key') || req.headers.get('x-internal-secret');
   const authHeader = req.headers.get('authorization');
   const systemSecret = process.env.INTERNAL_SECRET;
+
+  // 1. Check for ALLOWED_ADMIN_EMAILS configuration
+  if (!process.env.ALLOWED_ADMIN_EMAILS) {
+    return { success: false, error: 'Configuración de seguridad incompleta (ALLOWED_ADMIN_EMAILS)', status: 500 };
+  }
 
   // Mode A: SYSTEM (Auth by internal key)
   if (systemSecret && internalKey === systemSecret) {
@@ -81,7 +61,13 @@ export async function verifyAdminRequest(req: Request): Promise<AdminAuthResult>
       return { success: false, error: 'No tienes permisos de administrador', status: 403 };
     }
 
-    return { success: true, mode: 'USER', user, client: sessionClient };
+    return { 
+      success: true, 
+      mode: 'USER', 
+      user, 
+      client: sessionClient,
+      userEmail: user.email || ''
+    };
   }
 
   return { success: false, error: 'Autenticación requerida', status: 401 };

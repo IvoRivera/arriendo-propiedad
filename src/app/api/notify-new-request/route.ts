@@ -2,11 +2,17 @@ import { Resend } from 'resend';
 import { NextResponse } from 'next/server';
 import { getLiveConfigServer, getPropertyBaseConfig } from '@/lib/systemConfigServer';
 import { getPricing } from '@/lib/pricing';
+import { verifyAdminRequest } from '@/lib/adminAuth';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 export async function POST(req: Request) {
   try {
+    const auth = await verifyAdminRequest(req);
+    if (!auth.success) {
+      return NextResponse.json({ success: false, error: auth.error }, { status: auth.status });
+    }
+
     const body = await req.json();
     const {
       full_name,
