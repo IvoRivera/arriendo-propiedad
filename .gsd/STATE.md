@@ -1,37 +1,37 @@
 # Project State
 
 ## Current Position
-- **Phase**: 3 (Premium Admin UX Redesign)
-- **Task**: Completed full UI/UX overhaul of the Pricing Module
-- **Status**: Paused at 2026-04-28 16:30
+- **Phase**: 4 (Mobile Responsiveness & UX Polish)
+- **Task**: Completed mobile-first redesign and design system alignment.
+- **Status**: Active (resumed 2026-04-28 18:08)
 
 ## Last Session Summary
 Transformed the administrative pricing module into a high-fidelity, dual-column productivity workspace with a "Navy & Sand" premium aesthetic.
 
 ### Key Accomplishments:
-- **Layout Architecture**: Implemented a 70/30 dual-column system with a sticky interactive Sidebar Editor.
-- **Advanced Calendar Interactivity**: 
-    - Drag-to-select date ranges with real-time visual feedback.
-    - Glassmorphism on season labels and tooltips for holidays/bridge days.
-    - Fixed deformation issues on high-resolution screens (capped at 1200px width).
-- **Design System Evolution**: Updated `tailwind.config.ts` with brand tokens: `primary-navy`, `sand-light`, `sand-dark`.
-- **Unified Aesthetic**: Standardized Header, Sidebar, Calendar, and Table components to match the "Coastal Alchemist" premium design language.
+- **Mobile-First Redesign**: Transformed the sidebar into a high-fidelity centered modal for mobile devices.
+- **Scrolling Fix**: Adopted an `items-start` + `overflow-y-auto` parent pattern for the modal to ensure accessibility on small screens.
+- **Design System Alignment**: Fully implemented `docs/design/DESIGN.md` rules:
+    - **Capsule Buttons**: Interactive elements updated to `rounded-full`.
+    - **Primary Gradient**: Actions use the brand-specific `#00628f → #007cb3` gradient.
+    - **Sanctuary Aesthetic**: 20px backdrop blur and soft 12px container radius.
+    - **Tonal Surfaces**: Warm surface tones (`#fdfbf7`) for inputs with ghost borders.
+- **Framework Upgrade**: Upgraded Next.js to `v15.5.15` to resolve compilation and cache manifest issues.
 
 ## In-Progress Work
-- Refactoring `PricingManager` state logic for more robust history tracking.
-- Files modified: `PricingManager.tsx`, `PricingCalendar.tsx`, `PricingSidebar.tsx`, `PricingHeader.tsx`, `SeasonTable.tsx`, `tailwind.config.ts`.
-- Tests status: UI verified visually in dev environment.
+- Ready for Phase 5: Historical Tracking & Bulk Tools.
+- Files modified: `src/components/admin/PricingManager.tsx`, `src/components/admin/PricingSidebar.tsx`, `package.json`.
+- Tests status: Build successful (`npm run build`). Bug fixed: Redundant Tailwind classes and Cross-Origin mobile access in `next.config.ts`. Fresh build cache required.
 
 ## Context Dump
 ### Decisions Made
-- **Navy & Sand Palette**: Switched to a high-contrast but warm palette (`#002855` on `#fdfbf7`) to improve legibility and premium feel.
-- **Aspect Ratio Control**: Forced `aspect-[1.1]` on calendar cells to prevent "squashing" on wide screens.
-- **Mobile Logic**: Opted for a "Detail on Click" approach for mobile viewports, hiding labels to keep the grid clean.
+- **Modal Scrolling Pattern**: Switched from fixed-height internal scrolling to full-page overlay scrolling for mobile modals to prevent layout clipping.
+- **Capsule Hierarchy**: Adhered to the rule that all interactive elements must be capsules (`rounded-full`), while content containers remain soft-rectangles (`12px`).
 
 ### Approaches Tried
-- **Pure Grid for Sidebar**: Initially tried a standard grid but switched to a sticky sidebar to reduce cognitive load during long editing sessions.
+- **Internal Scroll**: Initially tried `max-h-[90vh]` on mobile, but it caused issues on small devices. Switched to `items-start` on the parent overlay.
 
 ## Next Steps
-1. **History Tab Implementation**: Connect the history tab to a real audit log database table.
-2. **Bulk Adjustment Tools**: Add a "Global Adjustments" modal to apply percentage increases/decreases across multiple rules.
-3. **Mobile Layout Verification**: Conduct a deep-dive test on touch targets for the calendar range selection on mobile.
+1. **Audit History Log**: Implement the tracking feature for pricing rule changes in the "Historial" tab.
+2. **Bulk Pricing Adjustments**: Build the modal for mass editing seasonal rates.
+3. **Database Security**: Hardening RLS policies for the new history and bulk logs.
