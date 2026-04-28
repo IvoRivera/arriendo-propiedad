@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { supabaseAdmin } from "@/lib/supabase";
 import { SeasonalPricing } from "@/types/pricing";
 import { usePricingData } from "@/hooks/usePricingData";
@@ -29,6 +30,8 @@ export function PricingManager() {
 
   const [activeTab, setActiveTab] = useState<ActiveTab>('calendar');
   const [sidebarMode, setSidebarMode] = useState<SidebarMode>('idle');
+  const [showHolidays, setShowHolidays] = useState(true);
+  const [showSidebar, setShowSidebar] = useState(true);
   const [sidebarData, setSidebarData] = useState<any>({
     season_name: "",
     start_date: "",
@@ -55,6 +58,7 @@ export function PricingManager() {
       if (error) throw error;
       
       setSidebarMode('idle');
+      setShowSidebar(false);
       await fetchData();
     } catch (error) {
       console.error('Error adding rule:', error);
@@ -82,6 +86,7 @@ export function PricingManager() {
 
       if (error) throw error;
       setSidebarMode('idle');
+      setShowSidebar(false);
       await fetchData();
     } catch (error) {
       console.error('Error updating rule:', error);
@@ -96,10 +101,19 @@ export function PricingManager() {
       const { error } = await supabaseAdmin.from('seasonal_pricing').delete().eq('id', id);
       if (error) throw error;
       setSidebarMode('idle');
+      setShowSidebar(false);
       await fetchData();
     } catch (error) {
       console.error('Error deleting rule:', error);
     }
+  };
+
+  const calculateNextPriority = (start: string, end: string) => {
+    const overlapping = seasonalPrices.filter(
+      r => r.start_date <= end && r.end_date >= start
+    );
+    if (overlapping.length === 0) return 1;
+    return Math.max(...overlapping.map(r => r.priority)) + 1;
   };
 
   const handleDateSelect = (date: string) => {
@@ -109,10 +123,11 @@ export function PricingManager() {
       end_date: date,
       price_per_night: basePrice.toString(),
       weekend_price: "",
-      priority: 0,
+      priority: calculateNextPriority(date, date),
       color_hex: "#D9C2A3"
     });
     setSidebarMode('create');
+    setShowSidebar(true);
   };
 
   const handleRangeSelect = (start: string, end: string) => {
@@ -122,11 +137,13 @@ export function PricingManager() {
       end_date: end,
       price_per_night: basePrice.toString(),
       weekend_price: "",
-      priority: 0,
+      priority: calculateNextPriority(start, end),
       color_hex: "#D9C2A3"
     });
     setSidebarMode('create');
+    setShowSidebar(true);
   };
+
 
   const handleQuickAction = (action: string) => {
     const year = new Date().getFullYear();
@@ -183,6 +200,12 @@ export function PricingManager() {
       weekend_price: rule.weekend_price?.toString() || ""
     });
     setSidebarMode('edit');
+    setShowSidebar(true);
+  };
+
+  const handleSidebarCancel = () => {
+    setSidebarMode('idle');
+    setShowSidebar(false);
   };
 
   if (isLoading) {
@@ -211,12 +234,12 @@ export function PricingManager() {
 
       {/* 2. Main Workspace (2 Columns) */}
       <div className="flex flex-col lg:flex-row gap-8 items-start min-h-[800px]">
-        
-        {/* Left Column: Viewport (70%) */}
-        <div className="flex-1 space-y-8 w-full lg:w-[70%]">
+        {/* Left Column: Viewport (Dynamic Width) */}
+        <div className={`space-y-8 transition-all duration-500 ${showSidebar ? 'lg:w-[70%]' : 'w-full'}`}>
           
-          {/* View Tabs */}
-          <div className="flex items-center gap-2 p-1.5 bg-sand-light border border-sand-dark rounded-2xl w-fit">
+          {/* View Tabs & Toggles */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="flex items-center gap-2 p-1.5 bg-sand-light border border-sand-dark rounded-2xl w-fit">
             {[
               { id: 'calendar', label: 'Calendario' },
               { id: 'rules', label: 'Reglas Activas' },
@@ -237,15 +260,41 @@ export function PricingManager() {
             ))}
           </div>
 
-          <div className="bg-white rounded-[32px] border border-sand-dark shadow-sm overflow-hidden min-h-[600px]">
+          {/* Sidebar Toggles (Only in Calendar Tab) */}
+          {activeTab === 'calendar' && (
+            <div className="flex items-center gap-4 px-2">
+              <button 
+                onClick={() => setShowHolidays(!showHolidays)}
+                className={`flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest transition-all ${showHolidays ? 'text-primary-navy' : 'text-primary-navy/30'}`}
+              >
+                <div className={`w-8 h-4 rounded-full relative transition-colors ${showHolidays ? 'bg-primary-navy' : 'bg-sand-dark'}`}>
+                  <div className={`absolute top-0.5 w-3 h-3 rounded-full bg-white transition-all ${showHolidays ? 'right-0.5' : 'left-0.5'}`} />
+                </div>
+                Feriados
+              </button>
+              <button 
+                onClick={() => setShowSidebar(!showSidebar)}
+                className={`flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest transition-all ${showSidebar ? 'text-primary-navy' : 'text-primary-navy/30'}`}
+              >
+                <div className={`w-8 h-4 rounded-full relative transition-colors ${showSidebar ? 'bg-primary-navy' : 'bg-sand-dark'}`}>
+                  <div className={`absolute top-0.5 w-3 h-3 rounded-full bg-white transition-all ${showSidebar ? 'right-0.5' : 'left-0.5'}`} />
+                </div>
+                Editor
+              </button>
+            </div>
+          )}
+        </div>
+
+          <div className="bg-white rounded-[24px] md:rounded-[32px] border border-sand-dark shadow-sm overflow-hidden min-h-[500px] md:min-h-[600px]">
             {activeTab === 'calendar' ? (
-              <div className="p-8">
+              <div className="p-2 md:p-8">
                 <PricingCalendar 
                   seasonalPrices={seasonalPrices} 
                   holidays={holidays} 
                   basePrice={basePrice} 
                   onDateSelect={handleDateSelect}
                   onRangeSelect={handleRangeSelect}
+                  showHolidays={showHolidays}
                 />
               </div>
             ) : activeTab === 'rules' ? (
@@ -273,18 +322,36 @@ export function PricingManager() {
           </div>
         </div>
 
-        {/* Right Column: Sidebar Editor (30%) - Sticky */}
-        <div className="w-full lg:w-[30%] lg:sticky lg:top-8 h-fit min-h-[700px]">
-          <PricingSidebar 
-            mode={sidebarMode}
-            data={sidebarData}
-            setData={setSidebarData}
-            onSave={sidebarMode === 'edit' ? handleUpdateRule : handleAddRule}
-            onDelete={handleDeleteRule}
-            onCancel={() => setSidebarMode('idle')}
-            isSaving={isSaving}
-          />
-        </div>
+        {/* Right Column: Sidebar Editor (Conditional) */}
+        <AnimatePresence>
+          {showSidebar && (
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              className="fixed inset-0 z-[100] flex items-start justify-center p-4 bg-primary-navy/40 backdrop-blur-[20px] overflow-y-auto lg:sticky lg:z-0 lg:flex lg:items-start lg:justify-start lg:p-0 lg:bg-transparent lg:backdrop-blur-none lg:w-[30%] lg:top-8 lg:h-fit lg:min-h-[700px]"
+            >
+              {/* Backdrop (Mobile only) */}
+              <div 
+                className="fixed inset-0 lg:hidden cursor-pointer"
+                onClick={() => setShowSidebar(false)}
+              />
+              
+              {/* Modal/Sidebar Content */}
+              <div className="relative w-full max-w-2xl lg:max-w-none h-auto bg-white rounded-[12px] lg:rounded-[12px] shadow-2xl lg:shadow-none border border-sand-dark/15 overflow-hidden flex flex-col z-10 my-8 lg:my-0">
+                <PricingSidebar 
+                  mode={sidebarMode}
+                  data={sidebarData}
+                  setData={setSidebarData}
+                  onSave={sidebarMode === 'edit' ? handleUpdateRule : handleAddRule}
+                  onDelete={handleDeleteRule}
+                  onCancel={handleSidebarCancel}
+                  isSaving={isSaving}
+                />
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </div>
   );
