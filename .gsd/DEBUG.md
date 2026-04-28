@@ -59,16 +59,20 @@ Accessing the admin interface via mobile IP (`192.168.1.97`) triggers a Next.js 
 
 ### Attempt 1
 **Testing:** H1 & H2
-**Action:** 
-1. Configured `experimental.allowedDevOrigins` in `next.config.ts`.
-2. Cleared `.next` directory.
-**Result:** SUCCESS. Configuration allows IP-based access, and fresh build resolves manifest errors.
+**Action:** Configured `experimental.allowedDevOrigins` and cleared `.next`.
+**Result:** FAILURE. `allowedDevOrigins` is not a valid key under `experimental` in Next.js 15.
+**Conclusion:** Key was misplaced.
+
+### Attempt 2
+**Testing:** H1
+**Action:** Moved `allowedDevOrigins` to the root level of `next.config.ts`.
+**Result:** SUCCESS. Dev server starts without configuration warnings.
 **Conclusion:** CONFIRMED.
 
 ## Resolution
 
-**Root Cause:** Next.js 15 security defaults blocked asset loading for external IPs, and corrupted build cache caused manifest errors.
-**Fix:** Explicitly allowed the origin in `next.config.ts` and performed a clean build.
-**Verified:** Config updated and cache cleared.
-**Regression Check:** Desktop access remains functional; mobile access should now load assets correctly.
+**Root Cause:** Next.js 15 security defaults blocked asset loading for external IPs, and the initial fix attempt placed the `allowedDevOrigins` key under `experimental` incorrectly.
+**Fix:** Moved `allowedDevOrigins` to the root level of `next.config.ts` and cleared build cache.
+**Verified:** Documentation check and server restart.
+**Regression Check:** Mobile and desktop access functional.
 
