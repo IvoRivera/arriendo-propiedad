@@ -86,7 +86,7 @@ export async function getPriceForDate(
 
     seasonalPrices = pricesRes.data || [];
     holidaysSet = new Set(holidaysRes.data?.map(h => h.date) || []);
-    
+
     // Prioritize system_config PROPERTY_RENT_VALUE over property table base_price
     basePrice = parseBasePrice(config[CONFIG_KEYS.PROPERTY_RENT_VALUE]) || (propertyRes?.base_price ?? undefined);
   }
@@ -108,7 +108,7 @@ export async function getPriceForDate(
   }).sort((a, b) => {
     // 1. Priority (DESC)
     if (b.priority !== a.priority) return b.priority - a.priority;
-    
+
     // 2. Specificity (ASC duration)
     const durA = new Date(a.end_date).getTime() - new Date(a.start_date).getTime();
     const durB = new Date(b.end_date).getTime() - new Date(b.start_date).getTime();
@@ -119,7 +119,7 @@ export async function getPriceForDate(
   });
 
   const bestRule = matches[0];
-  
+
   if (process.env.NODE_ENV === 'development' && !cachedData) {
     console.log(`[PricingEngine] Date: ${formattedDate}, Matches: ${matches.length}, Best Rule: ${bestRule?.season_name || 'None'}`);
   }
@@ -133,7 +133,7 @@ export async function getPriceForDate(
     const isWkdDay = isFriday(date) || isSaturday(date);
     const standardPrice = Number(bestRule.price_per_night);
     const weekendPrice = bestRule.weekend_price !== null ? Number(bestRule.weekend_price) : standardPrice;
-    
+
     if (isWkdDay) {
       price = weekendPrice;
       source = `Regla Temporal (Fin de Semana): ${bestRule.season_name}`;
@@ -141,7 +141,7 @@ export async function getPriceForDate(
       price = standardPrice;
       source = `Regla Temporal: ${bestRule.season_name}`;
     }
-    
+
     season = bestRule.season_name;
     rulePriority = bestRule.priority;
   }
@@ -189,7 +189,7 @@ export async function getPricingForRange(
 
   const seasonalPrices = pricesRes.data || [];
   const holidaysSet = new Set(holidaysRes.data?.map(h => h.date) || []);
-  
+
   // Prioritize system_config PROPERTY_RENT_VALUE over property table base_price
   const basePrice = parseBasePrice(config[CONFIG_KEYS.PROPERTY_RENT_VALUE]) || (propertyRes?.base_price ?? undefined);
 

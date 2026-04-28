@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { supabaseService } from '@/lib/supabaseServer';
 import { getLiveConfigServer, getPropertyBaseConfig } from '@/lib/systemConfigServer';
 import { validateSchema } from '@/lib/schemaValidator';
-import { parseBasePrice } from '@/lib/pricing-engine';
+import { parseBasePrice } from '@/lib/pricing-utils';
 
 export async function GET(request: NextRequest) {
   try {

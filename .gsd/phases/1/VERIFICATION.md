@@ -1,13 +1,13 @@
 ---
 phase: 1
-verified_at: 2026-04-28T17:55:00Z
+verified_at: 2026-04-28T15:02:00Z
 verdict: PASS
 ---
 
 # Phase 1 Verification Report
 
 ## Summary
-6/6 must-haves verified. The codebase has been successfully refactored to eliminate redundant logic andGod components.
+7/7 must-haves verified. The codebase has been successfully refactored to eliminate redundant logic and God components, including full parity between admin and public pricing APIs.
 
 ## Must-Haves
 
@@ -42,8 +42,14 @@ Manual parameter checks were removed and replaced by strict Zod validation.
 **Status:** PASS
 **Evidence:** API now returns structured field errors via `validation.error.flatten().fieldErrors`.
 
+### ✅ MH7: Public API Parity
+**Status:** PASS
+**Evidence:**
+- `src/app/api/public/pricing/route.ts` now imports and uses `parseBasePrice`.
+- Hardcoded `80000` default removed from public API.
+
 ## Verdict
 **PASS**
 
 ## Gap Closure Required
-None. All objectives for Phase 1 met.
+None. Phase 1 is fully complete.

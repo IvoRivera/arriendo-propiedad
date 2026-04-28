@@ -1,5 +1,24 @@
 # Project Journal
 
+## Session: 2026-04-28 15:00
+
+### Objective
+Finalize Phase 1 by refactoring the Public Pricing API to achieve parity with the Admin logic.
+
+### Accomplished
+- [x] Created Plan 1.4 for Public API Parity.
+- [x] Refactored `src/app/api/public/pricing/route.ts` to use `parseBasePrice`.
+- [x] Removed hardcoded base price defaults.
+- [x] Verified Phase 1 completion (7/7 must-haves).
+
+### Verification
+- [x] Phase 1 Verification Report: **PASS** (Updated with MH7).
+- [x] Roadmap and State updated to reflect Milestone 1 completion.
+
+### Handoff Notes
+Milestone 1 is complete. The foundation is solid, logic is centralized, and APIs are hardened. Next session should focus on Milestone 2 (UI/UX improvements).
+
+
 ## Session: 2026-04-28 14:00
 
 ### Objective
