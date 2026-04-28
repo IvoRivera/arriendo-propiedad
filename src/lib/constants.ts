@@ -12,9 +12,10 @@ export const CONFIG_KEYS = {
 
 // Preset pricing colors for consistency
 export const PRICING_COLORS = [
-  { name: 'Baja', hex: '#e2d9cc' },   // Sand/Surface High
-  { name: 'Media', hex: '#6b7c4a' },  // Pine
-  { name: 'Alta', hex: '#c8883a' },   // Warm Gold
-  { name: 'Feriado', hex: '#00628f' }, // Sea Blue
-  { name: 'Puente', hex: '#5a6a3d' },  // Deep Pine
+  { name: 'Baja', hex: '#D9C2A3' },
+  { name: 'Media', hex: '#A7B77B' },
+  { name: 'Alta', hex: '#E09A3E' },
+  { name: 'Feriado', hex: '#2C7DA0' },
+  { name: 'Puente', hex: '#E76F51' },
 ];
+
