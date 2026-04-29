@@ -21,7 +21,7 @@ export const CoastalAvailability: React.FC<CoastalAvailabilityProps> = ({ onActi
   const [seasonalPrices, setSeasonalPrices] = useState<SeasonalPricing[]>([]);
   const [holidays, setHolidays] = useState<any[]>([]);
   const [basePrice, setBasePrice] = useState<number>(0);
-  
+
   const confirmButtonRef = useRef<HTMLButtonElement>(null);
   const [hasScrolled, setHasScrolled] = useState(false);
   const [shouldAnimate, setShouldAnimate] = useState(false);
@@ -65,13 +65,13 @@ export const CoastalAvailability: React.FC<CoastalAvailabilityProps> = ({ onActi
 
   const { nights, totalPrice, isValid, isBlocked } = useMemo(() => {
     if (!range?.from || !range?.to) return { nights: 0, totalPrice: 0, isValid: false, isBlocked: false };
-    
+
     // Check if range contains blocked dates
     const start = range.from;
     const end = range.to;
     const currCheck = new Date(start);
     let rangeHasBlocked = false;
-    
+
     while (currCheck <= end) {
       const dStr = `${currCheck.getFullYear()}-${String(currCheck.getMonth() + 1).padStart(2, '0')}-${String(currCheck.getDate()).padStart(2, '0')}`;
       if (blockedDateStrings.includes(dStr)) {
@@ -104,19 +104,19 @@ export const CoastalAvailability: React.FC<CoastalAvailabilityProps> = ({ onActi
       if (isMobile) {
         // Delay slightly to allow the UI to update with pricing info
         const timer = setTimeout(() => {
-          confirmButtonRef.current?.scrollIntoView({ 
-            behavior: 'smooth', 
-            block: 'center' 
+          confirmButtonRef.current?.scrollIntoView({
+            behavior: 'smooth',
+            block: 'center'
           });
           setHasScrolled(true);
           setShouldAnimate(true);
-          
+
           // Reset animation class after it plays
           setTimeout(() => setShouldAnimate(false), 1500);
         }, 300);
         return () => clearTimeout(timer);
       }
-    } 
+    }
     // Reset scroll flag if range is cleared or becomes invalid
     if (!range?.from || !range?.to) {
       setHasScrolled(false);
@@ -162,16 +162,16 @@ export const CoastalAvailability: React.FC<CoastalAvailabilityProps> = ({ onActi
   return (
     <section id="availability" className="relative z-40 bg-[#faf7f2] border-t border-[#e2d9cc]">
       <style>{calendarStyles}</style>
-      
+
       <div className="max-w-7xl mx-auto px-6 py-24 md:py-40">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 lg:gap-24 items-start">
-          
+
           {/* A. STATIC HEADER (Column 1-5) */}
           <div className="lg:col-span-5 text-center lg:text-left">
             <span className="text-[10px] uppercase tracking-[0.4em] font-bold text-[#9a8a78] mb-8 block opacity-80">
               {SITE_CONTENT.availability.title}
             </span>
-            <h2 
+            <h2
               className="text-5xl md:text-7xl font-serif italic text-[#2c2416] mb-8 leading-[1.1]"
               style={{ fontFamily: "var(--font-newsreader), serif" }}
             >
@@ -185,7 +185,7 @@ export const CoastalAvailability: React.FC<CoastalAvailabilityProps> = ({ onActi
             <div className="hidden lg:block">
               {/* Optional: Additional descriptive text for the sanctuary */}
               <p className="text-[#8a7a6a] text-sm italic font-serif max-w-sm">
-                * Tu reserva será confirmada personalmente por nuestro equipo para asegurar una experiencia exclusiva.
+                * Recibiré personalmente tu reserva y la revisaré con atención para darte una bienvenida cálida y una estadía inolvidable.
               </p>
             </div>
           </div>
@@ -193,7 +193,7 @@ export const CoastalAvailability: React.FC<CoastalAvailabilityProps> = ({ onActi
           {/* B. INTERACTIVE ZONE (Column 6-12) — Stable Layout */}
           <div className="lg:col-span-7 w-full max-w-2xl mx-auto lg:mx-0">
             <div className="flex flex-col gap-8">
-              
+
               {/* 1. CALENDAR — Fixed height/width container */}
               <div className="availability-calendar bg-white p-8 md:p-12 rounded-[2.5rem] border border-[#e2d9cc] shadow-xl shadow-[#00628f]/5 min-h-[440px] flex items-center justify-center">
                 <DayPicker
@@ -233,7 +233,7 @@ export const CoastalAvailability: React.FC<CoastalAvailabilityProps> = ({ onActi
                           </p>
                         </div>
                       </div>
-                      
+
                       {range.to && isValid && (
                         <button
                           ref={confirmButtonRef}

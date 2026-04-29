@@ -9,7 +9,7 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 export async function POST(req: Request) {
   try {
     const auth = await verifyAdminRequest(req);
-    
+
     if (!auth.success) {
       return NextResponse.json({ success: false, error: auth.error }, { status: auth.status });
     }
@@ -137,7 +137,7 @@ export async function POST(req: Request) {
     }
 
     const payload = {
-      from: 'Reservas Costa Serena <reservas@riveradigital.cl>',
+      from: 'Reservas Playa La Serena <reservas@riveradigital.cl>',
       to: email,
       subject: subject,
       text: text,

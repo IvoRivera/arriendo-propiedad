@@ -32,7 +32,7 @@ export async function POST(req: Request) {
     ]);
 
     const ownerEmail = freshConfig['OWNER_EMAIL'] || process.env.OWNER_EMAIL || 'ivo.rivera.godoy@gmail.com';
-    
+
     if (!ownerEmail) {
       console.error('[Resend] Error: No owner email configured in system_config or environment variables');
     }
@@ -52,7 +52,7 @@ export async function POST(req: Request) {
     const dailyPrice = pricing.nightlyPrice;
 
     const { data, error } = await resend.emails.send({
-      from: 'Reservas Arriendo Costa Serena <reservas@riveradigital.cl>',
+      from: 'Reservas Playa La Serena <reservas@riveradigital.cl>',
       to: ownerEmail,
       subject: `Nueva solicitud: ${full_name} (${nights} noches)`,
       text: `

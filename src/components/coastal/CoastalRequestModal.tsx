@@ -23,16 +23,16 @@ const normalizePhone = (code: string, number: string) => {
   // Normalize prefix: ensure it starts with + and contains only digits
   let cleanCode = code.replace(/[^\d+]/g, "");
   if (cleanCode && !cleanCode.startsWith("+")) cleanCode = "+" + cleanCode;
-  
+
   // Normalize number: digits only
   let cleanNumber = number.replace(/[^\d]/g, "");
-  
+
   // Avoid duplicate prefixes (e.g. if user pasted +56 in the number field)
   const codeDigits = cleanCode.replace("+", "");
   if (codeDigits && cleanNumber.startsWith(codeDigits)) {
     cleanNumber = cleanNumber.substring(codeDigits.length);
   }
-  
+
   // Format E.164: +[code][number]
   return `${cleanCode}${cleanNumber}`;
 };
@@ -216,11 +216,11 @@ export const CoastalRequestModal: React.FC<CoastalRequestModalProps> = ({
 
     document.addEventListener("keydown", handleKeyDown);
     document.addEventListener("mousedown", handleClickOutside);
-    
+
     // Lock body scroll when calendar is open
     const originalStyle = window.getComputedStyle(document.body).overflow;
     document.body.style.overflow = 'hidden';
-    
+
     return () => {
       document.removeEventListener("keydown", handleKeyDown);
       document.removeEventListener("mousedown", handleClickOutside);
@@ -549,8 +549,8 @@ export const CoastalRequestModal: React.FC<CoastalRequestModalProps> = ({
                   <div className="space-y-2">
                     <label className="text-[10px] uppercase tracking-widest text-[#9a8a78] font-bold ml-1">Teléfono Móvil</label>
                     <div className="flex items-center gap-2 w-full">
-                      <input 
-                        {...register("country_code")} 
+                      <input
+                        {...register("country_code")}
                         placeholder="+56"
                         maxLength={6}
                         onInput={(e) => {
@@ -561,25 +561,25 @@ export const CoastalRequestModal: React.FC<CoastalRequestModalProps> = ({
                         className="w-[80px] flex-shrink-0 bg-white border border-[#e2d9cc] rounded-xl px-3 py-3.5 text-base sm:text-sm outline-none focus:border-[#00628f] shadow-sm"
                       />
 
-                      <input 
-                        {...register("phone")} 
-                        type="tel" 
-                        placeholder={selectedCountryCode === CHILE_PREFIX ? "9 1234 5678" : "Número"} 
+                      <input
+                        {...register("phone")}
+                        type="tel"
+                        placeholder={selectedCountryCode === CHILE_PREFIX ? "9 1234 5678" : "Número"}
                         maxLength={selectedCountryCode === CHILE_PREFIX ? 11 : 15} // 11 to account for 2 spaces in 9 digits
                         onInput={(e) => {
                           let val = e.currentTarget.value.replace(/[^\d]/g, "");
                           const prefixDigits = selectedCountryCode?.replace("+", "") || "";
-                          
+
                           // Handle duplicate prefix on paste
                           if (prefixDigits && val.startsWith(prefixDigits) && val.length > prefixDigits.length) {
                             val = val.substring(prefixDigits.length);
                           }
-                          
+
                           const formatted = formatVisualPhone(val, selectedCountryCode);
                           e.currentTarget.value = formatted;
                           setValue("phone", formatted, { shouldValidate: true });
                         }}
-                        className="flex-1 min-w-0 bg-white border border-[#e2d9cc] rounded-xl px-4 py-3.5 text-base sm:text-sm focus:border-[#00628f] focus:ring-1 focus:ring-[#00628f] outline-none transition-all shadow-sm" 
+                        className="flex-1 min-w-0 bg-white border border-[#e2d9cc] rounded-xl px-4 py-3.5 text-base sm:text-sm focus:border-[#00628f] focus:ring-1 focus:ring-[#00628f] outline-none transition-all shadow-sm"
                       />
                     </div>
                     {(errors.phone || errors.country_code) && (
@@ -611,15 +611,15 @@ export const CoastalRequestModal: React.FC<CoastalRequestModalProps> = ({
                       Mínimo de estadía: 2 noches
                     </span>
                   </div>
-                  
+
                   {/* Calendar Portal Root - Isolated from Form Layout */}
                   {activePicker && mounted && createPortal(
                     <div className="fixed inset-0 z-[10000000] flex items-center justify-center p-4 bg-black/20 backdrop-blur-[2px] calendar-portal-content animate-in fade-in duration-200">
-                      <div 
+                      <div
                         className="bg-white border border-[#e2d9cc] rounded-[32px] shadow-2xl p-6 sm:p-8 relative animate-in zoom-in-95 duration-200 max-w-sm w-full"
                         onClick={(e) => e.stopPropagation()}
                       >
-                        <button 
+                        <button
                           onClick={() => setActivePicker(null)}
                           className="absolute top-4 right-4 p-2 text-[#9a8a78] hover:text-[#2c2416] transition-colors"
                         >
@@ -638,13 +638,13 @@ export const CoastalRequestModal: React.FC<CoastalRequestModalProps> = ({
                         <style>{calendarStyles}</style>
                         <DayPicker
                           mode="single"
-                          selected={activePicker === 'check_in' 
+                          selected={activePicker === 'check_in'
                             ? (checkInValue ? parseISO(checkInValue) : undefined)
                             : (checkOutValue ? parseISO(checkOutValue) : undefined)
                           }
                           onSelect={(date) => {
                             if (!date) return;
-                            
+
                             const year = date.getFullYear();
                             const month = String(date.getMonth() + 1).padStart(2, '0');
                             const day = String(date.getDate()).padStart(2, '0');
@@ -652,19 +652,19 @@ export const CoastalRequestModal: React.FC<CoastalRequestModalProps> = ({
 
                             if (activePicker === 'check_in') {
                               setValue("check_in", dateStr, { shouldValidate: true });
-                              
+
                               // Auto-suggest checkout if not set or invalid
                               const suggested = new Date(date);
                               suggested.setDate(suggested.getDate() + 2);
                               const sDateStr = `${suggested.getFullYear()}-${String(suggested.getMonth() + 1).padStart(2, '0')}-${String(suggested.getDate()).padStart(2, '0')}`;
-                              
+
                               if (!checkOutValue || parseISO(checkOutValue) < suggested) {
                                 setValue("check_out", sDateStr, { shouldValidate: true });
                               }
                             } else {
                               setValue("check_out", dateStr, { shouldValidate: true });
                             }
-                            
+
                             setActivePicker(null);
                           }}
                           disabled={activePicker === 'check_in' ? isDateDisabled : isCheckOutDisabled}
@@ -864,7 +864,7 @@ export const CoastalRequestModal: React.FC<CoastalRequestModalProps> = ({
                   </button>
 
                   <p className="mt-4 text-[9px] text-center text-[#9a8a78] uppercase tracking-widest leading-relaxed">
-                    * Tu postulación será revisada personalmente<br />por el equipo de Playa Serena.
+                    * Cada reserva es revisada personalmente, cuidando cada detalle <br />para que vivas una experiencia relajada, exclusiva y frente al mar.
                   </p>
                 </div>
               </form>
@@ -877,7 +877,7 @@ export const CoastalRequestModal: React.FC<CoastalRequestModalProps> = ({
               <div className="space-y-3">
                 <h3 className="font-serif text-3xl sm:text-4xl text-[#2c2416] italic">¡Solicitud Recibida!</h3>
                 <p className="text-[#6b5d4f] text-sm font-light max-w-sm mx-auto leading-relaxed">
-                  Gracias por tu interés en Playa Serena. Revisaremos tu postulación y te contactaremos a la brevedad luego de revisar tu solicitud.
+                  Gracias por tu interés en Playa La Serena. Revisaré personalmente tu solicitud y te contactaré a la brevedad. Recuerda revisar también tu bandeja de correo no deseado o spam por si mi respuesta llega allí.
                 </p>
               </div>
               <button

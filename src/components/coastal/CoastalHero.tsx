@@ -1,11 +1,9 @@
-// CoastalHero.tsx — Elegant version (No Animations)
 "use client";
 
 import React from "react";
 import Image from "next/image";
-import { SITE_CONTENT } from "@/config/site-content";
+import { motion } from "framer-motion";
 import { IMAGE_FALLBACKS } from "@/config/image-fallbacks";
-import { useConfig } from "@/components/providers/ConfigProvider";
 import { Property } from "@/types/property";
 
 interface CoastalHeroProps {
@@ -19,24 +17,10 @@ export const CoastalHero: React.FC<CoastalHeroProps> = ({
     className = "", 
     onAction, 
     dynamicImages = [],
-    property 
 }) => {
-    const { getValue } = useConfig();
-    const livePrice = property?.base_price?.toString() || getValue("PROPERTY_RENT_VALUE") || "80.000";
-
-    // Helper to format price with dots (Chilean format)
-    const formatPrice = (p: string) => {
-        const num = parseInt(p.replace(/\D/g, ""));
-        return isNaN(num) ? p : num.toLocaleString("es-CL");
-    };
-
     // Base64 blur placeholder
-    const blurDataURL = "data:image/webp;base64,UklGRmAAAABXRUJQVlA4IFQAAADwAQCdASoKAAoAAUAmJaQAAuXc7XwAAP75R+V0C665R+V0C665R+V0C665R+V0C665R+V0C665R+V0C665R+V0C665R+V0C665R+V0C665AAA=";
+    const blurDataURL = "data:image/webp;base64,UklGRmAAAABXRUJQVlA4IFQAAADwAQCdASoKAAoAAUAmJaQAAuXc7XwAAP75R+V0C665R+V0C665R+V0C665R+V0C665R+V0C665R+V0C665R+V0C665R+V0C665R+V0C665R+V0C665R+V0C665AAA=";
 
-    const displayPrice = formatPrice(livePrice);
-
-    // Get dynamic hero image from dedicated 'hero' category
-    // Ref: Separation of Hero background from Gallery carousels
     const heroImage = (dynamicImages || [])
         .filter(img => img.category === 'hero' && img.url)
         .sort((a, b) => a.priority - b.priority)[0]?.url 
@@ -44,63 +28,103 @@ export const CoastalHero: React.FC<CoastalHeroProps> = ({
     
     return (
         <section 
-            className={`relative z-10 w-full min-h-[600px] h-[85vh] md:h-[90vh] flex flex-col items-center justify-center px-6 ${className}`}
+            className={`relative w-full h-[90vh] md:h-screen flex flex-col items-center justify-center px-6 overflow-hidden ${className}`}
         >
-            {/* Background image - Edge-to-edge */}
-            <div className="absolute inset-0 z-0 pointer-events-none">
-                {heroImage && heroImage.trim() !== "" ? (
+            {/* Background Layer with Parallax-ready feel */}
+            <div className="absolute inset-0 z-0">
+                {heroImage && (
                     <Image
                         src={heroImage}
-                        alt="Vista principal del departamento frente al mar"
+                        alt="Vista al mar desde el departamento"
                         fill
                         sizes="100vw"
                         priority
-                        placeholder="blur"
-                        blurDataURL={blurDataURL}
-                        className="object-cover object-center"
+                        className="object-cover object-center scale-105"
                     />
-                ) : (
-                    <div className="absolute inset-0 bg-[#001a2c] flex items-center justify-center overflow-hidden">
-                        <div className="absolute inset-0 bg-gradient-to-br from-[#002a46] to-[#000d16] opacity-50" />
-                    </div>
                 )}
-                {/* Minimalist Overlay - Only dark at the base */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
+                {/* 1. Cinematic Dark Overlay */}
+                <div className="absolute inset-0 bg-black/40 z-[1]" />
+                {/* 2. Deep Gradient Overlay for text contrast */}
+                <div className="absolute inset-0 bg-gradient-to-t from-[#1a150e]/90 via-transparent to-black/20 z-[2]" />
             </div>
 
-            {/* Content block - The Digital Sanctuary */}
-            <div className="relative z-30 max-w-4xl w-full flex flex-col items-center text-center mt-auto mb-16 md:my-auto">
-                {/* Emotional Subtitle */}
-                <p className="text-white/90 text-sm md:text-base font-light tracking-[0.15em] uppercase mb-4 drop-shadow-sm">
-                    {SITE_CONTENT.hero.tagline}
-                </p>
+            {/* Content Container */}
+            <div className="relative z-10 max-w-5xl w-full flex flex-col items-center text-center">
+                
+                {/* 1. Eyebrow - Glassmorphism Capsule */}
+                <motion.div 
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.8, ease: "easeOut" }}
+                    className="mb-8 px-5 py-2 rounded-full bg-white/10 backdrop-blur-md border border-white/20"
+                >
+                    <span className="text-[10px] md:text-xs font-medium text-white tracking-[0.2em] uppercase">
+                        79 m² · Primera Línea · Piso 11 · 2 Dormitorios · Cuatro Esquinas, La Serena
+                    </span>
+                </motion.div>
 
-                {/* Dominant Headline */}
-                <h1
-                    className="text-5xl md:text-7xl lg:text-8xl font-serif text-white leading-[1.1] mb-8 drop-shadow-xl"
+                {/* 2. Dominant Headline - Newsreader Serif with Soft Shadow */}
+                <motion.h1
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
+                    className="text-5xl md:text-7xl lg:text-8xl font-serif italic text-white leading-[1.05] mb-8 tracking-tight drop-shadow-2xl"
                     style={{ fontFamily: "var(--font-newsreader), serif" }}
                 >
-                    {SITE_CONTENT.hero.headline}
-                </h1>
+                    Tu refugio perfecto <br className="hidden md:block" /> frente al mar
+                </motion.h1>
 
-                {/* Price - Less visual weight */}
-                <p className="text-white/70 text-lg md:text-xl font-light tracking-wide mb-12 drop-shadow-md">
-                    Desde <span className="text-white font-medium">${displayPrice}</span> por noche
-                </p>
+                {/* 3. Emotional Subheadline - Off-white Newsreader Italic */}
+                <motion.p
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 1, delay: 0.5 }}
+                    className="max-w-3xl text-white/70 text-xl md:text-2xl font-serif italic leading-relaxed mb-10 drop-shadow-md px-4"
+                    style={{ fontFamily: "var(--font-newsreader), serif" }}
+                >
+                    Despierta con el sonido del mar, disfruta atardeceres inolvidables y vive la costa serenense desde una vista privilegiada.
+                </motion.p>
 
-                {/* Single Primary CTA */}
-                <div className="w-full sm:w-auto px-4">
+                {/* 3.5 Pricing Badge - Glassmorphism Style */}
+                <motion.div 
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.8, delay: 0.7 }}
+                    className="mb-12 px-6 py-2 rounded-full bg-white/10 backdrop-blur-md border border-white/10 shadow-lg"
+                >
+                    <span className="text-[10px] md:text-xs font-bold text-white tracking-[0.3em] uppercase">
+                        Desde $90.000 / noche
+                    </span>
+                </motion.div>
+
+                {/* 4. CTA - Restored to Previous State */}
+                <motion.div
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ duration: 0.5, delay: 0.8 }}
+                    className="w-full sm:w-auto px-4"
+                >
                     <button
                         onClick={(e) => {
                             e.preventDefault();
                             onAction?.();
                         }}
-                        className="w-full sm:min-w-[280px] px-10 py-5 bg-gradient-to-r from-[#00628f] to-[#007cb3] text-white text-lg font-semibold rounded-full transition-all duration-300 hover:scale-105 active:scale-95 cursor-pointer shadow-none border-none"
+                        className="w-full sm:min-w-[280px] px-10 py-5 bg-gradient-to-r from-[#00628f] to-[#007cb3] text-white text-lg font-semibold rounded-full transition-all duration-300 hover:scale-105 active:scale-95 cursor-pointer shadow-xl shadow-black/20 border-none"
                     >
                         Explorar disponibilidad
                     </button>
-                </div>
+                </motion.div>
             </div>
+
+            {/* Scroll Indicator - Bottom */}
+            <motion.div 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 1.5, duration: 1 }}
+                className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 z-10"
+            >
+                <div className="w-[1px] h-12 bg-gradient-to-b from-white/0 via-white/50 to-white/0" />
+            </motion.div>
         </section>
     );
 };

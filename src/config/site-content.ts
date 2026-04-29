@@ -203,7 +203,7 @@ export const SITE_CONTENT: SiteContent = {
       night: "noche",
       nights: "noches",
       minStayWarning: "La estadía mínima es de 2 noches.",
-      stayHours: "Check-in: 15:00 · Check-out: 11:00",
+      stayHours: "Check-in: 16:00 · Check-out: 12:00",
     }
   },
   discover: {
@@ -212,8 +212,8 @@ export const SITE_CONTENT: SiteContent = {
     items: [
       {
         emoji: "🌊",
-        title: "Playas a pasos del departamento",
-        description: "Camina a la playa de Cuatro Esquinas al atardecer o recorre hasta Totoralillo para aguas más claras. La vista al mar te acompaña todo el día.",
+        title: "Costa, sol y descanso",
+        description: "La Playa a pasos de tí, días de sol y noches con brisa costera. El lugar perfecto para desconectar y disfrutar La Serena. La vista hacia el mar te acompaña todo el día.",
       },
       {
         emoji: "🍽️",
@@ -246,7 +246,7 @@ export const SITE_CONTENT: SiteContent = {
       {
         name: "Carlos R.",
         avatar: "CR",
-        source: "Booking · Marzo 2026",
+        source: "Airbnb · Marzo 2026",
         rating: 5,
         text: "Imposible mejor ubicación. El ruido del mar de fondo mientras trabajas es terapia pura. El WiFi aguantó sin problemas (y eso que mi pega es full videollamadas). Volveremos con el próximo finde largo.",
       },
