@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { motion, AnimatePresence, useInView } from "framer-motion";
+import { motion, AnimatePresence, useInView, animate } from "framer-motion";
 import { Calendar } from "lucide-react";
 import { CoastalHero } from "@/components/coastal/CoastalHero";
 import { CoastalAvailability } from "@/components/coastal/CoastalAvailability";
@@ -39,9 +39,17 @@ export function HomeClient({ dynamicImages, property }: HomeClientProps) {
     const element = document.getElementById(id);
     if (!element) return;
     
-    // Smoothness is now handled by CSS 'scroll-behavior: smooth' in globals.css
-    // This is the most robust way to ensure it works on all mobile browsers
-    element.scrollIntoView({ block: 'center' });
+    const targetPosition = element.getBoundingClientRect().top + window.pageYOffset;
+    const startPosition = window.pageYOffset;
+
+    // Premium Ease-In-Out Animation
+    // slow start (ease in) -> fast middle -> slow end (ease out)
+    animate(startPosition, targetPosition, {
+      type: "tween",
+      duration: 1.5, // Luxurious duration
+      ease: [0.65, 0, 0.35, 1], // easeInOutQuint-ish curve
+      onUpdate: (latest) => window.scrollTo(0, latest)
+    });
   };
 
   const heroRef = useRef(null);
@@ -84,23 +92,22 @@ export function HomeClient({ dynamicImages, property }: HomeClientProps) {
         <CoastalFooterCta onAction={() => scrollToId('availability')} />
       </div>
 
-      {/* STICKY MINI-CTA — Transición minimalista y centrada para máxima ergonomía */}
-      <AnimatePresence>
+      {/* STICKY MINI-CTA — Transición minimalista con Morphing (layoutId) */}
+      <AnimatePresence mode="wait">
         {showFloating && (
           <motion.button
-            initial={{ opacity: 0, y: 50, x: "-50%", scale: 0.9 }}
-            animate={{ opacity: 1, y: 0, x: "-50%", scale: 1 }}
-            exit={{ opacity: 0, y: 50, x: "-50%", scale: 0.9 }}
-            whileHover={{ scale: 1.02, y: -2 }}
-            whileTap={{ scale: 0.98 }}
+            layoutId="main-cta"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 20 }}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            transition={{ type: "spring", stiffness: 300, damping: 30 }}
             onClick={() => scrollToId('availability')}
-            className="fixed bottom-8 left-1/2 z-[60] flex items-center gap-2.5 px-6 py-3.5 bg-[#00628f]/90 text-white rounded-full shadow-[0_20px_40px_-10px_rgba(0,0,0,0.3)] border border-white/10 backdrop-blur-lg group overflow-hidden"
+            className="fixed bottom-8 left-1/2 -translate-x-1/2 z-[60] flex items-center gap-3 px-6 py-3.5 bg-gradient-to-r from-[#00628f] to-[#007cb3] text-white rounded-full shadow-[0_20px_40px_-10px_rgba(0,98,143,0.5)] border border-white/20 backdrop-blur-md group"
           >
-            {/* Glossy light effect */}
-            <div className="absolute inset-0 bg-gradient-to-tr from-white/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-            
-            <Calendar className="w-4 h-4 text-[#66B8B6]" />
-            <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/90">
+            <Calendar className="w-5 h-5" />
+            <span className="text-[10px] font-bold uppercase tracking-[0.2em]">
               Disponibilidad
             </span>
           </motion.button>
