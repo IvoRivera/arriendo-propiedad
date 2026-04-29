@@ -95,13 +95,16 @@ export async function proxy(req: NextRequest) {
     }
   }
 
-  // B. Protect Email/Notification Endpoints (Internal Only)
+  // B. Protect Email/Notification Endpoints (Internal OR Admin Only)
   const isEmailRoute = pathname.startsWith('/api/send-status-email') || pathname.startsWith('/api/notify-new-request');
   if (isEmailRoute) {
-    if (!internalSecret || providedSecret !== internalSecret) {
-      console.warn(`[Middleware] Unauthorized internal API access attempt from IP: ${ip} on ${pathname}`);
+    const isAdmin = user?.app_metadata?.role === 'admin';
+    const isInternal = internalSecret && providedSecret === internalSecret;
+
+    if (!isAdmin && !isInternal) {
+      console.warn(`[Middleware] Unauthorized email API access attempt from IP: ${ip} on ${pathname}`);
       return new NextResponse(
-        JSON.stringify({ success: false, error: 'Acceso restringido: Secreto interno inválido o ausente.' }),
+        JSON.stringify({ success: false, error: 'Acceso restringido: Se requiere sesión de administrador o secreto interno.' }),
         { status: 401, headers: { 'content-type': 'application/json' } }
       );
     }
