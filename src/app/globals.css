@@ -9,13 +9,12 @@
   --color-sea-blue: #4a6fa5;
   --color-sand: #f5f0e8;
   --color-pine: #6b7c4a;
-
-  --font-inter: var(--font-inter);
-  --font-newsreader: var(--font-newsreader);
+  /* Fonts are injected via Next.js variable strategy in layout.tsx */
 }
 
 html {
   scroll-behavior: smooth;
+  scroll-padding-top: 2rem; /* Buffer for better landing */
 }
 
 html,
