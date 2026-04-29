@@ -1,24 +1,10 @@
-import { createClient } from '@supabase/supabase-js';
+import { createClient } from '@/utils/supabase/client';
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
-
-// Cliente público para booking_requests (sin persistencia de sesión)
-export const supabasePublic = createClient(supabaseUrl, supabaseAnonKey, {
-  auth: {
-    persistSession: false,
-    autoRefreshToken: false,
-    detectSessionInUrl: false
-  }
-});
-
-// Cliente de administración para autenticación y gestión (basado en sesión)
-export const supabaseAdmin = createClient(supabaseUrl, supabaseAnonKey, {
-  auth: {
-    persistSession: true,
-    storageKey: 'coastal-admin-session'
-  }
-});
-
-// Export por defecto para evitar romper archivos fuera del alcance de esta refactorización
+/**
+ * Shared Supabase Client
+ * We use the standard browser client to ensure session consistency
+ * across the entire administrative dashboard.
+ */
+export const supabaseAdmin = createClient();
+export const supabasePublic = supabaseAdmin;
 export const supabase = supabaseAdmin;
