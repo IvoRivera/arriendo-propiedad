@@ -5,6 +5,7 @@ import Image from "next/image";
 import { motion } from "framer-motion";
 import { IMAGE_FALLBACKS } from "@/config/image-fallbacks";
 import { Property } from "@/types/property";
+import { MapPin } from 'lucide-react';
 
 interface CoastalHeroProps {
     readonly className?: string;
@@ -13,9 +14,9 @@ interface CoastalHeroProps {
     property?: Property | null;
 }
 
-export const CoastalHero: React.FC<CoastalHeroProps> = ({ 
-    className = "", 
-    onAction, 
+export const CoastalHero: React.FC<CoastalHeroProps> = ({
+    className = "",
+    onAction,
     dynamicImages = [],
 }) => {
     // Base64 blur placeholder
@@ -23,11 +24,11 @@ export const CoastalHero: React.FC<CoastalHeroProps> = ({
 
     const heroImage = (dynamicImages || [])
         .filter(img => img.category === 'hero' && img.url)
-        .sort((a, b) => a.priority - b.priority)[0]?.url 
+        .sort((a, b) => a.priority - b.priority)[0]?.url
         || IMAGE_FALLBACKS.hero?.[0]?.src;
-    
+
     return (
-        <section 
+        <section
             className={`relative w-full h-[90vh] md:h-screen flex flex-col items-center justify-center px-6 overflow-hidden ${className}`}
         >
             {/* Background Layer with Parallax-ready feel */}
@@ -50,16 +51,33 @@ export const CoastalHero: React.FC<CoastalHeroProps> = ({
 
             {/* Content Container */}
             <div className="relative z-10 max-w-5xl w-full flex flex-col items-center text-center">
-                
+
                 {/* 1. Eyebrow - Glassmorphism Capsule */}
-                <motion.div 
+                <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.8, ease: "easeOut" }}
-                    className="mb-8 px-5 py-2 rounded-full bg-white/10 backdrop-blur-md border border-white/20"
+                    className="mb-8 px-5 py-2 rounded-lg bg-white/10 backdrop-blur-md border border-white/15"
                 >
-                    <span className="text-[10px] md:text-xs font-medium text-white tracking-[0.2em] uppercase">
-                        79 m² · Primera Línea · Piso 11 · 2 Dormitorios · Cuatro Esquinas, La Serena
+                    <span className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-[10px] md:text-xs font-medium text-[#e6d29c] tracking-[0.2em] uppercase">
+
+                        <span>Primera Línea</span>
+                        <span className="opacity-60">·</span>
+
+                        <span>Piso 11</span>
+                        <span className="opacity-60">·</span>
+
+                        <span>2 Dormitorios</span>
+                        <span className="opacity-60">·</span>
+
+                        <span>79 m²</span>
+                        <span className="opacity-60">·</span>
+
+                        <span className="inline-flex items-center gap-1">
+                            <MapPin className="w-3 h-3 stroke-[1.8] opacity-90" />
+                            Cuatro Esquinas, La Serena
+                        </span>
+
                     </span>
                 </motion.div>
 
@@ -68,10 +86,14 @@ export const CoastalHero: React.FC<CoastalHeroProps> = ({
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
-                    className="text-5xl md:text-7xl lg:text-8xl font-serif italic text-white leading-[1.05] mb-8 tracking-tight drop-shadow-2xl"
+                    className="text-5xl md:text-7xl lg:text-8xl font-serif italic text-[#FFFFFF] leading-[1.05] mb-8 tracking-tight drop-shadow-2xl"
                     style={{ fontFamily: "var(--font-newsreader), serif" }}
                 >
-                    Tu refugio perfecto <br className="hidden md:block" /> frente al mar
+                    Tu refugio perfecto <br className="hidden md:block" />
+                    frente al{" "}
+                    <span className="text-[#66B8B6] drop-shadow-[0_0_12px_rgba(102,184,182,0.25)]">
+                        mar
+                    </span>
                 </motion.h1>
 
                 {/* 3. Emotional Subheadline - Off-white Newsreader Italic */}
@@ -79,22 +101,33 @@ export const CoastalHero: React.FC<CoastalHeroProps> = ({
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ duration: 1, delay: 0.5 }}
-                    className="max-w-3xl text-white/70 text-xl md:text-2xl font-serif italic leading-relaxed mb-10 drop-shadow-md px-4"
+                    className="max-w-3xl text-[rgba(255,255,255,0.92)]/70 text-xl md:text-2xl font-serif italic leading-relaxed mb-10 drop-shadow-md px-4"
                     style={{ fontFamily: "var(--font-newsreader), serif" }}
                 >
-                    Despierta con el sonido del mar, disfruta atardeceres inolvidables y vive la costa serenense desde una vista privilegiada.
+                    Vista privilegiada, aire costero y atardeceres inolvidables en La Serena.
                 </motion.p>
 
                 {/* 3.5 Pricing Badge - Glassmorphism Style */}
-                <motion.div 
+                <motion.div
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.8, delay: 0.7 }}
-                    className="mb-12 px-6 py-2 rounded-full bg-white/10 backdrop-blur-md border border-white/10 shadow-lg"
+                    className="mb-12 px-5 py-3 rounded-2xl bg-black/15 border border-white/10"
+                //"mb-12 px-6 py-1 rounded-full bg-white/10 backdrop-blur-md border border-white/10 shadow-lg"
                 >
-                    <span className="text-[10px] md:text-xs font-bold text-white tracking-[0.3em] uppercase">
-                        Desde $90.000 / noche
-                    </span>
+                    <div className="flex items-center justify-center gap-3">
+                        <span className="text-[10px] uppercase tracking-[0.28em] text-[#e6d29c]/80">
+                            Desde
+                        </span>
+
+                        <span className="text-m font-medium text-white">
+                            $90.000
+                        </span>
+
+                        <span className="text-xs text-white/70 uppercase tracking-[0.14em]">
+                            / noche
+                        </span>
+                    </div>
                 </motion.div>
 
                 {/* 4. CTA - Restored to Previous State */}
@@ -117,7 +150,7 @@ export const CoastalHero: React.FC<CoastalHeroProps> = ({
             </div>
 
             {/* Scroll Indicator - Bottom */}
-            <motion.div 
+            <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 1.5, duration: 1 }}
