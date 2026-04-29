@@ -3,6 +3,7 @@
 // data-stitch-id: footer-cta-section
 
 import React from "react";
+import { motion } from "framer-motion";
 import { ArrowRight } from "lucide-react";
 import { SITE_CONTENT } from "@/config/site-content";
 
@@ -25,7 +26,9 @@ export const CoastalFooterCta: React.FC<CoastalFooterCtaProps> = ({ className = 
         <p className="text-[#8a7a6a] text-lg font-light mb-10 max-w-md mx-auto leading-relaxed italic">
           Cada detalle está listo para que tu única preocupación sea disfrutar el sonido de las olas.
         </p>
-        <button
+        <motion.button
+          whileHover={{ x: 5 }}
+          whileTap={{ scale: 0.95 }}
           onClick={onAction}
           className="group flex items-center gap-4 mx-auto text-[13px] font-mono uppercase tracking-[0.3em] text-[#2c2416] transition-all"
         >
@@ -33,7 +36,7 @@ export const CoastalFooterCta: React.FC<CoastalFooterCtaProps> = ({ className = 
             Volver a disponibilidad
           </span>
           <ArrowRight className="w-4 h-4 text-[#c8883a] group-hover:translate-x-1 transition-transform" />
-        </button>
+        </motion.button>
       </div>
 
       {/* Bottom bar */}

@@ -137,15 +137,14 @@ export const CoastalHero: React.FC<CoastalHeroProps> = ({
                     transition={{ duration: 0.5, delay: 0.8 }}
                     className="w-full sm:w-auto px-4"
                 >
-                    <button
-                        onClick={(e) => {
-                            e.preventDefault();
-                            onAction?.();
-                        }}
-                        className="w-full sm:min-w-[280px] px-10 py-5 bg-gradient-to-r from-[#00628f] to-[#007cb3] text-white text-lg font-semibold rounded-full transition-all duration-300 hover:scale-105 active:scale-95 cursor-pointer shadow-xl shadow-black/20 border-none"
+                    <motion.button
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        onClick={() => onAction?.()}
+                        className="w-full sm:min-w-[280px] px-10 py-5 bg-gradient-to-r from-[#00628f] to-[#007cb3] text-white text-lg font-semibold rounded-full cursor-pointer shadow-xl shadow-black/20 border-none select-none flex items-center justify-center"
                     >
                         Explorar disponibilidad
-                    </button>
+                    </motion.button>
                 </motion.div>
             </div>
 
@@ -154,7 +153,7 @@ export const CoastalHero: React.FC<CoastalHeroProps> = ({
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 1.5, duration: 1 }}
-                className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 z-10"
+                className="absolute bottom-10 left-1/2 -translate-x-1/2 hidden md:flex flex-col items-center gap-2 z-10"
             >
                 <div className="w-[1px] h-12 bg-gradient-to-b from-white/0 via-white/50 to-white/0" />
             </motion.div>

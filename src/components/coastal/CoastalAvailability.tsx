@@ -160,24 +160,24 @@ export const CoastalAvailability: React.FC<CoastalAvailabilityProps> = ({ onActi
   `;
 
   return (
-    <section id="availability" className="relative z-40 bg-[#faf7f2] border-t border-[#e2d9cc]">
+    <section id="availability" className="relative z-40 bg-[#faf7f2] border-t border-[#e2d9cc] scroll-mt-24">
       <style>{calendarStyles}</style>
 
-      <div className="max-w-7xl mx-auto px-6 py-24 md:py-40">
+      <div className="max-w-7xl mx-auto px-6 py-16 md:py-40">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 lg:gap-24 items-start">
 
           {/* A. STATIC HEADER (Column 1-5) */}
           <div className="lg:col-span-5 text-center lg:text-left">
-            <span className="text-[10px] uppercase tracking-[0.4em] font-bold text-[#9a8a78] mb-8 block opacity-80">
+            <span className="text-[10px] uppercase tracking-[0.4em] font-bold text-[#9a8a78] mb-4 md:mb-8 block opacity-80">
               {SITE_CONTENT.availability.title}
             </span>
             <h2
-              className="text-5xl md:text-7xl font-serif italic text-[#2c2416] mb-8 leading-[1.1]"
+              className="text-4xl md:text-7xl font-serif italic text-[#2c2416] mb-4 md:mb-8 leading-[1.1]"
               style={{ fontFamily: "var(--font-newsreader), serif" }}
             >
               ¿Cuándo quieres venir?
             </h2>
-            <p className="text-[#6b5d4f] text-lg md:text-xl font-light mb-12 leading-relaxed">
+            <p className="text-[#6b5d4f] text-base md:text-xl font-light mb-8 md:mb-12 leading-relaxed">
               Selecciona las fechas de tu estadía para verificar disponibilidad y comenzar tu reserva.
             </p>
 
@@ -195,7 +195,7 @@ export const CoastalAvailability: React.FC<CoastalAvailabilityProps> = ({ onActi
             <div className="flex flex-col gap-8">
 
               {/* 1. CALENDAR — Fixed height/width container */}
-              <div className="availability-calendar bg-white p-8 md:p-12 rounded-[2.5rem] border border-[#e2d9cc] shadow-xl shadow-[#00628f]/5 min-h-[440px] flex items-center justify-center">
+              <div className="availability-calendar bg-white p-4 md:p-12 rounded-[2rem] md:rounded-[2.5rem] border border-[#e2d9cc] shadow-xl shadow-[#00628f]/5 min-h-[400px] md:min-h-[440px] flex items-center justify-center">
                 <DayPicker
                   mode="range"
                   selected={range}
