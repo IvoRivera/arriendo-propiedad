@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { motion, AnimatePresence, useInView, animate } from "framer-motion";
+import { motion, AnimatePresence, useInView } from "framer-motion";
 import { Calendar } from "lucide-react";
 import { CoastalHero } from "@/components/coastal/CoastalHero";
 import { CoastalAvailability } from "@/components/coastal/CoastalAvailability";
@@ -44,22 +44,10 @@ export function HomeClient({ dynamicImages, property }: HomeClientProps) {
     const element = document.getElementById(id);
     if (!element) return;
 
-    const rect = element.getBoundingClientRect();
-    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-    
-    // Calculamos el destino para centrar el elemento
-    const targetY = rect.top + scrollTop - (window.innerHeight / 2) + (rect.height / 2);
-    
-    // Animación cinematográfica con framer-motion (esto es lo más robusto y premium)
-    animate(scrollTop, targetY, {
-      type: "spring",
-      stiffness: 35,   // Muy suave y controlado
-      damping: 20,
-      mass: 1,
-      onUpdate: (latest) => {
-        window.scrollTo(0, latest);
-      }
-    });
+    // Scroll básico nativo para máxima compatibilidad y evitar bloqueos
+    setTimeout(() => {
+      element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 10);
   };
 
   const heroRef = useRef(null);
@@ -156,59 +144,15 @@ export function HomeClient({ dynamicImages, property }: HomeClientProps) {
         {showFloating && (
           <div className="fixed bottom-8 left-0 right-0 z-[60] pointer-events-none flex justify-center">
             <div className="max-w-5xl w-full px-6 flex justify-end md:justify-center">
-              <motion.button
-                key="sticky-cta"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{
-                  opacity: 1,
-                  y: 0,
-                  scale: [1, 1.03, 1],
-                  boxShadow: [
-                    "0 20px 40px -10px rgba(0,98,143,0.3)",
-                    "0 20px 40px -10px rgba(0,98,143,0.6)",
-                    "0 20px 40px -10px rgba(0,98,143,0.3)"
-                  ]
-                }}
-                exit={{ opacity: 0, y: 20 }}
-                whileHover={{ y: -2, scale: 1.06 }}
-                whileTap={{ scale: 0.98 }}
-                transition={{
-                  scale: { repeat: Infinity, duration: 5, ease: "easeInOut" },
-                  boxShadow: { repeat: Infinity, duration: 5, ease: "easeInOut" },
-                  y: { type: "spring", stiffness: 400, damping: 25 },
-                  default: { duration: 0.3 }
-                }}
+              <button
                 onClick={() => scrollToId('availability')}
-                className="pointer-events-auto relative overflow-hidden flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-[#00628f] to-[#007cb3] text-white rounded-full border border-white/20 backdrop-blur-md group shadow-2xl"
+                className="pointer-events-auto relative overflow-hidden flex items-center gap-3 px-8 py-4 bg-[#00628f] hover:bg-[#007cb3] text-white rounded-full border border-white/20 shadow-2xl transition-all active:scale-[0.98]"
               >
-                {/* Shimmer Effect */}
-                <motion.div
-                  className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -skew-x-12"
-                  animate={{ x: ['-120%', '120%'] }}
-                  transition={{
-                    repeat: Infinity,
-                    duration: 6,
-                    ease: "linear",
-                    repeatDelay: 5
-                  }}
-                />
-
-                <Calendar className="w-5 h-5 group-hover:scale-110 transition-transform relative z-10" />
-                <div className="relative h-4 overflow-hidden">
-                  <AnimatePresence mode="wait">
-                    <motion.span
-                      key={getLabel()}
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -10 }}
-                      transition={{ duration: 0.3, ease: "easeOut" }}
-                      className="text-[10px] font-bold uppercase tracking-[0.25em] relative z-10 whitespace-nowrap block"
-                    >
-                      {getLabel()}
-                    </motion.span>
-                  </AnimatePresence>
-                </div>
-              </motion.button>
+                <Calendar className="w-5 h-5 relative z-10" />
+                <span className="text-[10px] font-bold uppercase tracking-[0.25em] relative z-10 whitespace-nowrap block">
+                  {getLabel()}
+                </span>
+              </button>
             </div>
           </div>
         )}
