@@ -39,8 +39,11 @@ export function HomeClient({ dynamicImages, property }: HomeClientProps) {
     const element = document.getElementById(id);
     if (!element) return;
     
-    // Smoothness is handled by CSS 'scroll-behavior: smooth' in globals.css
-    element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    // Robust scroll: let CSS handle smoothness to avoid JS/CSS conflicts on Android
+    // Adding a tiny delay to ensure the touch event doesn't interrupt the scroll
+    setTimeout(() => {
+      element.scrollIntoView({ block: 'center' });
+    }, 10);
   };
 
   const heroRef = useRef(null);
@@ -87,7 +90,6 @@ export function HomeClient({ dynamicImages, property }: HomeClientProps) {
       <AnimatePresence mode="wait">
         {showFloating && (
           <motion.button
-            layoutId="main-cta"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 20 }}

@@ -49,8 +49,9 @@ The custom `framer-motion` scroll animation implemented in Phase 7 failed (user 
 1. `animate(start, target, ...)` with `window.scrollTo` in `onUpdate` was fighting with `scroll-behavior: smooth` or failing on the user's specific browser/device.
 2. The calculation of `targetPosition` might have been incorrect if the page was still layouting or had transforms.
 
-## Resolution (Final)
-Reverted to the robust implementation:
-- **CSS**: `scroll-behavior: smooth` restored in `globals.css`.
-- **JS**: Standard `element.scrollIntoView({ behavior: 'smooth', block: 'start' })` in `HomeClient.tsx`.
-- **Reasoning**: Native CSS `scroll-behavior` is the most reliable way to achieve smooth scrolling across devices without external JS interference, even if it limits easing customization.
+## Resolution (Final - Android Stability)
+Reverted to the most robust implementation for Android compatibility:
+- **CSS**: `scroll-behavior: smooth` in `globals.css` remains the single source of truth for animation.
+- **JS**: Removed `behavior: 'smooth'` from `scrollIntoView` to avoid conflicts with CSS.
+- **Layout**: Removed `layoutId="main-cta"` from buttons. Morphing animations can sometimes interrupt scroll events on Android Chrome when the element being clicked is also being animated or unmounted.
+- **Timing**: Added a 10ms `setTimeout` in `scrollToId` to ensure the click event is processed before scrolling begins.

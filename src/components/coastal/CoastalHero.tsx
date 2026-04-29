@@ -140,7 +140,10 @@ export const CoastalHero: React.FC<CoastalHeroProps> = ({
                     <motion.button
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
-                        onClick={() => onAction?.()}
+                        onClick={(e) => {
+                            e.preventDefault();
+                            onAction?.();
+                        }}
                         className="w-full sm:min-w-[280px] px-10 py-5 bg-gradient-to-r from-[#00628f] to-[#007cb3] text-white text-lg font-semibold rounded-full cursor-pointer shadow-xl shadow-black/20 border-none select-none flex items-center justify-center"
                     >
                         Explorar disponibilidad
