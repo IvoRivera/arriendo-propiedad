@@ -149,7 +149,7 @@ export async function POST(req: Request) {
       console.log("RESEND RESULT:", result);
 
       if (result.error) {
-        console.error("RESEND ERROR (internal):", result.error);
+        console.error("RESEND ERROR (internal):", JSON.stringify(result.error, null, 2));
         return NextResponse.json({ error: result.error }, { status: 500 });
       }
 

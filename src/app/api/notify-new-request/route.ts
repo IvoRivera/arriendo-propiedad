@@ -31,7 +31,11 @@ export async function POST(req: Request) {
       getPropertyBaseConfig()
     ]);
 
-    const ownerEmail = freshConfig['OWNER_EMAIL'] || process.env.OWNER_EMAIL || '';
+    const ownerEmail = freshConfig['OWNER_EMAIL'] || process.env.OWNER_EMAIL || 'ivo.rivera.godoy@gmail.com';
+    
+    if (!ownerEmail) {
+      console.error('[Resend] Error: No owner email configured in system_config or environment variables');
+    }
 
     // Use central pricing engine
     const pricing = await getPricing({
@@ -71,7 +75,7 @@ export async function POST(req: Request) {
     });
 
     if (error) {
-      console.error('Resend error:', error);
+      console.error('[Resend Notification Error]:', JSON.stringify(error, null, 2));
       return NextResponse.json({ error }, { status: 500 });
     }
 
