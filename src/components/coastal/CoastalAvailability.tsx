@@ -109,10 +109,15 @@ export const CoastalAvailability: React.FC<CoastalAvailabilityProps> = ({ onActi
       if (isMobile) {
         // Delay slightly to allow the UI to update with pricing info
         const timer = setTimeout(() => {
-          confirmButtonRef.current?.scrollIntoView({
-            behavior: 'smooth',
-            block: 'center'
-          });
+          if (confirmButtonRef.current) {
+            const rect = confirmButtonRef.current.getBoundingClientRect();
+            const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+            const targetY = rect.top + scrollTop - (window.innerHeight / 2) + (rect.height / 2);
+            
+            window.scrollTo({
+              top: targetY
+            });
+          }
           setHasScrolled(true);
           setShouldAnimate(true);
 

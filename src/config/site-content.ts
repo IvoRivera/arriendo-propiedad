@@ -88,18 +88,15 @@ export interface DiscoverData {
   items: DiscoverItem[];
 }
 
-export interface TestimonialItem {
-  name: string;
-  avatar: string;
-  source: string;
-  rating: number;
-  text: string;
+export interface TrustSignal {
+  icon: string;
+  title: string;
+  description: string;
 }
 
-export interface TestimonialsData {
+export interface TrustData {
   sectionTitle: string;
-  ctaText: string;
-  items: TestimonialItem[];
+  items: TrustSignal[];
 }
 
 export interface FooterCtaData {
@@ -127,7 +124,7 @@ export interface SiteContent {
   specs: SpecificationsData;
   availability: AvailabilityData;
   discover: DiscoverData;
-  testimonials: TestimonialsData;
+  trust: TrustData;
   faq: FaqData;
   footerCta: FooterCtaData;
 }
@@ -160,18 +157,23 @@ export const SITE_CONTENT: SiteContent = {
     features: [
       {
         icon: "waves",
-        title: "Primera Línea Real",
-        description: "La playa está abajo. El océano está enfrente. No hay edificio entre tú y el mar.",
+        title: "Primera Línea",
+        description: "El mar como protagonista absoluto.",
       },
       {
         icon: "sofa",
-        title: "Comodidad Premium",
-        description: "Ropa de cama de hotel, cocina equipada y espacios diseñados para descansar de verdad.",
+        title: "Confort Premium",
+        description: "Equipamiento y ropa de cama de alta gama.",
       },
       {
         icon: "shield",
-        title: "Seguro y Tranquilo",
-        description: "Conserjería 24/7, estacionamiento privado y acceso controlado en el Edificio Playa Serena.",
+        title: "Seguridad 24/7",
+        description: "Conserjería y acceso controlado permanente.",
+      },
+      {
+        icon: "maximize",
+        title: "Espacios Amplios",
+        description: "79m² diseñados para tu comodidad total.",
       },
     ],
   },
@@ -245,62 +247,60 @@ export const SITE_CONTENT: SiteContent = {
       },
     ],
   },
-  testimonials: {
-    sectionTitle: "Lo que dicen quienes estuvieron aquí",
-    ctaText: "Solicitud de Reserva",
+  trust: {
+    sectionTitle: "Garantía de Confianza",
     items: [
       {
-        name: "María José V.",
-        avatar: "MJ",
-        source: "Airbnb · Marzo 2026",
-        rating: 5,
-        text: "Juro que las fotos no le hacen justicia. La terraza con vista al mar es un sueño, el amanecer ahí vale todo. El depto se nota nuevo (recién entregado en marzo) y todo funciona perfecto. Un lujo.",
+        icon: "building",
+        title: "Edificio Nuevo",
+        description: "Modernidad y seguridad recién entregada.",
       },
       {
-        name: "Carlos R.",
-        avatar: "CR",
-        source: "Airbnb · Marzo 2026",
-        rating: 5,
-        text: "Imposible mejor ubicación. El ruido del mar de fondo mientras trabajas es terapia pura. El WiFi aguantó sin problemas (y eso que mi pega es full videollamadas). Volveremos con el próximo finde largo.",
+        icon: "user-check",
+        title: "Atención Directa",
+        description: "Trato personalizado y sin intermediarios.",
       },
       {
-        name: "Familia Silva",
-        avatar: "FS",
-        source: "Directo · Marzo 2026",
-        rating: 5,
-        text: "Fuimos con nuestro hijo chico. El espacio es amplio, moderno pero acogedor, nada de esos departamentos fríos. El estacionamiento privado salvó, y que esté recién entregado se nota: impecable. Repetimos seguro.",
+        icon: "shield-check",
+        title: "Reserva Segura",
+        description: "Proceso transparente y respaldado.",
+      },
+      {
+        icon: "sparkles",
+        title: "Calidad Premium",
+        description: "Detalles cuidados para una estancia única.",
       },
     ],
   },
   faq: {
     sectionTitle: "Preguntas Frecuentes",
-    sectionSubtitle: "Todo lo que necesitas saber antes de tu llegada para una experiencia sin preocupaciones.",
+    sectionSubtitle: "Resolvemos tus dudas para que tu única preocupación sea disfrutar del mar.",
     items: [
       {
-        question: "¿Cuál es el horario de Check-in y Check-out?",
-        answer: "El horario de entrada (check-in) es a partir de las 16:00 hrs y la salida (check-out) es hasta las 12:00 hrs. Si necesitas flexibilizar estos horarios, consúltanos y veremos si es posible según la disponibilidad."
+        question: "¿Cómo es el proceso de reserva y pago?",
+        answer: "Es simple y seguro. Al enviar tu solicitud, verificamos disponibilidad y te contactamos. La reserva se garantiza mediante transferencia bancaria o pago online."
       },
       {
-        question: "¿El departamento cuenta con estacionamiento?",
-        answer: "Sí, contamos con un estacionamiento privado y techado dentro del edificio para tu total seguridad y comodidad."
+        question: "¿El departamento cuenta con estacionamiento y seguridad?",
+        answer: "Sí, dispones de un estacionamiento privado y techado. El edificio cuenta con conserjería las 24 horas, cámaras de seguridad y acceso controlado para tu total tranquilidad."
       },
       {
-        question: "¿Se aceptan mascotas?",
-        answer: "Para mantener el estándar de limpieza y cuidado del espacio, no estamos aceptando mascotas en este momento."
+        question: "¿Cuál es la política de cancelación?",
+        answer: "Entendemos que los planes pueden cambiar. Ofrecemos cancelación flexible hasta 7 días antes de tu llegada con reembolso total. Para cambios de fecha, siempre buscamos la mejor solución según disponibilidad."
       },
       {
-        question: "¿Qué incluye el equipamiento del departamento?",
-        answer: "El departamento está completamente equipado. Incluye ropa de cama calidad hotelera, toallas, cocina full equipada (vajilla, electrodomésticos, utensilios) y WiFi de alta velocidad."
+        question: "¿Qué incluye exactamente el equipamiento?",
+        answer: "Todo lo necesario para una estancia premium: sábanas de 300 hilos, toallas, cocina full equipada (Nespresso, tostadora, horno), WiFi de alta velocidad y Smart TV en todos los ambientes."
       },
       {
-        question: "¿Cómo funciona el proceso de reserva?",
-        answer: "Al seleccionar tus fechas en el calendario y enviar la solicitud, nos pondremos en contacto contigo rápidamente para confirmar la disponibilidad y enviarte los detalles para asegurar tu reserva."
+        question: "¿Puedo coordinar un Check-in o Check-out flexible?",
+        answer: "Nuestro horario estándar es Check-in 16:00 y Check-out 12:00. Sin embargo, siempre que la disponibilidad lo permita, ofrecemos flexibilidad sin costo adicional para adaptarnos a tus horarios de viaje."
       }
     ]
   },
   footerCta: {
     headline: "¿Lista tu próxima escapada?",
     subheadline: "Te contactaremos luego de revisar tu solicitud.",
-    ctaText: "Solicitud de Reserva",
+    ctaText: "Reservar Ahora",
   },
 };

@@ -55,3 +55,27 @@ Reverted to the most robust implementation for Android compatibility:
 - **JS**: Removed `behavior: 'smooth'` from `scrollIntoView` to avoid conflicts with CSS.
 - **Layout**: Removed `layoutId="main-cta"` from buttons. Morphing animations can sometimes interrupt scroll events on Android Chrome when the element being clicked is also being animated or unmounted.
 - **Timing**: Added a 10ms `setTimeout` in `scrollToId` to ensure the click event is processed before scrolling begins.
+
+## Symptom 4: Android Smooth Scroll "Short-Slide" Regression
+When pressing a CTA to scroll back to the calendar after passing it, the page only scrolls a small amount upwards instead of reaching the target.
+
+**When:** Scrolling back up to 'availability' from a lower section on Android.
+**Expected:** Centered scroll to the calendar.
+**Actual:** Tiny scroll increment, stops early.
+
+## Hypotheses (Symptom 4)
+1. `behavior: 'smooth'` in `scrollIntoView` is conflicting with layout updates or the sticky CTA's presence on Android Chrome. (High Likelihood)
+2. `block: 'center'` calculation is failing when scrolling upwards against a sticky/animating element.
+3. A more robust manual scroll calculation (window.scrollTo) is needed for Android stability.
+
+## Attempts
+
+### Attempt 1
+**Testing:** H1 & H3 — Hybrid approach (CSS Smooth + JS Manual Calculation)
+**Action:** 
+1. Added `scroll-behavior: smooth` to `html` in `globals.css`.
+2. Replaced `scrollIntoView` with manual centering logic using `window.scrollTo`.
+3. Removed `behavior: 'smooth'` from JS to avoid conflicting with CSS smoothness.
+4. Added 100ms `setTimeout` to allow click events to settle.
+**Result:** PENDING USER VERIFICATION (Fixed code in home-client.tsx and CoastalAvailability.tsx)
+**Conclusion:** UNTESTED (Requires Android device testing)
