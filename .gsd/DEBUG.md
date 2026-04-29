@@ -68,14 +68,24 @@ When pressing a CTA to scroll back to the calendar after passing it, the page on
 2. `block: 'center'` calculation is failing when scrolling upwards against a sticky/animating element.
 3. A more robust manual scroll calculation (window.scrollTo) is needed for Android stability.
 
+## Symptom 5: All buttons stopped working
+After Attempt 1, the user reported that no buttons were working on any platform.
+
+**When:** After adding `scroll-behavior: smooth` to CSS and manual `window.scrollTo`.
+**Expected:** Functional UI.
+**Actual:** Completely unresponsive buttons.
+
+## Hypotheses (Symptom 5)
+1. `scroll-behavior: smooth` in CSS was causing a layout engine conflict or a focus/event trap on some browsers.
+2. An accidental syntax error or missing import was introduced.
+
 ## Attempts
 
-### Attempt 1
-**Testing:** H1 & H3 — Hybrid approach (CSS Smooth + JS Manual Calculation)
+### Attempt 2
+**Testing:** H1 (Cinematic Custom Scroll)
 **Action:** 
-1. Added `scroll-behavior: smooth` to `html` in `globals.css`.
-2. Replaced `scrollIntoView` with manual centering logic using `window.scrollTo`.
-3. Removed `behavior: 'smooth'` from JS to avoid conflicting with CSS smoothness.
-4. Added 100ms `setTimeout` to allow click events to settle.
-**Result:** PENDING USER VERIFICATION (Fixed code in home-client.tsx and CoastalAvailability.tsx)
-**Conclusion:** UNTESTED (Requires Android device testing)
+1. Removed `scroll-behavior: smooth` from `globals.css` (reverted global change).
+2. Implemented `framer-motion`'s `animate` function for scrolling in `home-client.tsx` and `CoastalAvailability.tsx`.
+3. This provides a "spring" based, cinematic scroll that is fully controlled by JS and doesn't rely on native smooth behavior.
+**Result:** PENDING USER VERIFICATION.
+**Conclusion:** UNTESTED.

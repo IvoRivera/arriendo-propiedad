@@ -9,7 +9,7 @@ import { CalendarDays, ArrowRight, AlertCircle, Info, Sparkles } from "lucide-re
 import { getPriceForDate, type SeasonalPricing } from "@/lib/pricingClient";
 import "react-day-picker/style.css";
 import { useRef } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, animate } from "framer-motion";
 
 export type BookingIntent = 'standard' | 'long-stay';
 
@@ -114,8 +114,11 @@ export const CoastalAvailability: React.FC<CoastalAvailabilityProps> = ({ onActi
             const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
             const targetY = rect.top + scrollTop - (window.innerHeight / 2) + (rect.height / 2);
             
-            window.scrollTo({
-              top: targetY
+            animate(scrollTop, targetY, {
+              type: "spring",
+              stiffness: 35,
+              damping: 20,
+              onUpdate: (latest) => window.scrollTo(0, latest)
             });
           }
           setHasScrolled(true);

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { motion, AnimatePresence, useInView } from "framer-motion";
+import { motion, AnimatePresence, useInView, animate } from "framer-motion";
 import { Calendar } from "lucide-react";
 import { CoastalHero } from "@/components/coastal/CoastalHero";
 import { CoastalAvailability } from "@/components/coastal/CoastalAvailability";
@@ -44,20 +44,22 @@ export function HomeClient({ dynamicImages, property }: HomeClientProps) {
     const element = document.getElementById(id);
     if (!element) return;
 
-    // Pequeño delay para asegurar que el evento de click se procese 
-    // y no interrumpa la animación en dispositivos móviles (Android)
-    setTimeout(() => {
-      const rect = element.getBoundingClientRect();
-      const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-      
-      // Calculamos la posición para centrar el elemento
-      const targetY = rect.top + scrollTop - (window.innerHeight / 2) + (rect.height / 2);
-      
-      window.scrollTo({
-        top: targetY
-        // behavior: 'smooth' // Eliminado para dejar que globals.css maneje la suavidad de forma nativa
-      });
-    }, 100);
+    const rect = element.getBoundingClientRect();
+    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+    
+    // Calculamos el destino para centrar el elemento
+    const targetY = rect.top + scrollTop - (window.innerHeight / 2) + (rect.height / 2);
+    
+    // Animación cinematográfica con framer-motion (esto es lo más robusto y premium)
+    animate(scrollTop, targetY, {
+      type: "spring",
+      stiffness: 35,   // Muy suave y controlado
+      damping: 20,
+      mass: 1,
+      onUpdate: (latest) => {
+        window.scrollTo(0, latest);
+      }
+    });
   };
 
   const heroRef = useRef(null);
