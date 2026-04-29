@@ -255,7 +255,7 @@ export const SITE_CONTENT: SiteContent = {
         avatar: "FS",
         source: "Directo · Marzo 2026",
         rating: 5,
-        text: "Fuimos con nuestro hijo chico. El espacio es amplio, moderno pero acogedor – nada de esos departamentos fríos. El estacionamiento privado salvó, y que esté recién entregado se nota: impecable. Repetimos seguro.",
+        text: "Fuimos con nuestro hijo chico. El espacio es amplio, moderno pero acogedor, nada de esos departamentos fríos. El estacionamiento privado salvó, y que esté recién entregado se nota: impecable. Repetimos seguro.",
       },
     ],
   },
