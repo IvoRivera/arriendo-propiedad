@@ -20,19 +20,16 @@ const variants = {
   enter: (direction: number) => ({
     x: direction > 0 ? "100%" : "-100%",
     opacity: 0,
-    scale: 0.95,
   }),
   center: {
     zIndex: 1,
     x: 0,
     opacity: 1,
-    scale: 1,
   },
   exit: (direction: number) => ({
     zIndex: 0,
     x: direction < 0 ? "100%" : "-100%",
     opacity: 0,
-    scale: 0.95,
   }),
 };
 
@@ -45,7 +42,7 @@ export const Lightbox: React.FC<LightboxProps> = ({
   const [isZoomed, setIsZoomed] = useState(false);
   const [lastPinchDistance, setLastPinchDistance] = useState<number | null>(null);
   const [lastTap, setLastTap] = useState(0);
-  
+
   const scale = useMotionValue(1);
   const springScale = useSpring(scale, { stiffness: 400, damping: 30 });
 
@@ -128,13 +125,12 @@ export const Lightbox: React.FC<LightboxProps> = ({
               custom={direction}
               variants={variants}
               initial="enter"
-              animate="center"
               exit="exit"
               transition={{
-                x: { 
-                  type: "tween", 
-                  ease: [0.22, 1, 0.36, 1], 
-                  duration: 0.6 
+                x: {
+                  type: "tween",
+                  ease: [0.22, 1, 0.36, 1],
+                  duration: 0.6
                 },
                 opacity: { duration: 0.4 },
                 scale: { duration: 0.6, ease: [0.22, 1, 0.36, 1] }
@@ -187,9 +183,10 @@ export const Lightbox: React.FC<LightboxProps> = ({
                 }
                 setLastTap(now);
               }}
-              animate={isZoomed ? { scale: springScale } : "center"}
+              animate={isZoomed ? undefined : "center"}
               style={{
-                touchAction: isZoomed ? "none" : "pan-y"
+                touchAction: isZoomed ? "none" : "pan-y",
+                scale: springScale
               }}
               className="absolute inset-0 flex items-center justify-center p-0 sm:p-20"
             >
@@ -232,7 +229,7 @@ export const Lightbox: React.FC<LightboxProps> = ({
             </motion.p>
           </AnimatePresence>
         </div>
-        
+
         {/* Swipe hint for mobile */}
         <div className="md:hidden absolute bottom-2 text-white/20 text-[8px] tracking-[0.3em] uppercase text-center w-full">
           Desliza para navegar

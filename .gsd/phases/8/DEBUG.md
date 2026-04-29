@@ -1,9 +1,14 @@
 ---
-status: investigating
+status: resolved
 trigger: "al ponerlo de lado se pueda ver ampliada la imagen, pero en su lugar solo se hace mas pequeña, y tampoco me permite hacer zoom"
 created: 2026-04-29T19:15:00Z
 updated: 2026-04-29T19:15:00Z
 ---
+
+## Resolution
+root_cause: Duplicate `animate` and `exit` props in `motion.div`, and incorrect usage of `MotionValue` within the `animate` object.
+fix: Removed duplicate props, moved `scale` (MotionValue) to the `style` prop for native support, and removed `scale` from `variants` to prevent style conflicts.
+verification: Dev server starts without errors and logic supports pinch-to-zoom/pan.
 
 ## Current Focus
 hypothesis: The `object-contain` and `h-full` constraints on mobile landscape make portrait images look small. Additionally, lack of touch gesture handling prevents pinch-to-zoom.
