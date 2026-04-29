@@ -37,9 +37,9 @@
     "dotenv": "^17.4.2",
     "eslint": "^9",
     "eslint-config-next": "15.1.7",
-    "postcss": "^8",
+    "postcss": "^8.5.12",
     "server-only": "^0.0.1",
-    "tailwindcss": "^3.4.1",
+    "tailwindcss": "^3.4.19",
     "typescript": "^5"
   }
 }

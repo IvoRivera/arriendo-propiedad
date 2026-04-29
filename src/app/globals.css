@@ -1,3 +1,5 @@
+/* Tailwind Directives - The warnings for "Unknown at rule" are normal in IDEs without a Tailwind plugin. 
+   These are processed by PostCSS/Tailwind during the build. */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -12,10 +14,7 @@
   /* Fonts are injected via Next.js variable strategy in layout.tsx */
 }
 
-html {
-  /* scroll-behavior: smooth; */ /* Managed by JS for premium easing curves */
-}
-
+/* Base styles */
 html,
 body {
   height: 100%;

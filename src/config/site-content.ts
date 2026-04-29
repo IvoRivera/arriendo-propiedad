@@ -165,7 +165,7 @@ export const SITE_CONTENT: SiteContent = {
   gallery: {
     featured: {
       title: "Vistas que se quedan contigo",
-      subtitle: "Lo primero que ves al abrir la puerta.",
+      subtitle: "Espacios pensados para disfrutar de verdad.",
       ctaText: "Solicitud de Reserva",
     },
     interiors: {
