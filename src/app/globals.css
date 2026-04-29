@@ -9,16 +9,17 @@
   --color-sea-blue: #4a6fa5;
   --color-sand: #f5f0e8;
   --color-pine: #6b7c4a;
-  
+
   --font-inter: var(--font-inter);
   --font-newsreader: var(--font-newsreader);
 }
 
 html {
-  /* scroll-behavior: smooth; */ /* Managed by JS for premium easing */
+  scroll-behavior: smooth;
 }
 
-html, body {
+html,
+body {
   height: 100%;
   margin: 0;
   padding: 0;
@@ -40,7 +41,12 @@ main {
   flex: 1;
 }
 
-h1, h2, h3, h4, h5, h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
   font-family: var(--font-newsreader), serif;
   font-weight: 400;
 }

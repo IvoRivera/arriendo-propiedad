@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { motion, AnimatePresence, useInView, animate } from "framer-motion";
+import { motion, AnimatePresence, useInView } from "framer-motion";
 import { Calendar } from "lucide-react";
 import { CoastalHero } from "@/components/coastal/CoastalHero";
 import { CoastalAvailability } from "@/components/coastal/CoastalAvailability";
@@ -39,17 +39,8 @@ export function HomeClient({ dynamicImages, property }: HomeClientProps) {
     const element = document.getElementById(id);
     if (!element) return;
     
-    const targetPosition = element.getBoundingClientRect().top + window.pageYOffset;
-    const startPosition = window.pageYOffset;
-
-    // Premium Ease-In-Out Animation
-    // slow start (ease in) -> fast middle -> slow end (ease out)
-    animate(startPosition, targetPosition, {
-      type: "tween",
-      duration: 1.5, // Luxurious duration
-      ease: [0.65, 0, 0.35, 1], // easeInOutQuint-ish curve
-      onUpdate: (latest) => window.scrollTo(0, latest)
-    });
+    // Smoothness is handled by CSS 'scroll-behavior: smooth' in globals.css
+    element.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
 
   const heroRef = useRef(null);

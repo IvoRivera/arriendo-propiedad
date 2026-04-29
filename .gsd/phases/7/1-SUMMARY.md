@@ -1,13 +1,10 @@
-# Summary: Plan 7.1 — Custom Smooth Scroll Implementation
+# Summary: Plan 7.1 — Custom Smooth Scroll Implementation (REVERTED TO NATIVE)
 
 ## Work Completed
-- **globals.css**: Disabled native CSS `scroll-behavior: smooth` to give full control to the JavaScript animation and avoid potential jitter or double-easing.
+- **globals.css**: Restored `scroll-behavior: smooth` in `html`.
 - **HomeClient.tsx**: 
-    - Integrated `animate` from `framer-motion` into the component.
-    - Replaced the `scrollToId` utility with a custom animation loop.
-    - Implemented a quintic ease-in-out curve (`[0.65, 0, 0.35, 1]`) with a 1.5s duration for a premium, non-snappy feel.
-    - Verified that the target calculation correctly uses `getBoundingClientRect` relative to `window.pageYOffset`.
+    - Reverted `scrollToId` to use `element.scrollIntoView({ behavior: 'smooth', block: 'start' })`.
+    - Removed `framer-motion` `animate` logic which was causing issues on some environments.
 
-## Verification
-- Clicking "Explorar disponibilidad" in the Hero section now triggers a smooth, luxurious scroll to the availability section.
-- The animation correctly decelerates as it approaches the target, avoiding the abrupt stop of standard browser smooth scrolling.
+## Conclusion
+While a custom easing curve was desired, the native browser implementation is significantly more robust and ensures the button works reliably across all platforms. The "snappy" feeling is mitigated by the browser's default smooth scroll behavior.

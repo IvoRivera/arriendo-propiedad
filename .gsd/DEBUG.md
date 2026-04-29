@@ -38,3 +38,19 @@ A white line that should be below the button is overlapping/superimposing on the
 4. **Indicator Fix:** Kept the scroll indicator hidden on mobile to avoid overlap.
 
 **Verified:** Works smoothly, provides clear feedback, and centers the content.
+## Symptom 3: Regression after custom animation attempt
+The custom `framer-motion` scroll animation implemented in Phase 7 failed (user reported it "stays there").
+
+**When:** Phase 7 implementation.
+**Expected:** Custom ease-in-out scroll.
+**Actual:** No scroll movement.
+
+## Hypotheses (Regression)
+1. `animate(start, target, ...)` with `window.scrollTo` in `onUpdate` was fighting with `scroll-behavior: smooth` or failing on the user's specific browser/device.
+2. The calculation of `targetPosition` might have been incorrect if the page was still layouting or had transforms.
+
+## Resolution (Final)
+Reverted to the robust implementation:
+- **CSS**: `scroll-behavior: smooth` restored in `globals.css`.
+- **JS**: Standard `element.scrollIntoView({ behavior: 'smooth', block: 'start' })` in `HomeClient.tsx`.
+- **Reasoning**: Native CSS `scroll-behavior` is the most reliable way to achieve smooth scrolling across devices without external JS interference, even if it limits easing customization.
