@@ -70,3 +70,4 @@
 - **Status**: ✅ Complete
 - **Plans**:
     - [x] 8.1: Immersive Lightbox Scaling & Mobile Optimization ✅
+    - [x] 8.2: Landscape Optimization & Pinch-to-Zoom ✅

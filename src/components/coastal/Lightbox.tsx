@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
 import { X, ChevronLeft, ChevronRight } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, useMotionValue, useSpring } from "framer-motion";
 
 export interface LightboxImage {
   readonly src: string;
@@ -42,12 +42,24 @@ export const Lightbox: React.FC<LightboxProps> = ({
   onClose,
 }) => {
   const [[page, direction], setPage] = useState([initialIndex, 0]);
+  const [isZoomed, setIsZoomed] = useState(false);
+  const [lastPinchDistance, setLastPinchDistance] = useState<number | null>(null);
+  const [lastTap, setLastTap] = useState(0);
+  
+  const scale = useMotionValue(1);
+  const springScale = useSpring(scale, { stiffness: 400, damping: 30 });
 
   const currentIndex = page;
 
+  const resetZoom = useCallback(() => {
+    scale.set(1);
+    setIsZoomed(false);
+  }, [scale]);
+
   const paginate = useCallback((newDirection: number) => {
+    resetZoom();
     setPage([((page + newDirection + images.length) % images.length), newDirection]);
-  }, [page, images.length]);
+  }, [page, images.length, resetZoom]);
 
   // Keyboard navigation
   useEffect(() => {
@@ -127,17 +139,57 @@ export const Lightbox: React.FC<LightboxProps> = ({
                 opacity: { duration: 0.4 },
                 scale: { duration: 0.6, ease: [0.22, 1, 0.36, 1] }
               }}
-              drag="x"
-              dragConstraints={{ left: 0, right: 0 }}
-              dragElastic={0.05} // Very low elasticity to avoid "shake"
-              dragMomentum={false} // Disable inertia to keep it stable
+              drag={isZoomed ? true : "x"}
+              dragConstraints={isZoomed ? false : { left: 0, right: 0 }}
+              dragElastic={isZoomed ? 0.2 : 0.05}
+              dragMomentum={isZoomed}
               onDragEnd={(e, { offset }) => {
+                if (isZoomed) return;
                 const swipe = offset.x;
                 if (swipe < -40) {
                   paginate(1);
                 } else if (swipe > 40) {
                   paginate(-1);
                 }
+              }}
+              onTouchStart={(e) => {
+                if (e.touches.length === 2) {
+                  const dist = Math.hypot(
+                    e.touches[0].pageX - e.touches[1].pageX,
+                    e.touches[0].pageY - e.touches[1].pageY
+                  );
+                  setLastPinchDistance(dist);
+                }
+              }}
+              onTouchMove={(e) => {
+                if (e.touches.length === 2 && lastPinchDistance !== null) {
+                  const dist = Math.hypot(
+                    e.touches[0].pageX - e.touches[1].pageX,
+                    e.touches[0].pageY - e.touches[1].pageY
+                  );
+                  const delta = dist / lastPinchDistance;
+                  const newScale = Math.min(Math.max(scale.get() * delta, 1), 4);
+                  scale.set(newScale);
+                  setIsZoomed(newScale > 1.05);
+                  setLastPinchDistance(dist);
+                }
+              }}
+              onTouchEnd={() => {
+                setLastPinchDistance(null);
+                if (scale.get() < 1.05) resetZoom();
+              }}
+              onPointerDown={(e) => {
+                const now = Date.now();
+                if (now - lastTap < 300) {
+                  const targetScale = scale.get() === 1 ? 2.5 : 1;
+                  scale.set(targetScale);
+                  setIsZoomed(targetScale > 1);
+                }
+                setLastTap(now);
+              }}
+              animate={isZoomed ? { scale: springScale } : "center"}
+              style={{
+                touchAction: isZoomed ? "none" : "pan-y"
               }}
               className="absolute inset-0 flex items-center justify-center p-0 sm:p-20"
             >
