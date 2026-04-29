@@ -133,19 +133,77 @@ export const CoastalHero: React.FC<CoastalHeroProps> = ({
                 </motion.div>
 
                 {/* 4. CTA - Restored to Previous State */}
-                <div className="w-full sm:w-auto px-4">
-                    <button
+                <motion.div
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ duration: 0.5, delay: 0.8 }}
+                    className="w-full sm:w-auto px-4"
+                >
+                    <motion.button
+                        animate={{
+                            backgroundPosition: ["0% 50%", "100% 50%", "0% 50%"],
+                            y: [0, -2, 0],
+                        }}
+                        transition={{
+                            backgroundPosition: {
+                                duration: 6,
+                                repeat: Infinity,
+                                ease: "easeInOut",
+                            },
+                            y: {
+                                duration: 6,
+                                repeat: Infinity,
+                                ease: "easeInOut",
+                            },
+                        }}
+                        whileHover={{ scale: 1.03 }}
+                        whileTap={{ scale: 0.98 }}
                         onClick={(e) => {
+                            e.preventDefault();
                             if (onExplore) onExplore();
                             else onAction?.();
                         }}
-                        className="w-full sm:min-w-[280px] px-10 py-5 text-white text-lg font-semibold rounded-full cursor-pointer select-none flex items-center justify-center relative overflow-hidden bg-[#00628f] hover:bg-[#007cb3] transition-all border border-white/20 shadow-lg shadow-black/10"
+                        type="button"
+                        className="
+                            w-full sm:min-w-[280px] px-10 py-5
+
+                            text-white text-lg font-semibold
+                            rounded-full cursor-pointer select-none
+                            flex items-center justify-center
+
+                            relative overflow-hidden
+
+                            bg-[linear-gradient(120deg,rgba(255,255,255,0.08),rgba(0,180,255,0.25),rgba(255,255,255,0.08))]
+                            bg-[length:200%_200%]
+
+                            border border-white/20
+                            backdrop-blur-md
+                            shadow-lg shadow-black/10
+                        "
                     >
+                        {/* shimmer seguro (no bloquea clicks) */}
+                        <motion.div
+                            aria-hidden
+                            className="
+                                absolute inset-0
+                                bg-gradient-to-r
+                                from-transparent via-white/10 to-transparent
+                                -skew-x-12
+                                pointer-events-none
+                                "
+                            animate={{ x: ["-120%", "120%"] }}
+                            transition={{
+                                repeat: Infinity,
+                                duration: 6,
+                                ease: "linear"
+                            }}
+                        />
+
                         <span className="relative z-10">
                             Explorar disponibilidad
                         </span>
-                    </button>
-                </div>
+                    </motion.button>
+                </motion.div>
             </div>
 
             {/* Scroll Indicator - Bottom */}

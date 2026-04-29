@@ -14,7 +14,10 @@
   /* Fonts are injected via Next.js variable strategy in layout.tsx */
 }
 
-/* Base styles */
+html {
+  scroll-behavior: smooth;
+}
+
 html,
 body {
   height: 100%;
