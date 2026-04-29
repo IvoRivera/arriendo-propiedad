@@ -71,22 +71,22 @@ export const Lightbox: React.FC<LightboxProps> = ({
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 z-[99999] flex flex-col items-center justify-center bg-black/85 backdrop-blur-xl"
+      className="fixed inset-0 z-[99999] flex flex-col items-center justify-center bg-black/95 backdrop-blur-2xl"
       onClick={onClose}
     >
       {/* Container with scale/y entry animation */}
       <motion.div
-        initial={{ opacity: 0, scale: 0.96, y: 30 }}
+        initial={{ opacity: 0, scale: 0.98, y: 10 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
-        exit={{ opacity: 0, scale: 0.96, y: 30 }}
-        transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+        exit={{ opacity: 0, scale: 0.98, y: 10 }}
+        transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
         className="relative w-full h-full flex flex-col items-center justify-center overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Top Bar */}
-        <div className="absolute top-0 left-0 right-0 p-6 flex justify-between items-center z-[100] pointer-events-none">
-          <div className="bg-white/10 px-4 py-2 rounded-full backdrop-blur-md border border-white/5 pointer-events-auto">
-            <span className="text-white/70 text-[10px] font-mono uppercase tracking-[0.4em]">
+        <div className="absolute top-0 left-0 right-0 p-4 sm:p-6 flex justify-between items-center z-[100] pointer-events-none">
+          <div className="bg-white/10 px-3 py-1.5 sm:px-4 sm:py-2 rounded-full backdrop-blur-md border border-white/5 pointer-events-auto">
+            <span className="text-white/70 text-[9px] sm:text-[10px] font-mono uppercase tracking-[0.4em]">
               {currentIndex + 1} / {images.length}
             </span>
           </div>
@@ -109,7 +109,7 @@ export const Lightbox: React.FC<LightboxProps> = ({
         </button>
 
         {/* Carousel / Image Container */}
-        <div className="relative w-full h-full flex items-center justify-center p-4 sm:p-20 overflow-hidden">
+        <div className="relative w-full h-full flex items-center justify-center p-0 sm:p-20 overflow-hidden">
           <AnimatePresence initial={false} custom={direction} mode="popLayout">
             <motion.div
               key={page}
@@ -139,9 +139,9 @@ export const Lightbox: React.FC<LightboxProps> = ({
                   paginate(-1);
                 }
               }}
-              className="absolute inset-0 flex items-center justify-center p-4 sm:p-20"
+              className="absolute inset-0 flex items-center justify-center p-0 sm:p-20"
             >
-              <div className="relative w-full h-full max-w-6xl flex items-center justify-center select-none">
+              <div className="relative w-full h-full max-w-none sm:max-w-6xl flex items-center justify-center select-none">
                 {images[currentIndex]?.src?.trim() && (
                   <Image
                     src={images[currentIndex].src}
@@ -166,15 +166,15 @@ export const Lightbox: React.FC<LightboxProps> = ({
         </button>
 
         {/* Bottom Caption */}
-        <div className="absolute bottom-12 left-0 right-0 text-center px-6 pointer-events-none z-[100]">
+        <div className="absolute bottom-8 sm:bottom-12 left-0 right-0 text-center px-6 pointer-events-none z-[100]">
           <AnimatePresence mode="wait">
             <motion.p
               key={currentIndex}
-              initial={{ opacity: 0, y: 10 }}
+              initial={{ opacity: 0, y: 5 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
+              exit={{ opacity: 0, y: -5 }}
               transition={{ duration: 0.3 }}
-              className="text-white/90 text-sm sm:text-base font-light italic max-w-xl mx-auto drop-shadow-md"
+              className="text-white/80 text-[11px] sm:text-base font-light italic max-w-xl mx-auto drop-shadow-md tracking-wide"
             >
               {images[currentIndex].alt || "Sin descripción"}
             </motion.p>
@@ -182,7 +182,7 @@ export const Lightbox: React.FC<LightboxProps> = ({
         </div>
         
         {/* Swipe hint for mobile */}
-        <div className="md:hidden absolute bottom-4 text-white/30 text-[10px] tracking-widest uppercase text-center w-full">
+        <div className="md:hidden absolute bottom-2 text-white/20 text-[8px] tracking-[0.3em] uppercase text-center w-full">
           Desliza para navegar
         </div>
       </motion.div>
