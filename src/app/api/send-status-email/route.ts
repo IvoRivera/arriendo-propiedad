@@ -136,7 +136,7 @@ export async function POST(req: Request) {
     }
 
     const payload = {
-      from: 'ArriendoLS <onboarding@resend.dev>',
+      from: 'Reservas Costa Serena <reservas@riveradigital.cl>',
       to: email,
       subject: subject,
       text: text,
@@ -147,7 +147,7 @@ export async function POST(req: Request) {
     try {
       const result = await resend.emails.send(payload);
       console.log("RESEND RESULT:", result);
-      
+
       if (result.error) {
         console.error("RESEND ERROR (internal):", result.error);
         return NextResponse.json({ error: result.error }, { status: 500 });

@@ -24,7 +24,7 @@ export async function POST(req: Request) {
       trip_reason,
       referred_by
     } = body;
-    
+
     // Fetch configuration
     const [freshConfig, property] = await Promise.all([
       getLiveConfigServer(),
@@ -32,7 +32,7 @@ export async function POST(req: Request) {
     ]);
 
     const ownerEmail = freshConfig['OWNER_EMAIL'] || process.env.OWNER_EMAIL || '';
-    
+
     // Use central pricing engine
     const pricing = await getPricing({
       checkIn: check_in,
@@ -41,14 +41,14 @@ export async function POST(req: Request) {
     });
 
     const nights = pricing.nightsCount;
-    
+
     // Use snapshotted total_price if provided (from the new bookings API)
     const totalPrice = body.total_price !== undefined ? Number(body.total_price) : pricing.totalPrice;
     const formattedTotal = new Intl.NumberFormat('es-CL').format(totalPrice);
     const dailyPrice = pricing.nightlyPrice;
 
     const { data, error } = await resend.emails.send({
-      from: 'ArriendoLS <onboarding@resend.dev>',
+      from: 'Reservas Arriendo Costa Serena <reservas@riveradigital.cl>',
       to: ownerEmail,
       subject: `Nueva solicitud: ${full_name} (${nights} noches)`,
       text: `
