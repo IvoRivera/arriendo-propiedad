@@ -15,7 +15,7 @@
 }
 
 html {
-  scroll-behavior: smooth;
+  /* scroll-behavior: smooth; */ /* Managed by JS for premium easing */
 }
 
 html, body {
