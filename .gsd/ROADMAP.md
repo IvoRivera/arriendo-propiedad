@@ -57,10 +57,16 @@
     - [x] 6.1: Sticky CTA Transition Experience ✅
 
 ## Milestone 4: Advanced UX Refinement
-**Status**: 🏗️ In Progress
+**Status**: 🚀 In Progress
 
 ### Phase 7: Refined Navigation & Smooth Scrolling
 - **Goal**: Replace snappy browser default scrolling with custom ease-in-out animations for a premium feel.
 - **Status**: ✅ Complete
 - **Plans**:
     - [x] 7.1: Custom Smooth Scroll Implementation ✅
+
+### Phase 8: Immersive Fullscreen Gallery
+- **Goal**: Optimize the gallery lightbox for mobile, ensuring images occupy 100% of available space with an elegant, edge-to-edge presentation.
+- **Status**: ⏳ Planned
+- **Plans**:
+    - [ ] 8.1: Immersive Lightbox Scaling & Mobile Optimization
