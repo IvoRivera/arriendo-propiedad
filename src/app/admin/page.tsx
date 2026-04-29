@@ -130,13 +130,10 @@ export default function AdminPage() {
           });
 
           if (!response.ok) {
-            const errorData = await response.json();
-            console.error("Failed to send guest notification email:", errorData);
-            alert("Estado actualizado, pero el correo falló: " + (errorData.error || "Error de red"));
+            console.error("Failed to send guest notification email");
           }
         } catch (emailErr) {
           console.error("Failed to send guest notification email:", emailErr);
-          alert("Error al intentar enviar el correo de notificación.");
         }
       }
 

@@ -75,7 +75,7 @@ export async function POST(req: Request) {
     });
 
     if (error) {
-      console.error('[Resend Notification Error]:', JSON.stringify(error, null, 2));
+      console.error('Resend error:', error);
       return NextResponse.json({ error }, { status: 500 });
     }
 
