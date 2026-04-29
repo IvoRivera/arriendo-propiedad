@@ -117,7 +117,7 @@ export default function AdminPage() {
       const requestData = requests.find(r => r.id === id);
       if (requestData) {
         try {
-          fetch("/api/send-status-email", {
+          const response = await fetch("/api/send-status-email", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
@@ -128,8 +128,15 @@ export default function AdminPage() {
               check_out: requestData.check_out
             }),
           });
+
+          if (!response.ok) {
+            const errorData = await response.json();
+            console.error("Failed to send guest notification email:", errorData);
+            alert("Estado actualizado, pero el correo falló: " + (errorData.error || "Error de red"));
+          }
         } catch (emailErr) {
           console.error("Failed to send guest notification email:", emailErr);
+          alert("Error al intentar enviar el correo de notificación.");
         }
       }
 

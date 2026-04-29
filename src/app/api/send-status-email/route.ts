@@ -8,10 +8,15 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 
 export async function POST(req: Request) {
   try {
+    console.log("[Resend Debug] Verificando autorización para enviar email...");
     const auth = await verifyAdminRequest(req);
+    
     if (!auth.success) {
+      console.error("[Resend Debug] Autorización fallida:", auth.error);
       return NextResponse.json({ success: false, error: auth.error }, { status: auth.status });
     }
+
+    console.log("[Resend Debug] Autorización exitosa. Modo:", auth.mode);
 
     const body = await req.json();
     const {
