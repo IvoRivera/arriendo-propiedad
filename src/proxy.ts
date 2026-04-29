@@ -50,7 +50,7 @@ export async function proxy(req: NextRequest) {
   const ip = (req as any).ip || req.headers.get('x-forwarded-for')?.split(',')[0] || 'unknown';
   const now = Date.now();
   const record = ipCache.get(ip) || { count: 0, lastReset: now };
-  
+
   if (now - record.lastReset > RATE_LIMIT_WINDOW) {
     record.count = 1;
     record.lastReset = now;
@@ -95,7 +95,7 @@ export async function proxy(req: NextRequest) {
     }
   }
 
-  // B. Protect Email/Notification Endpoints (Internal OR Admin Only)
+  // B. Protect Email/Notification Endpoints (Internal / Admin Only)
   const isEmailRoute = pathname.startsWith('/api/send-status-email') || pathname.startsWith('/api/notify-new-request');
   if (isEmailRoute) {
     const isAdmin = user?.app_metadata?.role === 'admin';
