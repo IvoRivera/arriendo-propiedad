@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { motion, AnimatePresence, useInView } from "framer-motion";
+import { motion, AnimatePresence, useInView, animate } from "framer-motion";
 import { Calendar } from "lucide-react";
 import { CoastalHero } from "@/components/coastal/CoastalHero";
 import { CoastalAvailability } from "@/components/coastal/CoastalAvailability";
@@ -39,11 +39,20 @@ export function HomeClient({ dynamicImages, property }: HomeClientProps) {
     const element = document.getElementById(id);
     if (!element) return;
     
-    // Robust scroll: let CSS handle smoothness to avoid JS/CSS conflicts on Android
-    // Adding a tiny delay to ensure the touch event doesn't interrupt the scroll
-    setTimeout(() => {
-      element.scrollIntoView({ block: 'center' });
-    }, 10);
+    // Calculate target with center alignment
+    const elementRect = element.getBoundingClientRect();
+    const absoluteElementTop = elementRect.top + window.pageYOffset;
+    const middleOffset = (window.innerHeight / 2) - (elementRect.height / 2);
+    const targetPosition = absoluteElementTop - middleOffset;
+
+    // Premium Ease-In-Out Quintic animation
+    // We use JS instead of CSS for a more "cinematic" feel and better cross-device control
+    animate(window.pageYOffset, targetPosition, {
+      type: "tween",
+      duration: 1.2,
+      ease: [0.65, 0, 0.35, 1], // Custom cinematic bezier
+      onUpdate: (latest) => window.scrollTo(0, latest)
+    });
   };
 
   const heroRef = useRef(null);

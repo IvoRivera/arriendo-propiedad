@@ -13,8 +13,7 @@
 }
 
 html {
-  scroll-behavior: smooth;
-  scroll-padding-top: 2rem; /* Buffer for better landing */
+  /* scroll-behavior: smooth; */ /* Managed by JS for premium easing curves */
 }
 
 html,
