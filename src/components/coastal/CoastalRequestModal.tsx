@@ -89,79 +89,55 @@ const requestSchema = z.object({
     const num = parseInt(val.split(" ")[0]);
     return num >= 1 && num <= 4;
   }, "La capacidad máxima es de 4 personas"),
-  check_in: z.string().min(1, "La fecha de llegada es obligatoria"),
-  check_out: z.string().min(1, "La fecha de salida es obligatoria"),
-  trip_reason: z.string().min(10, "Cuéntanos un poco más sobre tu viaje (mín. 10 carac.)"),
+  // Standard fields (optional in schema to support long-stay switch, but validated in superRefine)
+  check_in: z.string().optional(),
+  check_out: z.string().optional(),
+  trip_reason: z.string().min(10, "Cuéntanos un poco más (mín. 10 carac.)"),
   referred_by_name: z.string().min(2, "Ingresa el nombre de quién te recomendó"),
   referred_by_relation: z.string().min(1, "Selecciona tu relación"),
   rules_accepted: z.literal(true, {
     errorMap: () => ({ message: "Debes aceptar las reglas de la casa" }),
   }),
+  // Long Stay fields
+  estimated_start_date: z.string().optional(),
+  flexible_dates: z.boolean().optional(),
+  estimated_duration: z.string().optional(),
+  stay_type: z.string().optional(),
+  budget: z.string().optional(),
+  amenities: z.array(z.string()).optional(),
 }).superRefine((data, ctx) => {
   // 1. Phone & Prefix Validation
   const prefix = data.country_code;
   const digits = data.phone.replace(/[^\d]/g, "");
 
-  // Required checks
   if (!prefix.startsWith("+") || prefix.length < 2) {
-    ctx.addIssue({
-      code: z.ZodIssueCode.custom,
-      message: "El prefijo debe empezar con + (ej: +56)",
-      path: ["country_code"],
-    });
+    ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Prefijo inválido", path: ["country_code"] });
   }
 
-  // Chile (+56) specific rules
   if (prefix === CHILE_PREFIX) {
-    if (digits.length > CHILE_PHONE_LENGTH) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: `El número para Chile debe tener máximo ${CHILE_PHONE_LENGTH} dígitos`,
-        path: ["phone"],
-      });
-    } else if (digits.length > 0 && !digits.startsWith("9")) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: "El número debe empezar con 9",
-        path: ["phone"],
-      });
-    } else if (digits.length < CHILE_PHONE_LENGTH && digits.length > 0) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: `El número para Chile debe tener ${CHILE_PHONE_LENGTH} dígitos`,
-        path: ["phone"],
-      });
+    if (digits.length !== CHILE_PHONE_LENGTH) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: `Debe tener ${CHILE_PHONE_LENGTH} dígitos`, path: ["phone"] });
+    } else if (!digits.startsWith("9")) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Debe empezar con 9", path: ["phone"] });
     }
-  } else if (digits.length > 0 && digits.length < 7) {
-    ctx.addIssue({
-      code: z.ZodIssueCode.custom,
-      message: "Número demasiado corto",
-      path: ["phone"],
-    });
   }
 
-  // 2. Dates Validation
+  // 2. Intent-based Validation
+  // We'll pass the intentMode to the validator if possible, but superRefine only sees 'data'.
+  // We can't easily see intentMode here unless we put it in the form data.
+  // For now, we'll handle conditional requirement in the onSubmit or via manual checks in UI.
+  
   if (data.check_in && data.check_out) {
     const start = parseISO(data.check_in);
     const end = parseISO(data.check_out);
-
     if (end <= start) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: "La fecha de salida debe ser posterior a la de llegada",
-        path: ["check_out"],
-      });
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Fecha inválida", path: ["check_out"] });
     } else if (!isValidStay(start, end)) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: SITE_CONTENT.availability.labels.minStayWarning,
-        path: ["check_out"],
-      });
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: SITE_CONTENT.availability.labels.minStayWarning, path: ["check_out"] });
     }
-    // Note: Overlap validation is handled in onSubmit and UI feedback 
-    // because blockedDateStrings is dynamic state.
   }
 });
+
 
 type RequestFormData = z.infer<typeof requestSchema>;
 
@@ -169,12 +145,15 @@ interface CoastalRequestModalProps {
   isOpen: boolean;
   onClose: () => void;
   initialDates?: { checkIn: Date; checkOut: Date } | null;
+  intentMode?: 'standard' | 'long-stay';
 }
+
 
 export const CoastalRequestModal: React.FC<CoastalRequestModalProps> = ({
   isOpen,
   onClose,
-  initialDates
+  initialDates,
+  intentMode = 'standard'
 }) => {
   const [mounted, setMounted] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
@@ -411,81 +390,73 @@ export const CoastalRequestModal: React.FC<CoastalRequestModalProps> = ({
     const finalPhone = normalizePhone(data.country_code, data.phone);
     const finalReferral = `${data.referred_by_name} (${data.referred_by_relation})`;
 
-    // Double-check stay validity before proceeding
-    if (!isValidStay(data.check_in, data.check_out)) {
-      setSubmitError(SITE_CONTENT.availability.labels.minStayWarning);
-      setIsSubmitting(false);
-      return;
-    }
-
     try {
-      // 1. Concurrency Check (Server-side re-validation)
-      // We check if any of the selected dates are blocked
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 8000);
-
-      const res = await fetch(`/api/public/availability?t=${Date.now()}`, {
-        signal: controller.signal
-      });
-      clearTimeout(timeoutId);
-
-      const availability = await res.json();
-
-      if (availability.success && availability.data) {
-        const currentBlocks = availability.data.blockedDates || [];
-
-        // Generate range of dates to check
-        const start = parseISO(data.check_in);
-        const end = parseISO(data.check_out);
-        const curr = new Date(start);
-        const datesToRequest: string[] = [];
-        while (curr <= end) {
-          const year = curr.getFullYear();
-          const month = String(curr.getMonth() + 1).padStart(2, '0');
-          const day = String(curr.getDate()).padStart(2, '0');
-          datesToRequest.push(`${year}-${month}-${day}`);
-          curr.setDate(curr.getDate() + 1);
+      // 1. Conditional Concurrency Check for Standard Mode
+      if (intentMode === 'standard' && data.check_in && data.check_out) {
+        if (!isValidStay(data.check_in, data.check_out)) {
+          throw new Error(SITE_CONTENT.availability.labels.minStayWarning);
         }
 
-        const isConflict = datesToRequest.some(d => currentBlocks.includes(d));
-        if (isConflict) {
-          setSubmitError("Lo sentimos, las fechas que seleccionaste acaban de ser reservadas. Por favor, elige nuevas fechas.");
-          fetchAvailability(); // Refresh calendar
-          return;
+        const resAvail = await fetch(`/api/public/availability?t=${Date.now()}`);
+        const availability = await resAvail.json();
+
+        if (availability.success && availability.data) {
+          const currentBlocks = availability.data.blockedDates || [];
+          const start = parseISO(data.check_in);
+          const end = parseISO(data.check_out);
+          const curr = new Date(start);
+          while (curr <= end) {
+            const year = curr.getFullYear();
+            const month = String(curr.getMonth() + 1).padStart(2, '0');
+            const day = String(curr.getDate()).padStart(2, '0');
+            const dateStr = `${year}-${month}-${day}`;
+            
+            if (currentBlocks.includes(dateStr)) {
+              throw new Error("Lo sentimos, las fechas que seleccionaste acaban de ser reservadas. Por favor, elige nuevas fechas.");
+            }
+            curr.setDate(curr.getDate() + 1);
+          }
         }
       }
 
-      // 3. Call Server-Side API (Handles pricing, scoring, and security)
-      const response = await fetch('/api/public/bookings', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      // 2. Format Payload
+      let formattedReason = data.trip_reason;
+      if (intentMode === 'long-stay') {
+        const amenitiesStr = data.amenities?.length ? `\n- Necesidades: ${data.amenities.join(', ')}` : '';
+        formattedReason = `[LONG STAY LEAD]\n- Inicio: ${data.estimated_start_date || 'Flexible'}\n- Duración: ${data.estimated_duration || 'Flexible'}\n- Tipo: ${data.stay_type || 'N/A'}\n- Presupuesto: ${data.budget || 'N/A'}${amenitiesStr}\n- Mensaje: ${data.trip_reason}`;
+      }
+
+      const res = await fetch("/api/public/bookings", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           full_name: data.full_name,
           email: data.email,
           phone: finalPhone,
-          guests_count: parseInt(data.guests_count.split(" ")[0]) || 4,
-          check_in: data.check_in,
-          check_out: data.check_out,
-          trip_reason: data.trip_reason,
+          guests_count: parseInt(data.guests_count.split(" ")[0]) || 1,
+          check_in: intentMode === 'standard' ? data.check_in : null,
+          check_out: intentMode === 'standard' ? data.check_out : null,
+          trip_reason: formattedReason,
           referred_by: finalReferral,
         }),
       });
 
-      const result = await response.json();
-
-      if (!response.ok || !result.success) {
-        throw new Error(result.error || "Error al procesar la reserva");
+      const result = await res.json();
+      if (!res.ok || !result.success) {
+        throw new Error(result.error || "Error al procesar la solicitud");
       }
 
       setIsSubmitted(true);
+      toast.success(intentMode === 'standard' ? "¡Solicitud enviada!" : "¡Propuesta solicitada!");
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "Error desconocido";
       console.error("[CoastalRequestModal] Submission error:", message);
-      setSubmitError("Hubo un problema al procesar tu solicitud. Por favor intenta nuevamente.");
+      setSubmitError(message);
     } finally {
       setIsSubmitting(false);
     }
   };
+
 
   if (!mounted || !isOpen) return null;
 
@@ -521,8 +492,12 @@ export const CoastalRequestModal: React.FC<CoastalRequestModalProps> = ({
               )}
 
               <div className="text-center mb-10">
-                <h3 className="font-serif text-3xl sm:text-4xl text-[#2c2416] italic tracking-tight">Solicitar Estadía</h3>
-                <p className="text-[#9a8a78] text-[10px] uppercase tracking-widest mt-2 font-bold">Completa tus datos para postular</p>
+                <h3 className="font-serif text-3xl sm:text-4xl text-[#2c2416] italic tracking-tight">
+                  {intentMode === 'standard' ? 'Solicitar Estadía' : 'Propuesta Personalizada'}
+                </h3>
+                <p className="text-[#9a8a78] text-[10px] uppercase tracking-widest mt-2 font-bold">
+                  {intentMode === 'standard' ? 'Completa tus datos para postular' : 'Cuéntanos sobre tu estadía ideal'}
+                </p>
               </div>
 
               <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
@@ -565,16 +540,13 @@ export const CoastalRequestModal: React.FC<CoastalRequestModalProps> = ({
                         {...register("phone")}
                         type="tel"
                         placeholder={selectedCountryCode === CHILE_PREFIX ? "9 1234 5678" : "Número"}
-                        maxLength={selectedCountryCode === CHILE_PREFIX ? 11 : 15} // 11 to account for 2 spaces in 9 digits
+                        maxLength={selectedCountryCode === CHILE_PREFIX ? 11 : 15}
                         onInput={(e) => {
                           let val = e.currentTarget.value.replace(/[^\d]/g, "");
                           const prefixDigits = selectedCountryCode?.replace("+", "") || "";
-
-                          // Handle duplicate prefix on paste
                           if (prefixDigits && val.startsWith(prefixDigits) && val.length > prefixDigits.length) {
                             val = val.substring(prefixDigits.length);
                           }
-
                           const formatted = formatVisualPhone(val, selectedCountryCode);
                           e.currentTarget.value = formatted;
                           setValue("phone", formatted, { shouldValidate: true });
@@ -582,11 +554,6 @@ export const CoastalRequestModal: React.FC<CoastalRequestModalProps> = ({
                         className="flex-1 min-w-0 bg-white border border-[#e2d9cc] rounded-xl px-4 py-3.5 text-base sm:text-sm focus:border-[#00628f] focus:ring-1 focus:ring-[#00628f] outline-none transition-all shadow-sm"
                       />
                     </div>
-                    {(errors.phone || errors.country_code) && (
-                      <p className="text-[10px] text-red-500 ml-1">
-                        {errors.phone?.message || errors.country_code?.message}
-                      </p>
-                    )}
                   </div>
                   <div className="space-y-2">
                     <label className="text-[10px] uppercase tracking-widest text-[#9a8a78] font-bold ml-1">Huéspedes</label>
@@ -604,143 +571,195 @@ export const CoastalRequestModal: React.FC<CoastalRequestModalProps> = ({
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 relative">
-                  <div className="absolute -top-6 right-1 flex items-center gap-1.5 bg-[#00628f]/5 px-2.5 py-1 rounded-full border border-[#00628f]/10">
-                    <Clock className="w-3 h-3 text-[#00628f]" />
-                    <span className="text-[8px] uppercase tracking-widest font-bold text-[#00628f]">
-                      Mínimo de estadía: 2 noches
-                    </span>
-                  </div>
+                {intentMode === 'standard' ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8 relative">
+                    <div className="absolute -top-6 right-1 flex items-center gap-1.5 bg-[#00628f]/5 px-2.5 py-1 rounded-full border border-[#00628f]/10">
+                      <Clock className="w-3 h-3 text-[#00628f]" />
+                      <span className="text-[8px] uppercase tracking-widest font-bold text-[#00628f]">
+                        Mínimo de estadía: 2 noches
+                      </span>
+                    </div>
 
-                  {/* Calendar Portal Root - Isolated from Form Layout */}
-                  {activePicker && mounted && createPortal(
-                    <div className="fixed inset-0 z-[10000000] flex items-center justify-center p-4 bg-black/20 backdrop-blur-[2px] calendar-portal-content animate-in fade-in duration-200">
-                      <div
-                        className="bg-white border border-[#e2d9cc] rounded-[32px] shadow-2xl p-6 sm:p-8 relative animate-in zoom-in-95 duration-200 max-w-sm w-full"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        <button
-                          onClick={() => setActivePicker(null)}
-                          className="absolute top-4 right-4 p-2 text-[#9a8a78] hover:text-[#2c2416] transition-colors"
+                    {activePicker && mounted && createPortal(
+                      <div className="fixed inset-0 z-[10000000] flex items-center justify-center p-4 bg-black/20 backdrop-blur-[2px] calendar-portal-content animate-in fade-in duration-200">
+                        <div
+                          className="bg-white border border-[#e2d9cc] rounded-[32px] shadow-2xl p-6 sm:p-8 relative animate-in zoom-in-95 duration-200 max-w-sm w-full"
+                          onClick={(e) => e.stopPropagation()}
                         >
-                          <X className="w-5 h-5" />
-                        </button>
+                          <button
+                            onClick={() => setActivePicker(null)}
+                            className="absolute top-4 right-4 p-2 text-[#9a8a78] hover:text-[#2c2416] transition-colors"
+                          >
+                            <X className="w-5 h-5" />
+                          </button>
 
-                        <div className="mb-6 text-center">
-                          <h4 className="font-serif text-xl italic text-[#2c2416]">
-                            {activePicker === 'check_in' ? 'Fecha de Llegada' : 'Fecha de Salida'}
-                          </h4>
-                          <p className="text-[10px] uppercase tracking-widest text-[#9a8a78] mt-1">
-                            Selecciona una fecha disponible
-                          </p>
-                        </div>
+                          <div className="mb-6 text-center">
+                            <h4 className="font-serif text-xl italic text-[#2c2416]">
+                              {activePicker === 'check_in' ? 'Fecha de Llegada' : 'Fecha de Salida'}
+                            </h4>
+                          </div>
 
-                        <style>{calendarStyles}</style>
-                        <DayPicker
-                          mode="single"
-                          selected={activePicker === 'check_in'
-                            ? (checkInValue ? parseISO(checkInValue) : undefined)
-                            : (checkOutValue ? parseISO(checkOutValue) : undefined)
-                          }
-                          onSelect={(date) => {
-                            if (!date) return;
+                          <style>{calendarStyles}</style>
+                          <DayPicker
+                            mode="single"
+                            selected={activePicker === 'check_in'
+                              ? (checkInValue ? parseISO(checkInValue) : undefined)
+                              : (checkOutValue ? parseISO(checkOutValue) : undefined)
+                            }
+                            onSelect={(date) => {
+                              if (!date) return;
+                              const year = date.getFullYear();
+                              const month = String(date.getMonth() + 1).padStart(2, '0');
+                              const day = String(date.getDate()).padStart(2, '0');
+                              const dateStr = `${year}-${month}-${day}`;
 
-                            const year = date.getFullYear();
-                            const month = String(date.getMonth() + 1).padStart(2, '0');
-                            const day = String(date.getDate()).padStart(2, '0');
-                            const dateStr = `${year}-${month}-${day}`;
-
-                            if (activePicker === 'check_in') {
-                              setValue("check_in", dateStr, { shouldValidate: true });
-
-                              // Auto-suggest checkout if not set or invalid
-                              const suggested = new Date(date);
-                              suggested.setDate(suggested.getDate() + 2);
-                              const sDateStr = `${suggested.getFullYear()}-${String(suggested.getMonth() + 1).padStart(2, '0')}-${String(suggested.getDate()).padStart(2, '0')}`;
-
-                              if (!checkOutValue || parseISO(checkOutValue) < suggested) {
-                                setValue("check_out", sDateStr, { shouldValidate: true });
+                              if (activePicker === 'check_in') {
+                                setValue("check_in", dateStr, { shouldValidate: true });
+                                const suggested = new Date(date);
+                                suggested.setDate(suggested.getDate() + 2);
+                                const sDateStr = `${suggested.getFullYear()}-${String(suggested.getMonth() + 1).padStart(2, '0')}-${String(suggested.getDate()).padStart(2, '0')}`;
+                                if (!checkOutValue || parseISO(checkOutValue) < suggested) {
+                                  setValue("check_out", sDateStr, { shouldValidate: true });
+                                }
+                              } else {
+                                setValue("check_out", dateStr, { shouldValidate: true });
                               }
-                            } else {
-                              setValue("check_out", dateStr, { shouldValidate: true });
-                            }
+                              setActivePicker(null);
+                            }}
+                            disabled={activePicker === 'check_in' ? isDateDisabled : isCheckOutDisabled}
+                            locale={es}
+                            defaultMonth={activePicker === 'check_out' && checkInValue ? parseISO(checkInValue) : undefined}
+                            footer={activePicker === 'check_out' && (
+                              <p className="text-[10px] text-center text-[#9a8a78] mt-4 italic font-medium">
+                                Estancia mínima de 2 noches
+                              </p>
+                            )}
+                            components={{
+                              DayButton: (props) => {
+                                const { day, ...buttonProps } = props as any;
+                                const { date } = day;
+                                const { price, isSeasonal, isHoliday } = getPriceForDate(date, seasonalPrices || [], basePrice || 0, holidays || []);
+                                const formatted = price >= 1000
+                                  ? new Intl.NumberFormat('es-CL').format(Math.floor(price / 1000)) + 'k'
+                                  : price;
 
-                            setActivePicker(null);
-                          }}
-                          disabled={activePicker === 'check_in' ? isDateDisabled : isCheckOutDisabled}
-                          locale={es}
-                          defaultMonth={activePicker === 'check_out' && checkInValue ? parseISO(checkInValue) : undefined}
-                          footer={activePicker === 'check_out' && (
-                            <p className="text-[10px] text-center text-[#9a8a78] mt-4 italic font-medium">
-                              Estancia mínima de 2 noches
-                            </p>
-                          )}
-                          components={{
-                            DayButton: (props) => {
-                              const { day, ...buttonProps } = props as any;
-                              const { date } = day;
-                              const { price, isSeasonal, isHoliday } = getPriceForDate(date, seasonalPrices || [], basePrice || 0, holidays || []);
-                              const formatted = price >= 1000
-                                ? new Intl.NumberFormat('es-CL').format(Math.floor(price / 1000)) + 'k'
-                                : price;
+                                return (
+                                  <button {...buttonProps}>
+                                    <div className="flex flex-col items-center justify-center w-full h-full pt-1">
+                                      <span className="text-[10px] font-medium leading-none">{date.getDate()}</span>
+                                      {price > 0 && (
+                                        <span className={`text-[7px] mt-0.5 leading-none font-bold tracking-tighter ${isHoliday ? 'text-rose-500' : isSeasonal ? 'text-[#00628f]' : 'text-[#b5a99a]'}`}>
+                                          ${formatted}
+                                        </span>
+                                      )}
+                                    </div>
+                                  </button>
+                                );
+                              }
+                            }}
+                          />
+                        </div>
+                      </div>,
+                      document.body
+                    )}
 
-                              return (
-                                <button {...buttonProps}>
-                                  <div className="flex flex-col items-center justify-center w-full h-full pt-1">
-                                    <span className="text-[10px] font-medium leading-none">{date.getDate()}</span>
-                                    {price > 0 && (
-                                      <span className={`text-[7px] mt-0.5 leading-none font-bold tracking-tighter ${isHoliday ? 'text-rose-500' : isSeasonal ? 'text-[#00628f]' : 'text-[#b5a99a]'}`}>
-                                        ${formatted}
-                                      </span>
-                                    )}
-                                  </div>
-                                </button>
-                              );
-                            }
-                          }}
-                        />
-                      </div>
-                    </div>,
-                    document.body
-                  )}
-
-                  <div className="space-y-2">
-                    <label className="text-[10px] uppercase tracking-widest text-[#9a8a78] font-bold ml-1">Fecha Llegada</label>
-                    <div className="relative">
+                    <div className="space-y-2">
+                      <label className="text-[10px] uppercase tracking-widest text-[#9a8a78] font-bold ml-1">Fecha Llegada</label>
                       <button
                         type="button"
-                        onClick={() => setActivePicker(activePicker === 'check_in' ? null : 'check_in')}
-                        className="picker-trigger w-full bg-white border border-[#e2d9cc] rounded-xl px-4 py-3.5 text-base sm:text-sm text-left outline-none focus:border-[#00628f] shadow-sm flex items-center justify-between transition-all hover:border-[#00628f]/50"
+                        onClick={() => setActivePicker('check_in')}
+                        className="w-full bg-white border border-[#e2d9cc] rounded-xl px-4 py-3.5 text-base sm:text-sm text-left outline-none focus:border-[#00628f] shadow-sm flex items-center justify-between"
                       >
                         <span className={checkInValue ? "text-[#2c2416]" : "text-[#b5a99a]"}>
-                          {checkInValue ? format(parseISO(checkInValue), "PPP", { locale: es }) : "Seleccionar fecha"}
+                          {checkInValue ? format(parseISO(checkInValue), "PPP", { locale: es }) : "Seleccionar"}
                         </span>
                         <CalendarDays className="w-4 h-4 text-[#9a8a78]" />
                       </button>
                     </div>
-                    {errors.check_in && <p className="text-[10px] text-red-500 ml-1">{errors.check_in.message}</p>}
-                  </div>
 
-                  <div className="space-y-2">
-                    <label className="text-[10px] uppercase tracking-widest text-[#9a8a78] font-bold ml-1">Fecha Salida</label>
-                    <div className="relative">
+                    <div className="space-y-2">
+                      <label className="text-[10px] uppercase tracking-widest text-[#9a8a78] font-bold ml-1">Fecha Salida</label>
                       <button
                         type="button"
-                        onClick={() => setActivePicker(activePicker === 'check_out' ? null : 'check_out')}
-                        className="picker-trigger w-full bg-white border border-[#e2d9cc] rounded-xl px-4 py-3.5 text-base sm:text-sm text-left outline-none focus:border-[#00628f] shadow-sm flex items-center justify-between transition-all hover:border-[#00628f]/50"
+                        onClick={() => setActivePicker('check_out')}
+                        className="w-full bg-white border border-[#e2d9cc] rounded-xl px-4 py-3.5 text-base sm:text-sm text-left outline-none focus:border-[#00628f] shadow-sm flex items-center justify-between"
                       >
                         <span className={checkOutValue ? "text-[#2c2416]" : "text-[#b5a99a]"}>
-                          {checkOutValue ? format(parseISO(checkOutValue), "PPP", { locale: es }) : "Seleccionar fecha"}
+                          {checkOutValue ? format(parseISO(checkOutValue), "PPP", { locale: es }) : "Seleccionar"}
                         </span>
                         <CalendarDays className="w-4 h-4 text-[#9a8a78]" />
                       </button>
                     </div>
-                    {errors.check_out && <p className="text-[10px] text-red-500 ml-1">{errors.check_out.message}</p>}
-                    {checkInValue && checkOutValue && isRangeBlocked(checkInValue, checkOutValue, blockedDateStrings) && (
-                      <p className="text-[10px] text-red-500 ml-1 mt-1 font-medium italic">Estas fechas no están disponibles</p>
-                    )}
                   </div>
-                </div>
+                ) : (
+                  <div className="space-y-8 animate-in fade-in duration-500">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                      <div className="space-y-2">
+                        <label className="text-[10px] uppercase tracking-widest text-[#9a8a78] font-bold ml-1">Fecha estimada llegada</label>
+                        <input {...register("estimated_start_date")} type="date" className="w-full bg-white border border-[#e2d9cc] rounded-xl px-4 py-3.5 text-base sm:text-sm focus:border-[#00628f] outline-none shadow-sm" />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-[10px] uppercase tracking-widest text-[#9a8a78] font-bold ml-1">Duración estimada</label>
+                        <select {...register("estimated_duration")} className="w-full bg-white border border-[#e2d9cc] rounded-xl px-4 py-3.5 text-base sm:text-sm outline-none focus:border-[#00628f] shadow-sm appearance-none cursor-pointer">
+                          <option value="2-4 semanas">2 a 4 semanas</option>
+                          <option value="1 mes">1 mes</option>
+                          <option value="2 meses">2 meses</option>
+                          <option value="Más de 2 meses">Más de 2 meses</option>
+                          <option value="Flexible">Flexible</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                      <div className="space-y-2">
+                        <label className="text-[10px] uppercase tracking-widest text-[#9a8a78] font-bold ml-1">Tipo de estadía</label>
+                        <select {...register("stay_type")} className="w-full bg-white border border-[#e2d9cc] rounded-xl px-4 py-3.5 text-base sm:text-sm outline-none focus:border-[#00628f] shadow-sm appearance-none cursor-pointer">
+                          <option value="Teletrabajo">Teletrabajo</option>
+                          <option value="Vacaciones largas">Vacaciones largas</option>
+                          <option value="Mudanza / transición">Mudanza / transición</option>
+                          <option value="Trabajo temporal">Trabajo temporal</option>
+                          <option value="Visita familiar">Visita familiar</option>
+                          <option value="Otro">Otro</option>
+                        </select>
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-[10px] uppercase tracking-widest text-[#9a8a78] font-bold ml-1">Presupuesto (opcional)</label>
+                        <input {...register("budget")} type="text" placeholder="Ej: $1.200.000 / mes" className="w-full bg-white border border-[#e2d9cc] rounded-xl px-4 py-3.5 text-base sm:text-sm focus:border-[#00628f] outline-none shadow-sm" />
+                      </div>
+                    </div>
+
+                    <div className="space-y-4">
+                      <label className="text-[10px] uppercase tracking-widest text-[#9a8a78] font-bold ml-1 block">Necesidades importantes</label>
+                      <div className="flex flex-wrap gap-2">
+                        {['Buen internet', 'Escritorio', 'Estacionamiento', 'Cocina equipada', 'Lavadora', 'Flexibilidad'].map((item) => {
+                          const selected = watch("amenities") || [];
+                          const isSelected = selected.includes(item);
+                          return (
+                            <button
+                              key={item}
+                              type="button"
+                              onClick={() => {
+                                const next = isSelected ? selected.filter(i => i !== item) : [...selected, item];
+                                setValue("amenities", next, { shouldValidate: true });
+                              }}
+                              className={`px-4 py-2 rounded-full text-[10px] font-bold uppercase tracking-widest border transition-all duration-300 ${
+                                isSelected ? 'bg-[#00628f] border-[#00628f] text-white shadow-lg shadow-[#00628f]/20' : 'bg-white border-[#e2d9cc] text-[#9a8a78] hover:border-[#00628f]/30'
+                              }`}
+                            >
+                              {item}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-3 p-4 bg-[#00628f]/5 rounded-2xl border border-[#00628f]/10">
+                      <input {...register("flexible_dates")} type="checkbox" id="flexible_dates" className="w-4 h-4 rounded border-[#e2d9cc] text-[#00628f] focus:ring-[#00628f]" />
+                      <label htmlFor="flexible_dates" className="text-xs text-[#00628f] font-medium cursor-pointer">Tengo flexibilidad en mis fechas</label>
+                    </div>
+                  </div>
+                )}
+
 
                 <div className="space-y-2">
                   <label className="text-[10px] uppercase tracking-widest text-[#9a8a78] font-bold ml-1">Propósito del Viaje</label>
@@ -860,7 +879,7 @@ export const CoastalRequestModal: React.FC<CoastalRequestModalProps> = ({
                     disabled={!isValid || isSubmitting}
                     className="w-full py-4 bg-gradient-to-br from-[#00628f] to-[#007cb3] text-white rounded-full font-semibold uppercase tracking-[-0.01em] text-[12px] transition-all duration-200 hover:brightness-110 active:scale-[0.97] disabled:opacity-50 disabled:grayscale flex items-center justify-center gap-3"
                   >
-                    {isSubmitting ? "Procesando solicitud..." : "Enviar Postulación"}
+                    {isSubmitting ? "Procesando solicitud..." : (intentMode === 'standard' ? "Enviar Postulación" : "Solicitar Propuesta")}
                   </button>
 
                   <p className="mt-4 text-[9px] text-center text-[#9a8a78] uppercase tracking-widest leading-relaxed">

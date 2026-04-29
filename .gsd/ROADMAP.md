@@ -71,3 +71,11 @@
 - **Plans**:
     - [x] 8.1: Immersive Lightbox Scaling & Mobile Optimization ✅
     - [x] 8.2: Landscape Optimization & Pinch-to-Zoom ✅
+
+### Phase 9: Long Stay & Multi-Intent Funnel
+- **Goal**: Refine the availability section and request flow to support long-stay leads and standard bookings in a dual-mode premium interface.
+- **Status**: ✅ Complete
+- **Plans**:
+    - [x] 9.1: Hub Foundation & Dual-Mode UI ✅
+    - [x] 9.2: Consultative Request Flow & Validations ✅
+    - [x] 9.3: Integration & UX Polish ✅

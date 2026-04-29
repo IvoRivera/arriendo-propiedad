@@ -10,6 +10,7 @@ import { MapPin } from 'lucide-react';
 interface CoastalHeroProps {
     readonly className?: string;
     onAction?: () => void;
+    onExplore?: () => void;
     dynamicImages?: any[];
     property?: Property | null;
 }
@@ -17,6 +18,7 @@ interface CoastalHeroProps {
 export const CoastalHero: React.FC<CoastalHeroProps> = ({
     className = "",
     onAction,
+    onExplore,
     dynamicImages = [],
 }) => {
     // Base64 blur placeholder
@@ -142,7 +144,8 @@ export const CoastalHero: React.FC<CoastalHeroProps> = ({
                         whileTap={{ scale: 0.95 }}
                         onClick={(e) => {
                             e.preventDefault();
-                            onAction?.();
+                            if (onExplore) onExplore();
+                            else onAction?.();
                         }}
                         className="w-full sm:min-w-[280px] px-10 py-5 bg-gradient-to-r from-[#00628f] to-[#007cb3] text-white text-lg font-semibold rounded-full cursor-pointer shadow-xl shadow-black/20 border-none select-none flex items-center justify-center"
                     >

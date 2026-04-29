@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { supabaseService } from '@/lib/supabaseServer';
-import { calculateBookingPrice } from '@/lib/pricing';
+import { calculateBookingPrice, PricingResult } from '@/lib/pricing';
 import { validateSchema } from '@/lib/schemaValidator';
 import { isValidStay } from '@/lib/dateUtils';
 import { SITE_CONTENT } from '@/config/site-content';
@@ -12,8 +12,8 @@ const bookingSchema = z.object({
   email: z.string().email(),
   phone: z.string(),
   guests_count: z.number(),
-  check_in: z.string(),
-  check_out: z.string(),
+  check_in: z.string().optional().nullable(),
+  check_out: z.string().optional().nullable(),
   trip_reason: z.string(),
   referred_by: z.string(),
 });
@@ -31,44 +31,51 @@ export async function POST(req: Request) {
     
     // 1. Validation
     const validatedData = bookingSchema.parse(body);
+    const isLongStayLead = validatedData.trip_reason.includes("[LONG STAY LEAD]");
 
-    // 2. Calculate frozen price
-    // This fetches seasonal prices and the base price from system_config
-    const pricing = await calculateBookingPrice(validatedData.check_in, validatedData.check_out);
-
-    if (!isValidStay(validatedData.check_in, validatedData.check_out)) {
-      throw new Error(SITE_CONTENT.availability.labels.minStayWarning);
-    }
-
-    // 3. Strict Overlap Detection (Source of Truth)
-    const { data: manualBlocks } = await supabaseService
-      .from('blocked_dates')
-      .select('start_date, end_date');
-
-    const { data: confirmedBookings } = await supabaseService
-      .from('booking_requests')
-      .select('check_in, check_out')
-      .eq('status', 'confirmed');
-
-    const blockedRanges = [
-      ...(manualBlocks || []).map(b => ({ from: b.start_date, to: b.end_date })),
-      ...(confirmedBookings || []).map(b => ({ from: b.check_in, to: b.check_out }))
-    ];
-
-    const start = new Date(`${validatedData.check_in}T12:00:00Z`);
-    const end = new Date(`${validatedData.check_out}T12:00:00Z`);
+    let pricing: PricingResult = { totalPrice: 0, breakdown: [], nightsCount: 0, nightlyPrice: 0 };
     
-    for (const range of blockedRanges) {
-      const bStart = new Date(`${range.from}T12:00:00Z`);
-      const bEnd = new Date(`${range.to}T12:00:00Z`);
+    // 2. Conditional Logic: Standard Booking vs. Long Stay Lead
+    if (!isLongStayLead) {
+      if (!validatedData.check_in || !validatedData.check_out) {
+        throw new Error("Las fechas de llegada y salida son obligatorias para reservas estándar.");
+      }
+
+      // Calculate frozen price
+      pricing = await calculateBookingPrice(validatedData.check_in, validatedData.check_out);
+
+      if (!isValidStay(validatedData.check_in, validatedData.check_out)) {
+        throw new Error(SITE_CONTENT.availability.labels.minStayWarning);
+      }
+
+      // 3. Strict Overlap Detection (Source of Truth)
+      const { data: manualBlocks } = await supabaseService
+        .from('blocked_dates')
+        .select('start_date, end_date');
+
+      const { data: confirmedBookings } = await supabaseService
+        .from('booking_requests')
+        .select('check_in, check_out')
+        .eq('status', 'confirmed');
+
+      const blockedRanges = [
+        ...(manualBlocks || []).map(b => ({ from: b.start_date, to: b.end_date })),
+        ...(confirmedBookings || []).map(b => ({ from: b.check_in, to: b.check_out }))
+      ];
+
+      const start = new Date(`${validatedData.check_in}T12:00:00Z`);
+      const end = new Date(`${validatedData.check_out}T12:00:00Z`);
       
-      // Overlap condition: (start <= bEnd) && (end >= bStart)
-      if (start <= bEnd && end >= bStart) {
-        throw new Error("Lo sentimos, algunas de las fechas seleccionadas ya no están disponibles.");
+      for (const range of blockedRanges) {
+        const bStart = new Date(`${range.from}T12:00:00Z`);
+        const bEnd = new Date(`${range.to}T12:00:00Z`);
+        if (start <= bEnd && end >= bStart) {
+          throw new Error("Lo sentimos, algunas de las fechas seleccionadas ya no están disponibles.");
+        }
       }
     }
 
-    // 4. Anti-Fiesta Scoring (Scoring Logic - moved from frontend for integrity)
+    // 4. Anti-Fiesta Scoring
     const keywords = ["fiesta", "cumpleaños", "carrete", "celebración", "evento", "despedida", "juntada", "party", "reunión"];
     const reasonLower = validatedData.trip_reason.toLowerCase();
     let riskScore = "Bajo";
@@ -85,7 +92,7 @@ export async function POST(req: Request) {
       .from("booking_requests")
       .insert([{
         ...validatedData,
-        status: "pending",
+        status: isLongStayLead ? "lead" : "pending", // New status for leads
         risk_score: riskScore,
         rules_accepted: true,
         total_price: pricing.totalPrice,
@@ -99,11 +106,10 @@ export async function POST(req: Request) {
       throw new Error('Error al guardar la solicitud en la base de datos');
     }
 
-    // 6. Notify owner (Async - trigger and continue)
+    // 6. Notify owner
     const protocol = process.env.NODE_ENV === 'development' ? 'http' : 'https';
     const host = req.headers.get('host');
     
-    // We pass the full data so the notification route can use the snapshotted price
     if (host) {
       const internalSecret = process.env.INTERNAL_SECRET;
       fetch(`${protocol}://${host}/api/notify-new-request`, {

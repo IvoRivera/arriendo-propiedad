@@ -108,6 +108,17 @@ export interface FooterCtaData {
   ctaText: string;
 }
 
+export interface FaqItem {
+  question: string;
+  answer: string;
+}
+
+export interface FaqData {
+  sectionTitle: string;
+  sectionSubtitle: string;
+  items: FaqItem[];
+}
+
 export interface SiteContent {
   site: SiteConfig;
   hero: HeroData;
@@ -117,6 +128,7 @@ export interface SiteContent {
   availability: AvailabilityData;
   discover: DiscoverData;
   testimonials: TestimonialsData;
+  faq: FaqData;
   footerCta: FooterCtaData;
 }
 
@@ -127,10 +139,11 @@ export const SITE_CONTENT: SiteContent = {
     mapUrl: "https://maps.app.goo.gl/SfjUJLWFQcFtjJzC6",
     googleMapsEmbedSrc: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3458.742468307434!2d-71.26871032394334!3d-29.90053937499645!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x9691ca5cd0e6af11%3A0xc66c1b3fbc062b14!2sAv.%20del%20Mar%203500%2C%20La%20Serena%2C%20Coquimbo!5e0!3m2!1ses-419!2scl!4v1700000000000!5m2!1ses-419!2scl",
     houseRules: [
-      "Capacidad máxima: 4 personas (estricto).",
-      "No se permiten fiestas, eventos o ruidos molestos.",
-      "Prohibido fumar dentro del departamento.",
-      "No se aceptan mascotas (reglamento del edificio).",
+      "Hasta 4 huéspedes para mantener la comodidad del espacio",
+      "Sin fiestas ni ruidos molestos en horarios de descanso",
+      "Espacio libre de humo en interiores",
+      "No se admiten mascotas",
+      "Cuidado del departamento y sus detalles"
     ]
   },
   hero: {
@@ -165,7 +178,7 @@ export const SITE_CONTENT: SiteContent = {
   gallery: {
     featured: {
       title: "Vistas que se quedan contigo",
-      subtitle: "Espacios pensados para disfrutar de verdad.",
+      subtitle: "Espacios pensados para descansar y disfrutar de verdad.",
       ctaText: "Solicitud de Reserva",
     },
     interiors: {
@@ -258,6 +271,32 @@ export const SITE_CONTENT: SiteContent = {
         text: "Fuimos con nuestro hijo chico. El espacio es amplio, moderno pero acogedor, nada de esos departamentos fríos. El estacionamiento privado salvó, y que esté recién entregado se nota: impecable. Repetimos seguro.",
       },
     ],
+  },
+  faq: {
+    sectionTitle: "Preguntas Frecuentes",
+    sectionSubtitle: "Todo lo que necesitas saber antes de tu llegada para una experiencia sin preocupaciones.",
+    items: [
+      {
+        question: "¿Cuál es el horario de Check-in y Check-out?",
+        answer: "El horario de entrada (check-in) es a partir de las 16:00 hrs y la salida (check-out) es hasta las 12:00 hrs. Si necesitas flexibilizar estos horarios, consúltanos y veremos si es posible según la disponibilidad."
+      },
+      {
+        question: "¿El departamento cuenta con estacionamiento?",
+        answer: "Sí, contamos con un estacionamiento privado y techado dentro del edificio para tu total seguridad y comodidad."
+      },
+      {
+        question: "¿Se aceptan mascotas?",
+        answer: "Para mantener el estándar de limpieza y cuidado del espacio, no estamos aceptando mascotas en este momento."
+      },
+      {
+        question: "¿Qué incluye el equipamiento del departamento?",
+        answer: "El departamento está completamente equipado. Incluye ropa de cama calidad hotelera, toallas, cocina full equipada (vajilla, electrodomésticos, utensilios) y WiFi de alta velocidad."
+      },
+      {
+        question: "¿Cómo funciona el proceso de reserva?",
+        answer: "Al seleccionar tus fechas en el calendario y enviar la solicitud, nos pondremos en contacto contigo rápidamente para confirmar la disponibilidad y enviarte los detalles para asegurar tu reserva."
+      }
+    ]
   },
   footerCta: {
     headline: "¿Lista tu próxima escapada?",
