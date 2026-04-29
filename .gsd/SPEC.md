@@ -1,4 +1,4 @@
-# SPEC: Project Audit, Refactoring & Hardening
+# SPEC: Project Audit, Refactoring & Hardening [FINALIZED]
 
 ## Goal
 Systematically audit the "departamento-ls" codebase to eliminate technical debt, consolidate redundant logic, decouple components, and harden the architecture for production-grade reliability.
@@ -18,6 +18,9 @@ Systematically audit the "departamento-ls" codebase to eliminate technical debt,
 - **Robustness**:
     - Decoupled components (props-based instead of internal state fetching where possible).
     - Fragile features (like date parsing) made resilient.
+- **Premium UX**:
+    - Smooth, eased scroll transitions for key CTAs (e.g., Hero to Calendar).
+    - Avoid "snappy" browser default scroll behaviors.
 
 ## Problem Areas (User Identified)
 1. **Disordered Structure**: Root and `src` directories need cleanup.
