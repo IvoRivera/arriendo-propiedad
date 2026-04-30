@@ -30,11 +30,11 @@ export const EditorialGallery: React.FC<EditorialGalleryProps> = ({
     <section className={`${bgColor} py-20 md:pt-40 md:pb-10 overflow-hidden`}>
       {/* Header with generous spacing */}
       <div className="px-6 md:px-12 mb-20 md:mb-32 max-w-7xl mx-auto flex flex-col items-center text-center">
-        <h2 className="text-4xl md:text-7xl font-serif font-normal text-[#2c2416] mb-8 tracking-tight leading-[1.1] max-w-4xl mx-auto">
+        <h2 className="text-4xl md:text-7xl font-serif-luxury text-[#2c2416] mb-8 tracking-tight leading-[1.1] max-w-4xl mx-auto">
           {title}
         </h2>
         {subtitle && (
-          <p className="text-[#8a7a6a] text-lg md:text-2xl font-light max-w-2xl leading-relaxed opacity-80 italic mx-auto">
+          <p className="text-[#6b5d4f] text-lg md:text-2xl font-light font-sans-luxury max-w-3xl leading-relaxed opacity-85 mx-auto">
             {subtitle}
           </p>
         )}
@@ -85,10 +85,10 @@ export const EditorialGallery: React.FC<EditorialGalleryProps> = ({
               {/* Narrative Text Block (20-25% width) */}
               <div className="w-full md:w-[25%] px-4 md:px-0">
                 <div className={`flex flex-col ${index % 2 === 0 ? "md:items-start" : "md:items-end text-right"}`}>
-                  <span className="text-xs font-sans font-bold tracking-luxury text-[#c8883a] mb-6">
+                  <span className="text-[10px] md:text-xs font-medium font-sans-luxury tracking-luxury text-[#c8883a] mb-6 uppercase opacity-90">
                     Momento {index + 1}
                   </span>
-                  <p className="text-[#2c2416] text-xl md:text-2xl font-light leading-relaxed opacity-90">
+                  <p className="text-[#2c2416] text-xl md:text-2xl font-serif-luxury leading-relaxed tracking-tight">
                     {img.alt || "La esencia del descanso frente al mar."}
                   </p>
                   <div className="mt-8 h-[1px] w-12 bg-[#e2d9cc]" />

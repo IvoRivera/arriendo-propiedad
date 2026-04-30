@@ -56,6 +56,7 @@ export interface SpecificationItem {
 
 export interface SpecificationsData {
   sectionTitle: string;
+  sectionSubtitle: string;
   items: SpecificationItem[];
 }
 
@@ -180,7 +181,7 @@ export const SITE_CONTENT: SiteContent = {
   gallery: {
     featured: {
       title: "Vistas que se quedan contigo",
-      subtitle: "Espacios pensados para descansar y disfrutar de verdad.",
+      subtitle: "La serenidad del océano integrada en el diseño de un refugio pensado para la desconexión total.",
       ctaText: "Solicitud de Reserva",
     },
     interiors: {
@@ -198,11 +199,12 @@ export const SITE_CONTENT: SiteContent = {
   },
   specs: {
     sectionTitle: "Especificaciones",
+    sectionSubtitle: "Cada metro cuadrado ha sido diseñado para maximizar tu comodidad y la conexión con el entorno.",
     items: [
       { icon: "area", label: "79 m²", sublabel: "Superficie total" },
       { icon: "bed", label: "2 Dormitorios, 2 Baños", sublabel: "Habitaciones" },
-      { icon: "terrace", label: "Terraza", sublabel: "16.06 m²" },
-      { icon: "car", label: "Estacionamiento", sublabel: "1 privado" },
+      { icon: "terrace", label: "16.06 m²", sublabel: "Terraza" },
+      { icon: "car", label: "1 privado", sublabel: "Estacionamiento" },
     ],
   },
   availability: {
@@ -282,7 +284,7 @@ export const SITE_CONTENT: SiteContent = {
       },
       {
         question: "¿El departamento cuenta con estacionamiento y seguridad?",
-        answer: "Sí, dispones de un estacionamiento privado y techado. El edificio cuenta con conserjería las 24 horas, cámaras de seguridad y acceso controlado para tu total tranquilidad."
+        answer: "Sí, dispones de un estacionamiento privado. El edificio cuenta con conserjería las 24 horas, cámaras de seguridad y acceso controlado para tu total tranquilidad."
       },
       {
         question: "¿Cuál es la política de cancelación?",
@@ -290,7 +292,7 @@ export const SITE_CONTENT: SiteContent = {
       },
       {
         question: "¿Qué incluye exactamente el equipamiento?",
-        answer: "Todo lo necesario para una estancia premium: sábanas de 300 hilos, toallas, cocina full equipada (Nespresso, tostadora, horno), WiFi de alta velocidad y Smart TV en todos los ambientes."
+        answer: "Todo lo necesario para una estancia premium: sábanas de 300 hilos, toallas, cocina full equipada, WiFi de alta velocidad y Smart TV."
       },
       {
         question: "¿Puedo coordinar un Check-in o Check-out flexible?",

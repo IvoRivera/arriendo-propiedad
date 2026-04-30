@@ -732,7 +732,7 @@ export const CoastalRequestModal: React.FC<CoastalRequestModalProps> = ({
                     <div className="space-y-4">
                       <label className="text-[10px] uppercase tracking-luxury font-bold font-sans-luxury ml-1 block">Necesidades importantes</label>
                       <div className="flex flex-wrap gap-2">
-                        {['Buen internet', 'Escritorio', 'Estacionamiento', 'Cocina equipada', 'Lavadora', 'Flexibilidad'].map((item) => {
+                        {['Buen internet', 'Escritorio', 'Estacionamiento', 'Cocina equipada', 'Lavadora'].map((item) => {
                           const selected = watch("amenities") || [];
                           const isSelected = selected.includes(item);
                           return (
