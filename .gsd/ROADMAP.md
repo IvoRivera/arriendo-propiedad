@@ -142,3 +142,11 @@
     - [x] 17.1: Inbox Bulk Actions & Selection UI ✅
     - [x] 17.2: Global Notification System (Toasts) ✅
     - [x] 17.3: Pricing History & Audit Log Implementation ✅
+
+### Phase 18: Flow Payment Gateway Integration
+- **Goal**: Integrate Flow to automate booking payments, providing a professional "payment link" experience while maintaining a manual fallback.
+- **Status**: ⏳ Planned
+- **Plans**:
+    - [ ] 18.1: Flow Adapter & Environment Setup
+    - [ ] 18.2: Automated Payment Link Generation & Email Integration
+    - [ ] 18.3: Flow Webhook & Status Automation (Confirmation)
