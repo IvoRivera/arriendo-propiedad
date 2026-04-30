@@ -103,4 +103,11 @@
 - **Plans**:
     - [x] 12.1: Limit Narrative Stack to 3 Images ✅
 
+### Phase 13: Typography & Opacity Refinement
+- **Goal**: Improve legibility of subtitles and descriptions in "La Experiencia" and "Garantía de Confianza" sections by increasing opacity and font size.
+- **Status**: 🚀 In Progress
+- **Plans**:
+    - [ ] 13.1: Adjust Subtitles and Descriptions
+
+
 
