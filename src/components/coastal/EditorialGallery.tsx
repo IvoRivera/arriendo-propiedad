@@ -23,8 +23,8 @@ export const EditorialGallery: React.FC<EditorialGalleryProps> = ({
 
   if (!images.length) return null;
 
-  // We take up to 5 images for the narrative editorial layout
-  const displayImages = images.slice(0, 5);
+  // We take up to 3 images for the narrative editorial layout
+  const displayImages = images.slice(0, 3);
 
   return (
     <section className={`${bgColor} py-20 md:pt-40 md:pb-10 overflow-hidden`}>
@@ -51,23 +51,22 @@ export const EditorialGallery: React.FC<EditorialGalleryProps> = ({
             >
               {/* Image Block (70-80% width) */}
               <div
-                className={`w-full md:w-[75%] relative group cursor-pointer overflow-hidden rounded-2xl md:rounded-[3rem] aspect-[4/3] md:aspect-[16/9] ${
-                  index === displayImages.length - 1 && images.length > 5 ? "mask-fade-bottom" : ""
-                }`}
+                className={`w-full md:w-[75%] relative group cursor-pointer overflow-hidden rounded-2xl md:rounded-[3rem] aspect-[4/3] md:aspect-[16/9] ${index === displayImages.length - 1 && images.length > 3 ? "mask-fade-bottom" : ""
+                  }`}
                 onClick={() => setLightboxIndex(index)}
               >
-                {index === displayImages.length - 1 && images.length > 5 && (
+                {index === displayImages.length - 1 && images.length > 3 && (
                   <>
                     {/* Fade-out gradient suggesting more content below */}
                     <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-[#faf7f2] via-[#faf7f2]/40 to-transparent z-20 pointer-events-none" />
-                    
+
                     {/* Discrete Glassmorphism CTA Overlay */}
                     <div className="absolute bottom-6 right-6 md:bottom-10 md:right-10 z-30 flex items-center gap-3 bg-white/20 backdrop-blur-xl border border-white/30 rounded-full pl-3 pr-5 py-2 group-hover:bg-white/40 group-hover:border-white/50 transition-all duration-500 shadow-lg shadow-black/5 active:scale-95">
                       <div className="w-6 h-6 rounded-full bg-[#002a45] flex items-center justify-center">
                         <Plus className="w-3.5 h-3.5 text-white" strokeWidth={2.5} />
                       </div>
-                      <span className="text-[9px] md:text-[10px] font-sans font-bold uppercase tracking-[0.2em] text-[#002a45] whitespace-nowrap">
-                        Ver galería completa <span className="opacity-60 ml-1">+{images.length - 5}</span>
+                      <span className="text-[9px] md:text-[10px] font-sans font-medium uppercase tracking-[0.2em] text-[#002a45] whitespace-nowrap">
+                        Ver más fotos destacadas <span className="opacity-60 ml-1">+{images.length - 3}</span>
                       </span>
                     </div>
                   </>

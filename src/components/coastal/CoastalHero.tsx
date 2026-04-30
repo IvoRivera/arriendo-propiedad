@@ -61,26 +61,34 @@ export const CoastalHero: React.FC<CoastalHeroProps> = ({
                     transition={{ duration: 0.8, ease: "easeOut" }}
                     className="mb-8 px-5 py-2 rounded-lg bg-white/10 backdrop-blur-md border border-white/15"
                 >
-                    <span className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-[10px] md:text-xs font-medium text-[#e6d29c] tracking-[0.2em] uppercase max-h-[3rem] md:max-h-none overflow-hidden">
+                    <div className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-[10px] md:text-xs font-medium text-[#e6d29c] tracking-[0.2em] uppercase max-h-[3rem] md:max-h-none overflow-hidden text-center">
 
-                        <span>Primera Línea</span>
-                        <span className="opacity-60 hidden md:inline">·</span>
+                        <div className="flex items-center">
+                            <span>Primera Línea</span>
+                            <span className="mx-2 opacity-60 last:hidden">·</span>
+                        </div>
 
-                        <span>Piso 11</span>
-                        <span className="opacity-60 hidden md:inline">·</span>
+                        <div className="flex items-center">
+                            <span>Piso 11</span>
+                            <span className="mx-2 opacity-60 last:hidden">·</span>
+                        </div>
 
-                        <span>2 Dormitorios</span>
-                        <span className="opacity-60 hidden md:inline">·</span>
+                        <div className="flex items-center">
+                            <span>2 Dormitorios</span>
+                            <span className="mx-2 opacity-60 last:hidden">·</span>
+                        </div>
 
-                        <span>79 m²</span>
-                        <span className="opacity-60 hidden md:inline">·</span>
+                        <div className="flex items-center">
+                            <span>79 m²</span>
+                            <span className="mx-2 opacity-60 last:hidden">·</span>
+                        </div>
 
-                        <span className="inline-flex items-center gap-1">
-                            <MapPin className="w-3 h-3 stroke-[1.8] opacity-90" />
-                            Cuatro Esquinas, La Serena
-                        </span>
+                        <div className="flex items-center">
+                            <MapPin className="w-3 h-3 stroke-[1.8] opacity-90 mr-1" />
+                            <span>Cuatro Esquinas, La Serena</span>
+                        </div>
 
-                    </span>
+                    </div>
                 </motion.div>
 
                 {/* 2. Dominant Headline - Newsreader Serif with Soft Shadow */}
