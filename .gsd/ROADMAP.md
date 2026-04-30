@@ -111,3 +111,8 @@
 
 
 
+### Phase 14: Typography Discipline & Luxury Unification
+- **Goal**: Unify the typography system into a consistent two-font architecture (Newsreader for titles, Inter for everything else) with standardized tracking and weights.
+- **Status**: ⬜ Not Started
+- **Plans**:
+    - [ ] 14.1: TBD (run /plan 14 to create)
