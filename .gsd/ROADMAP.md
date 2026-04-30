@@ -105,9 +105,9 @@
 
 ### Phase 13: Typography & Opacity Refinement
 - **Goal**: Improve legibility of subtitles and descriptions in "La Experiencia" and "Garantía de Confianza" sections by increasing opacity and font size.
-- **Status**: 🚀 In Progress
+- **Status**: ✅ Complete
 - **Plans**:
-    - [ ] 13.1: Adjust Subtitles and Descriptions
+    - [x] 13.1: Adjust Subtitles and Descriptions ✅
 
 
 

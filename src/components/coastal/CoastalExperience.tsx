@@ -32,7 +32,7 @@ export const CoastalExperience: React.FC<CoastalExperienceProps> = ({ className 
           >
             {SITE_CONTENT.experience.sectionTitle}
           </h2>
-          <p className="text-[#6b5d4f] text-xs md:text-base font-light leading-relaxed max-w-md mx-auto opacity-70">
+          <p className="text-[#6b5d4f] text-sm md:text-lg font-light leading-relaxed max-w-2xl mx-auto opacity-85">
             {SITE_CONTENT.experience.sectionSubtitle}
           </p>
         </div>
@@ -55,7 +55,7 @@ export const CoastalExperience: React.FC<CoastalExperienceProps> = ({ className 
               >
                 {feature.title}
               </h3>
-              <p className="text-[#8a7a6a] text-[11px] md:text-sm font-light leading-relaxed opacity-70">
+              <p className="text-[#8a7a6a] text-xs md:text-[15px] font-light leading-relaxed opacity-85">
                 {feature.description}
               </p>
             </div>

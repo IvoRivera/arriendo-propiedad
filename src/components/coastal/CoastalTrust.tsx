@@ -48,7 +48,7 @@ export const CoastalTrust: React.FC<CoastalTrustProps> = ({ className = "" }) =>
               >
                 {item.title}
               </h3>
-              <p className="text-[#6b5d4f] text-[11px] md:text-[13px] font-light leading-relaxed opacity-70 px-2">
+              <p className="text-[#6b5d4f] text-xs md:text-sm font-light leading-relaxed opacity-85 px-2">
                 {item.description}
               </p>
             </div>
