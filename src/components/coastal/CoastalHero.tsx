@@ -61,16 +61,29 @@ export const CoastalHero: React.FC<CoastalHeroProps> = ({
                     transition={{ duration: 0.8, ease: "easeOut" }}
                     className="mb-8 px-5 py-2 rounded-lg bg-white/10 backdrop-blur-md border border-white/15"
                 >
-                    <div className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-[10px] md:text-xs font-medium text-[#e6d29c] tracking-luxury max-h-[3rem] md:max-h-none overflow-hidden text-center">
-                        <span className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-[10px] md:text-xs font-medium text-[#e6d29c] tracking-[0.2em] uppercase">
-                            <span>Primera Línea</span>
-                            <span>Piso 11</span>
-                            <span>2 Dormitorios</span>
-                            <span>79 m²</span>
-                            <span className="inline-flex items-center gap-1"> <MapPin className="w-3 h-3 stroke-[1.8] opacity-90 relative top-[-1.3px]" /> Cuatro Esquinas, La Serena </span>
+                    <div className="flex flex-wrap items-center justify-center 
+    gap-x-1.5 gap-y-1              /* Reducción agresiva de gap en móvil */
+    md:gap-x-3 md:gap-y-2 
+    text-[9px] md:text-xs          /* Fuente mínima para forzar el fit */
+    tracking-[0.1em] md:tracking-[0.2em] /* Reducción de tracking en móvil */
+    font-medium text-[#e6d29c] uppercase text-center w-full px-4">
+
+                        <span className="flex items-center gap-x-1.5 after:content-['•'] after:opacity-50 last:after:content-none md:gap-x-3">
+                            Primera Línea
                         </span>
-
-
+                        <span className="flex items-center gap-x-1.5 after:content-['•'] after:opacity-50 last:after:content-none md:gap-x-3">
+                            Piso 11
+                        </span>
+                        <span className="flex items-center gap-x-1.5 after:content-['•'] after:opacity-50 last:after:content-none md:gap-x-3">
+                            2 Dormitorios
+                        </span>
+                        <span className="flex items-center gap-x-1.5 after:content-['•'] after:opacity-50 last:after:content-none md:gap-x-3">
+                            79 m²
+                        </span>
+                        <span className="inline-flex items-center gap-1">
+                            <MapPin className="w-3 h-3 stroke-[1.8] opacity-90 -mt-[1px]" />
+                            Cuatro Esquinas, La Serena
+                        </span>
                     </div>
                 </motion.div>
 
