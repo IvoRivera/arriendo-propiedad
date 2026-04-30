@@ -97,3 +97,10 @@
     - [x] 11.1: Immersive Gallery Climax Implementation ✅
     - [x] 11.2: Progressive Revelation Gallery Redesign ✅
 
+### Phase 12: Gallery Display Refinement
+- **Goal**: Limit the featured narrative stack to 3 images to improve scannability while maintaining the "See More" functionality.
+- **Status**: 🚀 In Progress
+- **Plans**:
+    - [ ] 12.1: Limit Narrative Stack to 3 Images
+
+
