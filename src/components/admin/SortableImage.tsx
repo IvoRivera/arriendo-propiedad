@@ -108,7 +108,7 @@ export function SortableImage({ id, image, onDelete, onUpdate, isDeleting, isOve
               <select 
                 value={editCategory}
                 onChange={(e) => setEditCategory(e.target.value as ImageCategory)}
-                className="w-full bg-[#faf7f2] border border-[#e2d9cc] rounded-lg px-2 py-1.5 text-xs text-[#2c2416] focus:outline-none focus:ring-1 focus:ring-[#6b7c4a]"
+                className="w-full bg-[#faf7f2] border border-[#e2d9cc] rounded-lg px-2 py-1.5 text-base sm:text-xs text-[#2c2416] focus:outline-none focus:ring-1 focus:ring-[#6b7c4a]"
               >
                 <option value="property">Propiedad</option>
                 <option value="amenities">Amenidades</option>
@@ -122,7 +122,7 @@ export function SortableImage({ id, image, onDelete, onUpdate, isDeleting, isOve
                 type="number" 
                 value={editPriority}
                 onChange={(e) => setEditPriority(parseInt(e.target.value) || 0)}
-                className="w-full bg-[#faf7f2] border border-[#e2d9cc] rounded-lg px-2 py-1.5 text-xs text-[#2c2416] focus:outline-none focus:ring-1 focus:ring-[#6b7c4a]"
+                className="w-full bg-[#faf7f2] border border-[#e2d9cc] rounded-lg px-2 py-1.5 text-base sm:text-xs text-[#2c2416] focus:outline-none focus:ring-1 focus:ring-[#6b7c4a]"
               />
             </div>
             <div className="space-y-1">
@@ -132,7 +132,7 @@ export function SortableImage({ id, image, onDelete, onUpdate, isDeleting, isOve
                 value={editAlt}
                 onChange={(e) => setEditAlt(e.target.value)}
                 placeholder="Descripción de la imagen"
-                className="w-full bg-[#faf7f2] border border-[#e2d9cc] rounded-lg px-2 py-1.5 text-xs text-[#2c2416] focus:outline-none focus:ring-1 focus:ring-[#6b7c4a]"
+                className="w-full bg-[#faf7f2] border border-[#e2d9cc] rounded-lg px-2 py-1.5 text-base sm:text-xs text-[#2c2416] focus:outline-none focus:ring-1 focus:ring-[#6b7c4a]"
               />
             </div>
             <div className="flex items-center justify-end gap-2 pt-1">
