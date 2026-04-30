@@ -28,12 +28,12 @@ export const EditorialGallery: React.FC<EditorialGalleryProps> = ({
   return (
     <section className={`${bgColor} py-20 md:py-40 overflow-hidden`}>
       {/* Header with generous spacing */}
-      <div className="px-6 md:px-12 mb-20 md:mb-32 max-w-7xl mx-auto">
-        <h2 className="text-4xl md:text-7xl font-serif font-normal text-[#2c2416] mb-8 tracking-tight leading-[1.1] max-w-4xl">
+      <div className="px-6 md:px-12 mb-20 md:mb-32 max-w-7xl mx-auto flex flex-col items-center text-center">
+        <h2 className="text-4xl md:text-7xl font-serif font-normal text-[#2c2416] mb-8 tracking-tight leading-[1.1] max-w-4xl mx-auto">
           {title}
         </h2>
         {subtitle && (
-          <p className="text-[#8a7a6a] text-lg md:text-2xl font-light max-w-2xl leading-relaxed opacity-80 italic">
+          <p className="text-[#8a7a6a] text-lg md:text-2xl font-light max-w-2xl leading-relaxed opacity-80 italic mx-auto">
             {subtitle}
           </p>
         )}

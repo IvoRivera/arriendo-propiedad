@@ -32,13 +32,15 @@ export const CoastalDiscover: React.FC<CoastalDiscoverProps> = ({ className = ""
                 key={index}
                 className="bg-[#faf7f2] rounded-xl p-5 border border-[#e2d9cc] hover:border-[#c8b89a] transition-colors duration-200"
               >
-                <span className="text-2xl mb-2 block" aria-hidden>{item.emoji}</span>
-                <h3
-                  className="text-base font-semibold text-[#2c2416] mb-1"
-                  style={{ fontFamily: "var(--font-newsreader), 'Georgia', serif" }}
-                >
-                  {item.title}
-                </h3>
+                <div className="flex items-center gap-3 mb-2">
+                  <span className="text-xl" aria-hidden>{item.emoji}</span>
+                  <h3
+                    className="text-base font-semibold text-[#2c2416]"
+                    style={{ fontFamily: "var(--font-newsreader), 'Georgia', serif" }}
+                  >
+                    {item.title}
+                  </h3>
+                </div>
                 <p className="text-[#8a7a6a] text-[13px] font-light leading-relaxed">
                   {item.description}
                 </p>

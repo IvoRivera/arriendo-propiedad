@@ -61,19 +61,19 @@ export const CoastalHero: React.FC<CoastalHeroProps> = ({
                     transition={{ duration: 0.8, ease: "easeOut" }}
                     className="mb-8 px-5 py-2 rounded-lg bg-white/10 backdrop-blur-md border border-white/15"
                 >
-                    <span className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-[10px] md:text-xs font-medium text-[#e6d29c] tracking-[0.2em] uppercase">
+                    <span className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-[10px] md:text-xs font-medium text-[#e6d29c] tracking-[0.2em] uppercase max-h-[3rem] md:max-h-none overflow-hidden">
 
                         <span>Primera Línea</span>
-                        <span className="opacity-60">·</span>
+                        <span className="opacity-60 hidden md:inline">·</span>
 
                         <span>Piso 11</span>
-                        <span className="opacity-60">·</span>
+                        <span className="opacity-60 hidden md:inline">·</span>
 
                         <span>2 Dormitorios</span>
-                        <span className="opacity-60">·</span>
+                        <span className="opacity-60 hidden md:inline">·</span>
 
                         <span>79 m²</span>
-                        <span className="opacity-60">·</span>
+                        <span className="opacity-60 hidden md:inline">·</span>
 
                         <span className="inline-flex items-center gap-1">
                             <MapPin className="w-3 h-3 stroke-[1.8] opacity-90" />
