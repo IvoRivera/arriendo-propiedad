@@ -28,6 +28,9 @@ export function PricingManager() {
     fetchData
   } = usePricingData();
 
+  const [history, setHistory] = useState<any[]>([]);
+  const [loadingHistory, setLoadingHistory] = useState(false);
+
   const [activeTab, setActiveTab] = useState<ActiveTab>('calendar');
   const [sidebarMode, setSidebarMode] = useState<SidebarMode>('idle');
   const [showHolidays, setShowHolidays] = useState(true);
@@ -45,6 +48,30 @@ export function PricingManager() {
     priority: 0,
     color_hex: "#D9C2A3"
   });
+
+  const fetchHistory = async () => {
+    try {
+      setLoadingHistory(true);
+      // MOCKED: For now we return static data to show the design
+      const mockHistory = [
+        { id: '1', changed_at: new Date().toISOString(), action: 'UPDATE', season_name: 'Temporada Alta', old_price: 180000, new_price: 195000, user: 'admin@riveradigital.cl' },
+        { id: '2', changed_at: new Date(Date.now() - 86400000).toISOString(), action: 'INSERT', season_name: 'Feriado Mayo', old_price: null, new_price: 210000, user: 'admin@riveradigital.cl' },
+        { id: '3', changed_at: new Date(Date.now() - 172800000).toISOString(), action: 'UPDATE', season_name: 'Precio Base', old_price: 150000, new_price: 160000, user: 'admin@riveradigital.cl' },
+      ];
+      
+      await new Promise(r => setTimeout(r, 800));
+      setHistory(mockHistory);
+    } catch (error) {
+      console.error('Error fetching pricing history:', error);
+    } finally {
+      setLoadingHistory(false);
+    }
+  };
+
+  const handleTabChange = (tab: ActiveTab) => {
+    setActiveTab(tab);
+    if (tab === 'history') fetchHistory();
+  };
 
   const handleAddRule = async () => {
     setIsSaving(true);
@@ -237,7 +264,7 @@ export function PricingManager() {
           
           {/* View Tabs & Toggles */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div className="flex items-center gap-2 p-1.5 bg-sand-light border border-sand-dark rounded-2xl w-fit">
+            <div className="flex items-center gap-2 p-1.5 bg-sand-light border border-sand-dark rounded-full w-fit">
             {[
               { id: 'calendar', label: 'Calendario' },
               { id: 'rules', label: 'Reglas Activas' },
@@ -245,9 +272,9 @@ export function PricingManager() {
             ].map(tab => (
               <button
                 key={tab.id}
-                onClick={() => setActiveTab(tab.id as ActiveTab)}
+                onClick={() => handleTabChange(tab.id as ActiveTab)}
                 className={`
-                  px-6 py-2.5 rounded-xl text-[11px] font-bold uppercase tracking-widest transition-all
+                  px-6 py-2.5 rounded-full text-[11px] font-bold uppercase tracking-luxury transition-all
                   ${activeTab === tab.id 
                     ? 'bg-white text-primary-navy shadow-sm border border-sand-dark' 
                     : 'text-primary-navy/40 hover:text-primary-navy/60'}
@@ -263,7 +290,7 @@ export function PricingManager() {
             <div className="flex items-center gap-4 px-2">
               <button 
                 onClick={() => setShowHolidays(!showHolidays)}
-                className={`flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest transition-all ${showHolidays ? 'text-primary-navy' : 'text-primary-navy/30'}`}
+                className={`flex items-center gap-2 text-[10px] font-bold uppercase tracking-luxury transition-all ${showHolidays ? 'text-primary-navy' : 'text-primary-navy/30'}`}
               >
                 <div className={`w-8 h-4 rounded-full relative transition-colors ${showHolidays ? 'bg-primary-navy' : 'bg-sand-dark'}`}>
                   <div className={`absolute top-0.5 w-3 h-3 rounded-full bg-white transition-all ${showHolidays ? 'right-0.5' : 'left-0.5'}`} />
@@ -301,11 +328,72 @@ export function PricingManager() {
                 />
               </div>
             ) : (
-              <div className="flex flex-col items-center justify-center p-20 text-center space-y-4">
-                <div className="w-16 h-16 bg-surface-container rounded-full flex items-center justify-center text-primary/20">
-                  <TrendingUp className="w-8 h-8" />
-                </div>
-                <p className="text-primary/40 font-serif italic">El historial de cambios estará disponible próximamente.</p>
+              <div className="space-y-6">
+                {loadingHistory ? (
+                  <div className="flex flex-col items-center justify-center py-20 gap-4">
+                    <div className="w-8 h-8 border-4 border-[#6b7c4a]/20 border-t-[#6b7c4a] rounded-full animate-spin" />
+                    <p className="text-[#6b5d4f] text-sm italic font-serif-luxury">Recuperando registros...</p>
+                  </div>
+                ) : history.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center p-20 text-center space-y-4">
+                    <div className="w-16 h-16 bg-[#faf7f2] border border-[#e2d9cc]/40 rounded-full flex items-center justify-center text-[#6b7c4a]/30">
+                      <TrendingUp className="w-8 h-8" />
+                    </div>
+                    <p className="text-[#9a8a78] font-serif-luxury italic">No hay registros de cambios recientes.</p>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    <AnimatePresence mode="popLayout">
+                      {history.map((item, idx) => (
+                        <motion.div
+                          key={item.id}
+                          initial={{ opacity: 0, x: -20 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: idx * 0.05 }}
+                          className="bg-white border border-[#e2d9cc]/40 rounded-[24px] p-5 flex items-center justify-between group hover:shadow-lg hover:shadow-[#1a150e]/5 transition-all"
+                        >
+                          <div className="flex items-center gap-5">
+                            <div className={`w-12 h-12 rounded-2xl flex items-center justify-center border ${item.action === 'INSERT' ? 'bg-emerald-50 border-emerald-100 text-emerald-600' : 'bg-blue-50 border-blue-100 text-blue-600'}`}>
+                              <TrendingUp className="w-5 h-5" />
+                            </div>
+                            <div>
+                              <div className="flex items-center gap-2 mb-1">
+                                <span className={`text-[9px] font-bold uppercase tracking-luxury-sm px-2 py-0.5 rounded-full ${item.action === 'INSERT' ? 'bg-emerald-100 text-emerald-700' : 'bg-blue-100 text-blue-700'}`}>
+                                  {item.action === 'INSERT' ? 'Creación' : 'Actualización'}
+                                </span>
+                                <span className="text-[10px] text-[#9a8a78] font-medium tracking-luxury-sm">
+                                  {new Date(item.changed_at).toLocaleDateString('es-CL', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}
+                                </span>
+                              </div>
+                              <h4 className="text-lg font-serif-luxury italic text-[#2c2416] tracking-tight">
+                                {item.season_name}
+                              </h4>
+                              <p className="text-[10px] text-[#6b5d4f] font-medium uppercase tracking-luxury-sm mt-0.5">
+                                Por: <span className="text-[#2c2416]">{item.user}</span>
+                              </p>
+                            </div>
+                          </div>
+                          
+                          <div className="text-right">
+                            <div className="flex items-center gap-3">
+                              {item.old_price && (
+                                <span className="text-[#9a8a78] text-xs line-through font-medium">
+                                  ${item.old_price.toLocaleString('es-CL')}
+                                </span>
+                              )}
+                              <span className="text-[#6b7c4a] text-lg font-serif-luxury italic">
+                                ${item.new_price.toLocaleString('es-CL')}
+                              </span>
+                            </div>
+                            <p className="text-[9px] text-[#9a8a78] font-bold uppercase tracking-luxury-sm mt-1">
+                              Precio por noche
+                            </p>
+                          </div>
+                        </motion.div>
+                      ))}
+                    </AnimatePresence>
+                  </div>
+                )}
               </div>
             )}
           </div>
@@ -371,21 +459,21 @@ export function PricingManager() {
               className="relative w-full max-w-md bg-primary-navy/95 text-white p-8 rounded-[40px] shadow-2xl border border-white/10 backdrop-blur-xl flex flex-col gap-6"
             >
               <div className="space-y-2 text-center">
-                <p className="text-[10px] font-bold uppercase tracking-[0.25em] text-warm-gold/80">Selección Detectada</p>
-                <p className="text-xl font-serif italic text-sand-light/90 leading-tight">
+                <p className="text-[10px] font-bold uppercase tracking-luxury text-warm-gold/80">Selección Detectada</p>
+                <p className="text-xl font-serif-luxury italic text-sand-light/90 leading-tight">
                   ¿Deseas agregar una regla en la {pendingAction?.type === 'date' ? 'fecha seleccionada' : 'rango seleccionado'}?
                 </p>
               </div>
               <div className="flex flex-col sm:flex-row gap-3">
                 <button 
                   onClick={confirmPendingAction}
-                  className="flex-1 py-4 bg-warm-gold text-primary-navy rounded-full text-[10px] font-bold uppercase tracking-widest hover:brightness-110 active:scale-95 transition-all shadow-lg"
+                  className="flex-1 py-4 bg-warm-gold text-primary-navy rounded-full text-[10px] font-bold uppercase tracking-luxury hover:brightness-110 active:scale-95 transition-all shadow-lg"
                 >
                   Confirmar y Editar
                 </button>
                 <button 
                   onClick={() => setPendingAction(null)}
-                  className="flex-1 py-4 bg-white/5 text-white rounded-full text-[10px] font-bold uppercase tracking-widest hover:bg-white/10 active:scale-95 transition-all border border-white/10"
+                  className="flex-1 py-4 bg-white/5 text-white rounded-full text-[10px] font-bold uppercase tracking-luxury hover:bg-white/10 active:scale-95 transition-all border border-white/10"
                 >
                   Cancelar
                 </button>

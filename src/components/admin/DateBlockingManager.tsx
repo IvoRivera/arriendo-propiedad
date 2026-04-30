@@ -175,12 +175,12 @@ export function DateBlockingManager() {
             <Calendar className="w-5 h-5" />
           </div>
           <div>
-            <h3 className="font-serif text-xl text-[#2c2416] italic">Bloquear Fechas</h3>
-            <p className="text-[10px] text-[#9a8a78] font-bold uppercase tracking-widest mt-0.5">Gestión manual de disponibilidad</p>
+            <h3 className="font-serif-luxury text-xl text-[#2c2416] italic tracking-tight">Bloquear Fechas</h3>
+            <p className="text-[10px] text-[#9a8a78] font-bold uppercase tracking-luxury mt-0.5">Gestión manual de disponibilidad</p>
           </div>
         </div>
 
-        <div className="mb-8 bg-[#faf7f2]/50 rounded-2xl p-6 border border-[#e2d9cc]/30">
+        <div className="mb-8 bg-[#faf7f2]/50 rounded-[24px] p-6 border border-[#e2d9cc]/30">
           <style jsx global>{`
             .rdp-admin-root {
               --rdp-cell-size: 40px;
@@ -321,9 +321,9 @@ export function DateBlockingManager() {
               months: "flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0",
               month: "space-y-4",
               caption: "flex justify-between pt-1 relative items-center mb-2",
-              caption_label: "text-sm font-semibold text-[#2c2416] font-serif italic",
+              caption_label: "text-sm font-semibold text-[#2c2416] font-serif-luxury italic tracking-tight",
               nav: "flex items-center gap-1",
-              nav_button: "h-7 w-7 bg-white border border-[#e2d9cc] rounded-lg flex items-center justify-center text-[#9a8a78] hover:text-[#6b7c4a] hover:border-[#6b7c4a] transition-all",
+              nav_button: "h-7 w-7 bg-white border border-[#e2d9cc] rounded-full flex items-center justify-center text-[#9a8a78] hover:text-[#6b7c4a] hover:border-[#6b7c4a] transition-all",
               table: "w-full border-collapse",
               day: "text-[11px] font-medium",
             }}
@@ -378,7 +378,7 @@ export function DateBlockingManager() {
 
         <div className="space-y-4">
           <div className="space-y-1.5">
-            <label className="text-[10px] font-bold uppercase tracking-[0.15em] text-[#9a8a78] ml-1">
+            <label className="text-[10px] font-bold uppercase tracking-luxury text-[#9a8a78] ml-1">
               Motivo del bloqueo (Opcional)
             </label>
             <input
@@ -386,14 +386,14 @@ export function DateBlockingManager() {
               value={reason}
               onChange={(e) => setReason(e.target.value)}
               placeholder="Ej. Mantenimiento, Limpieza, Uso personal..."
-              className="w-full bg-[#faf7f2] border border-[#e2d9cc] rounded-xl px-4 py-3 text-sm text-[#2c2416] focus:ring-1 focus:ring-[#6b7c4a] focus:border-[#6b7c4a] transition-all outline-none"
+              className="w-full bg-[#faf7f2] border border-[#e2d9cc] rounded-full px-5 py-3 text-sm text-[#2c2416] focus:ring-1 focus:ring-[#6b7c4a] focus:border-[#6b7c4a] transition-all outline-none"
             />
           </div>
 
           <button
             onClick={handleBlock}
             disabled={loading || !range?.from || !range?.to}
-            className="w-full py-4 bg-[#6b7c4a] text-white rounded-xl font-bold text-[10px] uppercase tracking-[0.2em] shadow-lg hover:bg-[#5a6a3d] disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
+            className="w-full py-4 bg-[#6b7c4a] text-white rounded-full font-bold text-[10px] uppercase tracking-luxury shadow-lg hover:bg-[#5a6a3d] disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
           >
             {loading ? <Plus className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
             Confirmar Bloqueo
@@ -402,7 +402,7 @@ export function DateBlockingManager() {
           {range?.from && (
             <button
               onClick={() => { setRange(undefined); setHoverDate(undefined); }}
-              className="w-full py-2 text-[#9a8a78] hover:text-[#6b7c4a] font-bold text-[9px] uppercase tracking-[0.1em] transition-all flex items-center justify-center gap-2"
+              className="w-full py-2 text-[#9a8a78] hover:text-[#6b7c4a] font-bold text-[9px] uppercase tracking-luxury-sm transition-all flex items-center justify-center gap-2"
             >
               <X className="w-3 h-3" />
               Limpiar Selección
@@ -414,8 +414,8 @@ export function DateBlockingManager() {
       {/* Right: List */}
       <div className="space-y-4">
         <div className="flex items-center justify-between mb-2 px-2">
-          <h4 className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#9a8a78]">Bloqueos Activos</h4>
-          <span className="text-[10px] font-bold text-[#6b7c4a] bg-[#6b7c4a]/10 px-2 py-0.5 rounded-full">
+          <h4 className="text-[10px] font-bold uppercase tracking-luxury text-[#9a8a78]">Bloqueos Activos</h4>
+          <span className="text-[10px] font-bold text-[#6b7c4a] bg-[#6b7c4a]/10 px-3 py-1 rounded-full tracking-luxury-sm">
             {blocks.length} registros
           </span>
         </div>
@@ -431,7 +431,7 @@ export function DateBlockingManager() {
             blocks.map((block) => (
               <div
                 key={block.id}
-                className="group bg-white border border-[#e2d9cc]/50 rounded-2xl p-4 hover:border-[#6b7c4a]/30 transition-all duration-300"
+                className="group bg-white border border-[#e2d9cc]/50 rounded-[24px] p-4 hover:border-[#6b7c4a]/30 transition-all duration-300"
               >
                 <div className="flex items-center justify-between gap-4">
                   <div className="flex items-center gap-3">
@@ -457,9 +457,9 @@ export function DateBlockingManager() {
           )}
         </div>
 
-        <div className="bg-amber-50 border border-amber-100 rounded-2xl p-4 flex gap-3 items-start">
+        <div className="bg-amber-50 border border-amber-100 rounded-[24px] p-4 flex gap-3 items-start">
           <AlertCircle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
-          <p className="text-[11px] text-amber-800 leading-relaxed">
+          <p className="text-[11px] text-amber-800 leading-relaxed font-medium tracking-luxury-sm">
             <strong>Nota:</strong> Los bloqueos manuales deshabilitan las fechas inmediatamente para los huéspedes. Las reservas confirmadas se bloquean automáticamente.
           </p>
         </div>

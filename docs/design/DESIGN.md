@@ -1,218 +1,125 @@
 # Design System Document: The Coastal Alchemist
 
 ## 1. Overview & Creative North Star
-The Creative North Star for this design system is **"The Digital Sanctuary."**
+The Creative North Star for this design system is **"The Digital Sanctuary"** under the concept of **"The Coastal Alchemist."**
 
-We are not building a utility app; we are curating a digital experience that mimics the sensation of walking onto a sun-drenched veranda in La Serena.
+We are not building a utility app; we are curating a digital experience that mimics the sensation of walking onto a sun-drenched veranda in La Serena. The design should feel like it was shaped by wind, light, and time.
 
-The system prioritizes:
-- **Calm over stimulation**
-- **Editorial composition over rigid grids**
-- **Atmosphere over density**
-
-We break conventional layouts through:
-- **Intentional asymmetry**
-- **Edge-bleeding imagery (especially on 390px viewport)**
-- **Tonal separation instead of structural borders**
-
-Every interaction must feel **effortless, warm, and premium**.
+### Core Principles
+- **Atmospheric over Utility**: Prioritize the feeling of the space over dense information.
+- **Editorial Composition**: Use asymmetry and large typography to mimic high-end travel magazines.
+- **Effortless Premium**: Interactions should be smooth, with subtle shimmers and progressive revelations.
+- **Tonal Separation**: Use background contrast and spacing instead of harsh structural borders.
 
 ---
 
-## 2. Colors
+## 2. Colors & Light
 
 Our palette is a dialogue between shoreline warmth and Pacific depth.
 
-### Core Brand Colors
-* **Primary (`#00628f`)** → Coastal blue, used ONLY for primary actions
-* **Primary Container (`#007cb3`)** → Lighter coastal tone for gradients
+### Brand Palette
+*   **Pacific Blue (`#00628f`)** → Primary actions, deep ocean feeling.
+*   **Teal Accents (`#66B8B6`)** → Highlights, specialized headlines (e.g., "mar").
+*   **Warm Sand (`#faf7f2`)** → Base surface, mimics sun-bleached sand.
+*   **Dune Gold (`#e6d29c`)** → Eyebrow text, secondary emphasis.
+*   **Coastal Pine (`#6b7c4a`)** → Selection highlights (e.g., calendar selected days).
 
-### CTA Rule (Critical)
-Primary actions MUST use a **soft gradient**, never flat color:
+### CTA Rules
+Primary actions MUST use a **cinematic gradient** or shimmer:
+- **Gradient**: `linear-gradient(120deg, rgba(255,255,255,0.08), rgba(0,180,255,0.25), rgba(255,255,255,0.08))`
+- **Shimmer**: A subtle light-sweep animation moving across the button.
 
-- Direction: 135°
-- From: `#00628f`
-- To: `#007cb3`
-
-This gradient defines brand identity.
-
-### Surface System
+### Surface Hierarchy
 Layer UI using tonal hierarchy instead of borders:
-
-- `surface` → base
-- `surface_container_low`
-- `surface_container`
-- `surface_container_high`
-- `surface_container_highest`
-
-### Rules
-- ❌ No 1px borders for layout separation
-- ❌ No pure black backgrounds
-- ✅ Use background contrast to define structure
-
-### Glass & Atmosphere
-- Floating elements use semi-transparent surfaces
-- Backdrop blur: **20px**
-- Maintain environmental continuity (no visual disconnection)
+- `surface` (#faf7f2) → Base
+- `surface-container-low` (#f5f0e8) → Secondary areas
+- `surface-container-high` (#e7e2da) → Interactive areas/inputs
 
 ---
 
-## 3. Typography
+## 3. Typography: The Editorial Voice
 
-Typography balances editorial elegance with clarity.
+Typography balances timeless elegance with modern clarity.
 
-### Display (Newsreader)
-- Used for hero and emotional emphasis
-- Slight negative tracking: **-2%**
-- Large, confident, never cramped
+### Display: Newsreader (Serif)
+- **Use**: Headlines, emotional quotes, featured cards.
+- **Style**: Often used in *Italic* for a softer, more sophisticated "editorial" look.
+- **Tracking**: Slight negative tracking (**-0.02em**) for larger headlines.
+- **Class**: `.font-serif-luxury`
 
-### Body (Inter)
-- Clean, readable, modern
-- Used for all functional content
+### Body: Inter (Sans)
+- **Use**: UI labels, metadata, functional text.
+- **Tracking**: Luxury tracking for tags (**0.15em**) and small labels (**0.08em**).
+- **Class**: `.font-sans-luxury`, `.tracking-luxury`, `.tracking-luxury-sm`
 
-### Spacing Rule
-- Minimum **24px vertical breathing space** after large text
-- Never stack dense text blocks
-
----
-
-## 4. Elevation & Depth
-
-Depth must feel **natural, not artificial**.
-
-### Principles
-- Prefer **layering over shadows**
-- Avoid “floating cards” unless necessary
-
-### Shadows (only when needed)
-
-0px 12px 32px rgba(27, 28, 26, 0.06)
-
-
-- Never use pure black shadows
-- Keep them diffused and subtle
-
-### Ghost Border
-Used only when necessary:
-- 15% opacity
-- Barely visible
+### Rhythm
+- Maintain significant whitespace between text blocks.
+- Never stack more than 3 lines of dense body text in featured sections.
 
 ---
 
-## 5. Components
+## 4. Shape Language
 
-### Buttons (UPDATED — Critical Change)
+The system uses **two distinct shape rules** to reinforce hierarchy:
 
-#### Primary (CTA)
-- Gradient: `#00628f → #007cb3`
-- Text: white
-- Shape: **fully rounded capsule (`rounded-full`)**
-- Padding: generous (minimum `px-8 py-3`)
-- Typography: Inter, semibold, slight negative tracking
-
-Interaction:
-- Hover: **brightness increase (no color swap)**
-- No shadows
-- No borders
-
-👉 Must feel:
-- calm
-- premium
-- touch-friendly
-- not aggressive
+1.  **Interactive Elements (Buttons, Chips, Tags):**
+    - → **Capsule (`rounded-full`)**
+    - Reinforces "touchability" and softness.
+2.  **Structural Containers (Cards, Images, Modals):**
+    - → **Soft Radius (`12px` or `24px`)**
+    - Provides a modern, grounded feel without being "sharp."
 
 ---
 
-#### Secondary
-- Background: `surface_container_low`
-- Shape: **rounded-full (capsule)**
-- No borders
-- Subtle presence
+## 5. Components & Interactions
+
+### The Editorial Gallery
+- **Progressive Revelation**: Images should not just "appear"; they should feel curated.
+- **Narrative Stack**: Limit featured images to 3 in a stack to maintain scannability.
+- **Contextual CTAs**: "Ver más" counters integrated into the last image of a stack.
+
+### Glassmorphism
+- Used for "Floating" elements (eyebrows, price badges).
+- **Backdrop Blur**: `20px` minimum.
+- **Border**: `1px` at `15%` white opacity.
+
+### Micro-animations
+- **Shimmers**: For loading states and primary CTAs.
+- **Floating**: Subtle Y-axis oscillation for Hero elements.
+- **Smooth Scroll**: Cinematic transitions between sections.
 
 ---
 
-#### Tertiary
-- No background
-- Text-only
-- Underline only under text (not full width)
-- Color: `primary`
+## 6. Admin Panel Vision: Luxury Management
 
----
+The Admin Panel should not feel like a separate, generic app. It should be the **"Internal Sanctuary."**
 
-### Cards & Lists
-- ❌ No dividers
-- Use spacing or tonal shift
-- Image radius: **12px only (not capsule)**
-
----
-
-### Input Fields
-- Background: `surface_container_high`
-- On focus:
-  - lighter surface
-  - ghost border appears
-- No harsh outlines
-
----
-
-### Chips
-- Capsule shape (`rounded-full`)
-- Background: `secondary_container`
-- Small, subtle, non-dominant
-
----
-
-### Editorial Quote
-- Newsreader italic
-- Centered
-- Minimal lines above/below
-- Used to create rhythm in long layouts
-
----
-
-## 6. Shape Language (NEW — Important)
-
-The system uses **two distinct shape rules**:
-
-- **Cognitive elements (buttons, chips, actions):**
-  → Capsule (`rounded-full`)
-
-- **Content containers (cards, images):**
-  → Soft radius (`12px`)
-
-👉 Never mix these arbitrarily.
-
-This contrast reinforces hierarchy:
-- Capsules = interactive
-- Rounded rectangles = structural
+### Aesthetics
+- **Light Mode Primary**: Maintain the `#faf7f2` base for clarity and focus.
+- **Luxury Grids**: Use the same `12px` radius for data cards.
+- **Typography**: Apply `Newsreader Italic` for section titles to keep the premium feel.
+- **Actions**: Admin buttons use the same Capsule shape, but with solid tonal backgrounds (e.g., Pine or Navy) instead of shimmers for better readability in high-frequency use.
+- **Data Visualization**: Clean, minimal graphs using the Brand Palette.
 
 ---
 
 ## 7. Do's and Don'ts
 
 ### Do:
-- Use asymmetry intentionally
-- Prioritize whitespace
-- Let images breathe
-- Make CTAs feel touchable and soft
+- ✅ Use asymmetry to create rhythm.
+- ✅ Let images bleed to the edges on mobile.
+- ✅ Use background color shifts for separation.
+- ✅ Apply "Luxury Tracking" to all uppercase labels.
 
 ### Don't:
-- ❌ Use pure black (#000000)
-- ❌ Use harsh hover color changes
-- ❌ Use rectangular buttons for primary actions
-- ❌ Use borders as separators
-- ❌ Overuse the primary color
+- ❌ Use pure black (#000000). Use `#1a150e` for deep shadows.
+- ❌ Use rectangular buttons for primary actions.
+- ❌ Use 1px borders to separate main layout sections.
+- ❌ Overcrowd the viewport with text.
 
 ---
 
 ## Final Principle
 
-If an element feels:
-- loud
-- rigid
-- overly sharp
-- or generic
-
-→ It does NOT belong in this system.
-
-Everything should feel like it was shaped by wind, light, and time.
+If an element feels **loud, rigid, or generic**, it does NOT belong in this system. Everything should feel like it was crafted by an alchemist who understands the harmony of the coast.
+el like it was shaped by wind, light, and time.

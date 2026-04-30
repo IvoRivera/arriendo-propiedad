@@ -14,7 +14,7 @@ export default function FAQ() {
     },
     {
       question: "¿Qué incluye el departamento?",
-      answer: "El departamento está completamente equipado. Incluye ropa de cama premium, toallas de baño, secador de pelo, Smart TV, cocina completamente amoblada, microondas, hervidor, refrigerador y conexión WiFi de fibra óptica."
+      answer: "El departamento está completamente equipado. Incluye ropa de cama premium, secador de pelo, Smart TV, cocina completamente amoblada, microondas, hervidor, refrigerador y conexión WiFi de fibra óptica."
     },
     {
       question: "¿Cuál es el horario de Check-in y Check-out?",
@@ -40,8 +40,8 @@ export default function FAQ() {
 
         <div className="space-y-4">
           {faqs.map((faq, index) => (
-            <div 
-              key={index} 
+            <div
+              key={index}
               className="glass-panel border border-slate-700/50 rounded-xl overflow-hidden"
             >
               <button
@@ -49,11 +49,11 @@ export default function FAQ() {
                 onClick={() => setOpenIndex(openIndex === index ? null : index)}
               >
                 <span className="font-semibold text-slate-200 pr-8">{faq.question}</span>
-                <ChevronDown 
-                  className={`w-5 h-5 text-cyan-400 flex-shrink-0 transition-transform duration-300 ${openIndex === index ? 'rotate-180' : ''}`} 
+                <ChevronDown
+                  className={`w-5 h-5 text-cyan-400 flex-shrink-0 transition-transform duration-300 ${openIndex === index ? 'rotate-180' : ''}`}
                 />
               </button>
-              
+
               <AnimatePresence>
                 {openIndex === index && (
                   <motion.div

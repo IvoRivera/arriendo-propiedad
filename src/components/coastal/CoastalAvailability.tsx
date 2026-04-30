@@ -197,7 +197,7 @@ export const CoastalAvailability: React.FC<CoastalAvailabilityProps> = ({ onActi
 
             <div className="hidden lg:block">
               <p className="text-[#8a7a6a] text-sm italic font-serif max-w-sm">
-                * Recibiré personalmente tu reserva y la revisaré con atención para asegurarte una cálida bienvenida cálida y una estadía increíble.
+                * Recibiré personalmente tu reserva y la revisaré con atención para asegurarte una cálida bienvenida y una estadía increíble.
               </p>
             </div>
           </div>
@@ -360,7 +360,7 @@ export const CoastalAvailability: React.FC<CoastalAvailabilityProps> = ({ onActi
                     <div className="w-16 h-16 bg-[#00628f]/5 rounded-[1.5rem] flex items-center justify-center mb-6">
                       <Sparkles className="w-8 h-8 text-[#00628f]" />
                     </div>
-                    <h3 
+                    <h3
                       className="text-2xl md:text-4xl font-serif italic text-[#2c2416] mb-4 leading-tight"
                     >
                       Algunas estadías merecen otro ritmo.
@@ -375,7 +375,7 @@ export const CoastalAvailability: React.FC<CoastalAvailabilityProps> = ({ onActi
                       <span className="text-xs font-bold uppercase tracking-[0.2em]">Solicitar propuesta personalizada</span>
                       <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                     </button>
-                    
+
                     <div className="mt-8 grid grid-cols-2 gap-6 w-full max-w-sm">
                       <div className="flex flex-col items-center gap-2">
                         <div className="w-1 h-1 rounded-full bg-[#00628f]" />

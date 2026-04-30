@@ -42,6 +42,7 @@ export const CRITICAL_SCHEMA = {
     'guests_count',
     'risk_score',
     'total_price',
+    'price_breakdown',
     'trip_reason'
   ],
   blocked_dates: [

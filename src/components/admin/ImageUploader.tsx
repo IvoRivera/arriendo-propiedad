@@ -16,7 +16,7 @@ interface FileWithStatus {
 }
 
 interface ImageUploaderProps {
-  onUploadComplete?: () => void;
+  onUploadComplete?: (category: ImageCategory) => void;
 }
 
 export function ImageUploader({ onUploadComplete }: ImageUploaderProps) {
@@ -24,18 +24,45 @@ export function ImageUploader({ onUploadComplete }: ImageUploaderProps) {
   const [category, setCategory] = useState<ImageCategory>('property');
   const [optimize, setOptimize] = useState(true);
   const [isUploading, setIsUploading] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const processFiles = (filesList: FileList) => {
+    const files = Array.from(filesList).map(file => ({
+      file,
+      id: Math.random().toString(36).substring(7),
+      status: 'pending' as const,
+      progress: 0,
+      previewUrl: URL.createObjectURL(file)
+    }));
+    setSelectedFiles(prev => [...prev, ...files]);
+  };
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
-      const files = Array.from(e.target.files).map(file => ({
-        file,
-        id: Math.random().toString(36).substring(7),
-        status: 'pending' as const,
-        progress: 0,
-        previewUrl: URL.createObjectURL(file)
-      }));
-      setSelectedFiles(prev => [...prev, ...files]);
+      processFiles(e.target.files);
+    }
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+    
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      processFiles(e.dataTransfer.files);
     }
   };
 
@@ -84,7 +111,7 @@ export function ImageUploader({ onUploadComplete }: ImageUploaderProps) {
 
     setIsUploading(false);
     await revalidateImages();
-    if (onUploadComplete) onUploadComplete();
+    if (onUploadComplete) onUploadComplete(category);
   };
 
   const updateFileStatus = (id: string, updates: Partial<FileWithStatus>) => {
@@ -133,7 +160,14 @@ export function ImageUploader({ onUploadComplete }: ImageUploaderProps) {
         {/* Dropzone */}
         <div 
           onClick={() => fileInputRef.current?.click()}
-          className="group border-2 border-dashed border-[#e2d9cc] hover:border-[#6b7c4a] rounded-[24px] p-12 text-center transition-all cursor-pointer bg-[#faf7f2]/30 hover:bg-[#6b7c4a]/5"
+          onDragOver={handleDragOver}
+          onDragLeave={handleDragLeave}
+          onDrop={handleDrop}
+          className={`group border-2 border-dashed rounded-[24px] p-12 text-center transition-all cursor-pointer ${
+            isDragging 
+              ? 'border-[#6b7c4a] bg-[#6b7c4a]/10 scale-[0.99] shadow-inner' 
+              : 'border-[#e2d9cc] hover:border-[#6b7c4a] bg-[#faf7f2]/30 hover:bg-[#6b7c4a]/5'
+          }`}
         >
           <input 
             type="file" 

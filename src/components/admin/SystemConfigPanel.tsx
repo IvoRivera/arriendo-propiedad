@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { supabaseAdmin } from "@/lib/supabase";
+import toast from "react-hot-toast";
 import { setLocalConfig, initConfig } from "@/lib/systemConfig";
 import { Save, RefreshCw, Check, AlertCircle, User, CreditCard, DollarSign, Clock, Info } from "lucide-react";
 
@@ -147,22 +148,51 @@ export function SystemConfigPanel() {
       setConfig(prev => ({ ...prev, [key]: value }));
       
       if (result.warning) {
-        setError({ message: result.warning, type: 'warning' });
+        toast.error(result.warning, {
+          style: {
+            borderRadius: '32px',
+            background: '#2c2416',
+            color: '#fff',
+            fontSize: '11px',
+            fontWeight: 'bold',
+            textTransform: 'uppercase',
+            letterSpacing: '0.1em'
+          },
+        });
       } else {
-        setSuccessMsg(result.data.changed ? "Configuración actualizada correctamente" : "Valor verificado (sin cambios)");
+        toast.success(result.data.changed ? "Configuración actualizada" : "Valor verificado", {
+          style: {
+            borderRadius: '32px',
+            background: '#2c2416',
+            color: '#fff',
+            fontSize: '11px',
+            fontWeight: 'bold',
+            textTransform: 'uppercase',
+            letterSpacing: '0.1em'
+          },
+          iconTheme: {
+            primary: '#6b7c4a',
+            secondary: '#fff',
+          },
+        });
       }
       
       // Refresh history if open
       if (openHistoryKey === key) fetchHistory(key);
-
-      setTimeout(() => {
-        setSuccessMsg(null);
-        setError(null);
-      }, 4000);
     } catch (err) {
       console.error("Error updating config:", err);
       const errorMessage = err instanceof Error ? err.message : `Error al actualizar ${key}`;
-      setError({ message: errorMessage, type: 'error' });
+      toast.error(errorMessage, {
+        style: {
+          borderRadius: '32px',
+          background: '#2c2416',
+          color: '#fff',
+          fontSize: '11px',
+          fontWeight: 'bold',
+          textTransform: 'uppercase',
+          letterSpacing: '0.1em'
+        }
+      });
     } finally {
       setSavingKey(null);
     }
@@ -179,28 +209,11 @@ export function SystemConfigPanel() {
 
   return (
     <div className="space-y-10 pb-10 relative">
-      {/* Notifications Overlay */}
-      {(error || successMsg) && (
-        <div className={`fixed top-4 right-4 z-50 p-4 rounded-2xl shadow-xl border animate-in slide-in-from-top-4 duration-300 max-w-xs ${
-          error?.type === 'error' ? 'bg-rose-50 border-rose-100 text-rose-600' :
-          error?.type === 'warning' ? 'bg-amber-50 border-amber-100 text-amber-600' :
-          'bg-emerald-50 border-emerald-100 text-emerald-600'
-        }`}>
-          <div className="flex items-start gap-3">
-            {error ? <AlertCircle className="w-5 h-5 mt-0.5" /> : <Check className="w-5 h-5 mt-0.5" />}
-            <div className="flex-1">
-              <p className="text-xs font-bold mb-0.5">{error ? (error.type === 'error' ? 'Error' : 'Aviso') : 'Éxito'}</p>
-              <p className="text-[10px] leading-relaxed opacity-90">{error?.message || successMsg}</p>
-            </div>
-            <button onClick={() => { setError(null); setSuccessMsg(null); }} className="text-[10px] opacity-50 hover:opacity-100">×</button>
-          </div>
-        </div>
-      )}
 
       {Array.from(new Set(CONFIG_WHITELIST.map(w => w.category))).map(category => (
         <div key={category} className="space-y-6">
           <div className="flex items-center gap-3">
-            <h2 className="font-serif text-2xl text-[#2c2416] italic">{category}</h2>
+            <h2 className="font-serif-luxury text-2xl text-[#2c2416] italic tracking-tight">{category}</h2>
             <div className="h-px flex-1 bg-[#e2d9cc]/50" />
           </div>
 
@@ -212,7 +225,7 @@ export function SystemConfigPanel() {
               >
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
-                    <label className="text-[10px] font-bold uppercase tracking-[0.15em] text-[#9a8a78] flex items-center gap-2">
+                    <label className="text-[10px] font-bold uppercase tracking-luxury text-[#9a8a78] flex items-center gap-2">
                       {item.icon} {item.label}
                     </label>
                     <button 
@@ -224,7 +237,7 @@ export function SystemConfigPanel() {
                   </div>
 
                   {item.type === 'currency' && editValues[item.key] && (
-                    <div className="text-[10px] font-bold text-[#6b7c4a] bg-[#6b7c4a]/5 px-3 py-1.5 rounded-lg inline-block animate-in fade-in duration-300">
+                    <div className="text-[10px] font-bold text-[#6b7c4a] bg-[#6b7c4a]/5 px-3 py-1.5 rounded-full inline-block animate-in fade-in duration-300 tracking-luxury-sm">
                       Previsualización: {formatCurrency(editValues[item.key])}
                     </div>
                   )}
@@ -235,12 +248,12 @@ export function SystemConfigPanel() {
                       value={editValues[item.key] || ""}
                       placeholder={config[item.key] || "Sin valor"}
                       onChange={(e) => setEditValues(prev => ({ ...prev, [item.key]: e.target.value }))}
-                      className="flex-1 bg-[#faf7f2] border border-[#e2d9cc] rounded-2xl px-4 py-3 text-sm text-[#2c2416] focus:ring-1 focus:ring-[#6b7c4a] outline-none transition-all"
+                      className="flex-1 bg-[#faf7f2] border border-[#e2d9cc] rounded-full px-5 py-3 text-sm text-[#2c2416] focus:ring-1 focus:ring-[#6b7c4a] outline-none transition-all"
                     />
                     <button 
                       onClick={() => handleUpdate(item.key)}
                       disabled={savingKey === item.key || editValues[item.key] === config[item.key]}
-                      className={`p-3 rounded-2xl transition-all ${
+                      className={`p-3 rounded-full transition-all ${
                         savingKey === item.key 
                           ? 'bg-gray-100 text-gray-400' 
                           : editValues[item.key] === config[item.key]

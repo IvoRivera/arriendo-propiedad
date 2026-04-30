@@ -216,6 +216,23 @@ export function ImageManager() {
     }
   };
 
+  const handleUploadComplete = (category: ImageCategory) => {
+    fetchImages();
+    
+    // Give it a small delay for the state to update and elements to be available
+    setTimeout(() => {
+      const element = document.getElementById(`category-${category}`);
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        // Optional: brief highlight effect
+        element.classList.add('ring-2', 'ring-[#6b7c4a]/30', 'ring-offset-8', 'rounded-2xl');
+        setTimeout(() => {
+          element.classList.remove('ring-2', 'ring-[#6b7c4a]/30', 'ring-offset-8', 'rounded-2xl');
+        }, 2000);
+      }
+    }, 500);
+  };
+
   const categories: { key: ImageCategory; label: string; isSingleton?: boolean }[] = [
     { key: 'hero', label: 'Imagen Hero', isSingleton: true },
     { key: 'property', label: 'Propiedad' },
@@ -242,32 +259,32 @@ export function ImageManager() {
       )}
 
       {/* Upload Section */}
-      <ImageUploader onUploadComplete={fetchImages} />
+      <ImageUploader onUploadComplete={handleUploadComplete} />
 
       {/* Gallery Sections by Category */}
       {categories.map(cat => {
         const catImages = images.filter(img => img.category === cat.key);
         
         return (
-          <div key={cat.key} className="space-y-6">
+          <div key={cat.key} id={`category-${cat.key}`} className="space-y-6 scroll-mt-24 transition-all duration-700">
             <div className="flex items-center gap-4">
-              <h2 className="font-serif text-2xl text-[#2c2416] italic">{cat.label}</h2>
+              <h2 className="font-serif-luxury text-2xl text-[#2c2416] italic tracking-tight">{cat.label}</h2>
               <div className="h-px flex-1 bg-[#e2d9cc]/50" />
-              <span className="text-[10px] font-bold uppercase tracking-wider text-[#9a8a78] bg-white border border-[#e2d9cc] px-3 py-1 rounded-full">
+              <span className="text-[10px] font-bold uppercase tracking-luxury text-[#9a8a78] bg-white border border-[#e2d9cc] px-3 py-1 rounded-full">
                 {catImages.length} {catImages.length === 1 ? 'foto' : 'fotos'}
               </span>
             </div>
 
             {cat.isSingleton && catImages.length > 1 && (
-              <div className="bg-amber-50 border border-amber-100 text-amber-700 p-4 rounded-2xl text-xs flex items-center gap-3">
+              <div className="bg-amber-50 border border-amber-100 text-amber-700 p-4 rounded-[24px] text-xs flex items-center gap-3 font-medium tracking-luxury-sm">
                 <Info className="w-4 h-4 shrink-0" />
                 Se han detectado varias imágenes Hero. El sitio solo mostrará la primera en la lista de prioridades.
               </div>
             )}
 
             {catImages.length === 0 ? (
-              <div className="bg-[#faf7f2]/50 border border-dashed border-[#e2d9cc] rounded-3xl py-12 text-center">
-                <p className="text-[#9a8a78] text-sm italic">No hay imágenes en esta categoría.</p>
+              <div className="bg-[#faf7f2]/50 border border-dashed border-[#e2d9cc] rounded-[32px] py-12 text-center">
+                <p className="text-[#9a8a78] text-sm italic font-serif-luxury opacity-60">No hay imágenes en esta categoría.</p>
               </div>
             ) : (
               <DndContext

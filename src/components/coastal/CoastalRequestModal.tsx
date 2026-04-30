@@ -424,7 +424,8 @@ export const CoastalRequestModal: React.FC<CoastalRequestModalProps> = ({
       let formattedReason = data.trip_reason;
       if (intentMode === 'long-stay') {
         const amenitiesStr = data.amenities?.length ? `\n- Necesidades: ${data.amenities.join(', ')}` : '';
-        formattedReason = `[LONG STAY LEAD]\n- Inicio: ${data.estimated_start_date || 'Flexible'}\n- Duración: ${data.estimated_duration || 'Flexible'}\n- Tipo: ${data.stay_type || 'N/A'}\n- Presupuesto: ${data.budget || 'N/A'}${amenitiesStr}\n- Mensaje: ${data.trip_reason}`;
+        const flexibilityStr = data.flexible_dates ? '\n- Flexibilidad: Sí (Fechas flexibles)' : '\n- Flexibilidad: No (Fechas fijas)';
+        formattedReason = `[LONG STAY LEAD]\n- Inicio: ${data.estimated_start_date || 'Flexible'}\n- Duración: ${data.estimated_duration || 'Flexible'}\n- Tipo: ${data.stay_type || 'N/A'}\n- Presupuesto: ${data.budget || 'N/A'}${flexibilityStr}${amenitiesStr}\n- Mensaje: ${data.trip_reason}`;
       }
 
       const res = await fetch("/api/public/bookings", {

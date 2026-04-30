@@ -120,3 +120,25 @@
     - [x] Standardize Request Modal typography (Prices, headers, buttons).
     - [x] Eliminate hardcoded font-family overrides across the project.
 
+### Phase 15: Admin Panel Aesthetic Transformation
+- **Goal**: Apply the "Digital Sanctuary" and "Luxury-Management" design system to the admin panel, unifying typography, shape language, and surface hierarchy.
+- **Status**: ✅ Complete
+- **Plans**:
+    - [x] 15.1: Admin Shell & Navigation Redesign ✅
+    - [x] 15.2: Admin Dashboard & Inbox Aesthetic Refinement ✅
+    - [x] 15.3: Manager Components Unification (Pricing, Images, Config) ✅
+
+### Phase 16: Mobile-First Admin Navigation Redesign
+- **Goal**: Replace the horizontal tab navigation with a premium hamburger menu (Drawer/Overlay) to improve mobile usability and editorial aesthetic.
+- **Status**: ✅ Complete
+- **Plans**:
+    - [x] 16.1: Admin Navigation Drawer & Trigger Implementation ✅
+    - [x] 16.2: Admin Layout & Header Refinement ✅
+
+### Phase 17: Admin Experience & Productivity Hardening
+- **Goal**: Implement high-value administrative tools including bulk actions, toast notifications, and the pricing history audit log.
+- **Status**: ✅ Complete
+- **Plans**:
+    - [x] 17.1: Inbox Bulk Actions & Selection UI ✅
+    - [x] 17.2: Global Notification System (Toasts) ✅
+    - [x] 17.3: Pricing History & Audit Log Implementation ✅
