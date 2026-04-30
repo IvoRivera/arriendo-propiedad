@@ -79,3 +79,13 @@
     - [x] 9.1: Hub Foundation & Dual-Mode UI ✅
     - [x] 9.2: Consultative Request Flow & Validations ✅
     - [x] 9.3: Integration & UX Polish ✅
+
+## Milestone 5: Visual Consistency & Final Polish
+**Status**: 🚀 In Progress
+
+### Phase 10: UI/UX Fine-tuning & Typography Consistency
+- **Goal**: Resolve specific mobile layout issues, improve legibility in editorial sections, and unify typography according to the design system.
+- **Status**: 🚀 In Progress
+- **Plans**:
+    - [ ] 10.1: Visual Refinement & Mobile Optimization
+    - [ ] 10.2: Typography Unification & Contrast
