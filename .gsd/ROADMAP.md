@@ -99,8 +99,8 @@
 
 ### Phase 12: Gallery Display Refinement
 - **Goal**: Limit the featured narrative stack to 3 images to improve scannability while maintaining the "See More" functionality.
-- **Status**: 🚀 In Progress
+- **Status**: ✅ Complete
 - **Plans**:
-    - [ ] 12.1: Limit Narrative Stack to 3 Images
+    - [x] 12.1: Limit Narrative Stack to 3 Images ✅
 
 
