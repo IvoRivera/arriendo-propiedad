@@ -185,7 +185,6 @@ export const CoastalAvailability: React.FC<CoastalAvailabilityProps> = ({ onActi
             </span>
             <h2
               className="text-4xl md:text-7xl font-serif italic text-[#2c2416] mb-4 md:mb-8 leading-[1.1]"
-              style={{ fontFamily: "var(--font-newsreader), serif" }}
             >
               {activeTab === 'standard' ? '¿Cuándo quieres venir?' : 'Otro ritmo de vida'}
             </h2>
@@ -267,13 +266,13 @@ export const CoastalAvailability: React.FC<CoastalAvailabilityProps> = ({ onActi
                         <div className="flex flex-col sm:flex-row items-center gap-4 p-6 bg-white rounded-3xl border border-[#e2d9cc] shadow-sm">
                           <div className="flex items-center gap-3 text-[#2c2416] flex-1">
                             <div className="text-left">
-                              <p className="text-[9px] uppercase tracking-widest font-bold text-[#9a8a78]">Desde</p>
-                              <p className="font-serif italic text-base">{format(range.from, "eee d MMM", { locale: es })}</p>
+                              <p className="text-[9px] tracking-luxury font-bold text-[#9a8a78]">Desde</p>
+                              <p className="font-bold text-base">{format(range.from, "eee d MMM", { locale: es })}</p>
                             </div>
                             <div className="h-4 w-[1px] bg-[#e2d9cc]" />
                             <div className="text-left">
-                              <p className="text-[9px] uppercase tracking-widest font-bold text-[#9a8a78]">Hasta</p>
-                              <p className="font-serif italic text-base">
+                              <p className="text-[9px] tracking-luxury font-bold text-[#9a8a78]">Hasta</p>
+                              <p className="font-bold text-base">
                                 {range.to ? format(range.to, "eee d MMM", { locale: es }) : "—"}
                               </p>
                             </div>
@@ -312,11 +311,11 @@ export const CoastalAvailability: React.FC<CoastalAvailabilityProps> = ({ onActi
                               <div className="flex items-center justify-between px-8 py-4 bg-[#00628f]/[0.03] border border-[#00628f]/10 rounded-2xl animate-in fade-in duration-700">
                                 <div className="flex items-center gap-2 text-[#00628f]">
                                   <Info className="w-4 h-4" />
-                                  <span className="text-[10px] font-bold uppercase tracking-widest">{nights} noches</span>
+                                  <span className="text-[10px] font-bold tracking-luxury">{nights} noches</span>
                                 </div>
-                                <p className="text-[#2c2416] text-xl font-serif">
-                                  <span className="text-xs font-sans text-[#8a7a6a] mr-2">Estadía estimada</span>
-                                  <span className="italic font-bold">${new Intl.NumberFormat('es-CL').format(totalPrice)}</span>
+                                <p className="text-[#2c2416] text-xl">
+                                  <span className="text-xs text-[#8a7a6a] mr-2">Estadía estimada</span>
+                                  <span className="font-bold">${new Intl.NumberFormat('es-CL').format(totalPrice)}</span>
                                 </p>
                               </div>
 
@@ -363,7 +362,6 @@ export const CoastalAvailability: React.FC<CoastalAvailabilityProps> = ({ onActi
                     </div>
                     <h3 
                       className="text-2xl md:text-4xl font-serif italic text-[#2c2416] mb-4 leading-tight"
-                      style={{ fontFamily: "var(--font-newsreader), serif" }}
                     >
                       Algunas estadías merecen otro ritmo.
                     </h3>

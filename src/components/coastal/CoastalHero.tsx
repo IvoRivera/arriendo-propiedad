@@ -61,7 +61,7 @@ export const CoastalHero: React.FC<CoastalHeroProps> = ({
                     transition={{ duration: 0.8, ease: "easeOut" }}
                     className="mb-8 px-5 py-2 rounded-lg bg-white/10 backdrop-blur-md border border-white/15"
                 >
-                    <div className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-[10px] md:text-xs font-medium text-[#e6d29c] tracking-[0.2em] uppercase max-h-[3rem] md:max-h-none overflow-hidden text-center">
+                    <div className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-[10px] md:text-xs font-medium text-[#e6d29c] tracking-luxury max-h-[3rem] md:max-h-none overflow-hidden text-center">
 
                         <div className="flex items-center">
                             <span>Primera Línea</span>
@@ -97,7 +97,6 @@ export const CoastalHero: React.FC<CoastalHeroProps> = ({
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
                     className="text-5xl md:text-7xl lg:text-8xl font-serif italic text-[#FFFFFF] leading-[1.05] mb-8 tracking-tight drop-shadow-2xl"
-                    style={{ fontFamily: "var(--font-newsreader), serif" }}
                 >
                     Tu refugio perfecto <br className="hidden md:block" />
                     frente al{" "}
@@ -111,8 +110,7 @@ export const CoastalHero: React.FC<CoastalHeroProps> = ({
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ duration: 1, delay: 0.5 }}
-                    className="max-w-3xl text-[rgba(255,255,255,0.92)]/70 text-xl md:text-2xl font-serif italic leading-relaxed mb-10 drop-shadow-md px-4"
-                    style={{ fontFamily: "var(--font-newsreader), serif" }}
+                    className="max-w-3xl text-[rgba(255,255,255,0.92)]/70 text-xl md:text-2xl font-light leading-relaxed mb-10 drop-shadow-md px-4"
                 >
                     Vista privilegiada, aire costero y atardeceres inolvidables en La Serena.
                 </motion.p>
@@ -126,15 +124,15 @@ export const CoastalHero: React.FC<CoastalHeroProps> = ({
                 //"mb-12 px-6 py-1 rounded-full bg-white/10 backdrop-blur-md border border-white/10 shadow-lg"
                 >
                     <div className="flex items-center justify-center gap-3">
-                        <span className="text-[10px] uppercase tracking-[0.28em] text-[#e6d29c]/80">
+                        <span className="text-[10px] tracking-luxury text-[#e6d29c]/80">
                             Desde
                         </span>
 
-                        <span className="text-m font-medium text-white">
+                        <span className="text-base font-medium text-white">
                             $90.000
                         </span>
 
-                        <span className="text-xs text-white/70 uppercase tracking-[0.14em]">
+                        <span className="text-[10px] text-white/70 tracking-luxury">
                             / noche
                         </span>
                     </div>
@@ -175,9 +173,10 @@ export const CoastalHero: React.FC<CoastalHeroProps> = ({
                         className="
                             w-full sm:min-w-[280px] px-10 py-5
 
-                            text-white text-lg font-semibold
+                            text-white text-lg font-bold
                             rounded-full cursor-pointer select-none
                             flex items-center justify-center
+                            tracking-luxury-sm
 
                             relative overflow-hidden
 

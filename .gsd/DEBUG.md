@@ -1,57 +1,30 @@
-# Debug Session: Android Hero Issues
+---
+status: resolved
+trigger: "corrige @[src/components/coastal/CoastalRequestModal.tsx]"
+created: 2026-04-30T15:36:50Z
+updated: 2026-04-30T15:40:50Z
+---
 
-## Symptom 1: Explore Availability Scroll Failure
-The "explorar disponibilidad" button only shows the press animation but does not scroll to the calendar section on Android devices. It works correctly on iOS and Desktop.
+## Current Focus
+Resolved.
 
-**When:** Clicking the button on Android mobile browsers.
-**Expected:** Page scrolls smoothly to the availability/calendar section.
-**Actual:** Only the button's active state/animation is visible; no movement occurs.
+## Symptoms
+expected: Component should compile and render the booking modal.
+actual: Multiple TS errors: "JSX element has no corresponding closing tag", "Unterminated template literal", "Identifier expected".
+errors: 
+- TS17008: JSX element 'div' has no corresponding closing tag.
+- TS1003: Identifier expected (Line 745-746).
+- TS1160: Unterminated template literal.
 
-## Symptom 2: Overlapping White Line
-A white line that should be below the button is overlapping/superimposing on the CTA "explorar disponibilidad" button on narrow mobile screens. It looks correct on desktop.
+## Eliminated
+- Hypothesis that logic was broken: It was purely a syntax error in JSX template literals.
 
-**When:** Viewing on a narrow mobile screen (Android).
-**Expected:** The line should be positioned below the button or hidden if it doesn't fit.
-**Actual:** The line superimposes on the button.
+## Evidence
+- `tsc` output initially showed massive breakage.
+- `git restore` brought back a stable state.
+- Re-application of fixes in smaller chunks with `tsc` validation confirmed stability.
 
-## Hypotheses
-
-| # | Hypothesis | Likelihood | Status |
-|---|------------|------------|--------|
-| 1 | `scrollIntoView` is interrupted by button animation/click state on Android. | 90% | CONFIRMED |
-| 2 | Scroll indicator line is absolute and overlaps growing centered content on mobile. | 95% | CONFIRMED |
-| 3 | `smooth` scroll behavior is bugged or disabled in the specific Android browser. | 60% | RESOLVED |
-| 4 | CSS `scroll-behavior: smooth` is the most reliable way to handle the animation. | 100% | CONFIRMED |
-
-## Resolution (Final Polish)
-
-**Root Cause:** 
-1. Original implementation relied on JS-only smooth scrolling which is flaky on some mobile versions.
-2. The indicator overlap was due to fixed positioning vs dynamic content height.
-3. The "snappy" behavior was due to the native anchor jump not having a smooth scroll context in CSS.
-4. Button feedback was lost when switching to `<a>` tags due to browser behavior on `:active`.
-
-**Fix Applied:** 
-1. **Premium Feedback:** Switched back to `<motion.button>` with `whileTap={{ scale: 0.95 }}` for guaranteed visual feedback on press.
-2. **Centered Scroll:** Updated `scrollIntoView` to use `block: 'center'` to better focus on the calendar.
-3. **Robust Smoothness:** Kept `scroll-behavior: smooth` in `globals.css` as the backbone of the animation.
-4. **Indicator Fix:** Kept the scroll indicator hidden on mobile to avoid overlap.
-
-**Verified:** Works smoothly, provides clear feedback, and centers the content.
-## Symptom 3: Regression after custom animation attempt
-The custom `framer-motion` scroll animation implemented in Phase 7 failed (user reported it "stays there").
-
-**When:** Phase 7 implementation.
-**Expected:** Custom ease-in-out scroll.
-**Actual:** No scroll movement.
-
-## Hypotheses (Regression)
-1. `animate(start, target, ...)` with `window.scrollTo` in `onUpdate` was fighting with `scroll-behavior: smooth` or failing on the user's specific browser/device.
-2. The calculation of `targetPosition` might have been incorrect if the page was still layouting or had transforms.
-
-## Resolution (Final - Android Stability)
-Reverted to the most robust implementation for Android compatibility:
-- **CSS**: `scroll-behavior: smooth` in `globals.css` remains the single source of truth for animation.
-- **JS**: Removed `behavior: 'smooth'` from `scrollIntoView` to avoid conflicts with CSS.
-- **Layout**: Removed `layoutId="main-cta"` from buttons. Morphing animations can sometimes interrupt scroll events on Android Chrome when the element being clicked is also being animated or unmounted.
-- **Timing**: Added a 10ms `setTimeout` in `scrollToId` to ensure the click event is processed before scrolling begins.
+## Resolution
+root_cause: Incorrect replacement in multi_replace_file_content during Phase 14, where a closing bracket `>` was accidentally removed or misaligned in a template literal within a `className` attribute.
+fix: Restored file via git, re-applied typography unificiation (Serif-luxury for headers, Sans bold for prices/labels) carefully using focused replacement chunks.
+verification: `npx tsc --noEmit --jsx react-jsx src/components/coastal/CoastalRequestModal.tsx` now passes syntax check (no unclosed tags).

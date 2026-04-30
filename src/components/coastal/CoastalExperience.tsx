@@ -27,8 +27,7 @@ export const CoastalExperience: React.FC<CoastalExperienceProps> = ({ className 
         {/* data-stitch-id: experience-header */}
         <div className="text-center mb-10 md:mb-16">
           <h2
-            className="text-2xl md:text-3xl font-serif font-normal text-[#2c2416] mb-3 tracking-tight"
-            style={{ fontFamily: "'Newsreader', 'Georgia', serif" }}
+            className="text-2xl md:text-3xl font-serif-luxury text-[#2c2416] mb-3 tracking-tight"
           >
             {SITE_CONTENT.experience.sectionTitle}
           </h2>
@@ -50,8 +49,7 @@ export const CoastalExperience: React.FC<CoastalExperienceProps> = ({ className 
                 {iconMap[feature.icon]}
               </div>
               <h3
-                className="text-sm md:text-base font-semibold text-[#2c2416] mb-2 md:mb-3 tracking-wide"
-                style={{ fontFamily: "'Newsreader', 'Georgia', serif" }}
+                className="text-[10px] md:text-xs font-medium font-sans-luxury text-[#2c2416] mb-2 md:mb-3 tracking-luxury uppercase opacity-90"
               >
                 {feature.title}
               </h3>

@@ -19,18 +19,17 @@ export const CoastalFooterCta: React.FC<CoastalFooterCtaProps> = ({ className = 
       <div className="py-20 md:py-32 px-6 text-center max-w-4xl mx-auto">
         <h2
           className="text-4xl md:text-5xl font-serif italic text-[#2c2416] mb-6"
-          style={{ fontFamily: "var(--font-newsreader), serif" }}
         >
           Te esperamos frente al mar
         </h2>
-        <p className="text-[#8a7a6a] text-lg font-light mb-10 max-w-md mx-auto leading-relaxed italic">
+        <p className="text-[#8a7a6a] text-lg font-light mb-10 max-w-md mx-auto leading-relaxed">
           Cada detalle está listo para que tu única preocupación sea disfrutar el sonido de las olas.
         </p>
         <motion.button
           whileHover={{ x: 5 }}
           whileTap={{ scale: 0.95 }}
           onClick={onAction}
-          className="group flex items-center gap-4 mx-auto text-[13px] font-sans font-semibold uppercase tracking-[0.3em] text-[#2c2416] transition-all"
+          className="group flex items-center gap-4 mx-auto text-[13px] font-sans font-bold tracking-luxury text-[#2c2416] transition-all"
         >
           <span className="border-b border-[#2c2416]/20 group-hover:border-[#2c2416] pb-2 transition-all">
             Volver a disponibilidad

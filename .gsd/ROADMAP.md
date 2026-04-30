@@ -111,8 +111,12 @@
 
 
 
-### Phase 14: Typography Discipline & Luxury Unification
+### Phase 14: Typography Discipline & Luxury Unification ✅
 - **Goal**: Unify the typography system into a consistent two-font architecture (Newsreader for titles, Inter for everything else) with standardized tracking and weights.
-- **Status**: ⬜ Not Started
-- **Plans**:
-    - [ ] 14.1: TBD (run /plan 14 to create)
+- **Status**: ✅ Completed
+- **Tasks**:
+    - [x] Create global tokens in `globals.css` (`.font-serif-luxury`, `.font-sans-luxury`, `.tracking-luxury`).
+    - [x] Audit and unify all coastal components (Hero, Experience, Trust, Gallery, Specs, Discover, Availability, FAQ, Footer).
+    - [x] Standardize Request Modal typography (Prices, headers, buttons).
+    - [x] Eliminate hardcoded font-family overrides across the project.
+

@@ -43,12 +43,22 @@ main {
 
 h1,
 h2,
-h3,
-h4,
-h5,
-h6 {
+.font-serif-luxury {
   font-family: var(--font-newsreader), serif;
   font-weight: 400;
+}
+
+.font-sans-luxury {
+  font-family: var(--font-inter), system-ui, sans-serif;
+}
+
+.tracking-luxury {
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+}
+
+.tracking-luxury-sm {
+  letter-spacing: 0.08em;
 }
 
 /* DayPicker Customization */

@@ -25,8 +25,7 @@ export const CoastalTrust: React.FC<CoastalTrustProps> = ({ className = "" }) =>
       <div className="max-w-5xl mx-auto">
         <div className="text-center mb-10 md:mb-12">
           <h2
-            className="text-2xl md:text-3xl font-serif font-normal text-[#2c2416] mb-3 tracking-tight"
-            style={{ fontFamily: "var(--font-newsreader), 'Georgia', serif" }}
+            className="text-2xl md:text-3xl font-serif-luxury text-[#2c2416] mb-3 tracking-tight"
           >
             {SITE_CONTENT.trust.sectionTitle}
           </h2>
@@ -43,8 +42,7 @@ export const CoastalTrust: React.FC<CoastalTrustProps> = ({ className = "" }) =>
                 </div>
               </div>
               <h3 
-                className="text-sm md:text-lg font-serif font-medium text-[#2c2416] mb-1.5 md:mb-2 leading-tight"
-                style={{ fontFamily: "var(--font-newsreader), 'Georgia', serif" }}
+                className="text-[10px] md:text-xs font-medium font-sans-luxury text-[#2c2416] mb-1.5 md:mb-2 tracking-luxury uppercase opacity-90"
               >
                 {item.title}
               </h3>

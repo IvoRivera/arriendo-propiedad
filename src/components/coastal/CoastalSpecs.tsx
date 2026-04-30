@@ -25,7 +25,6 @@ export const CoastalSpecs: React.FC<CoastalSpecsProps> = ({ className = "" }) =>
         {/* data-stitch-id: specs-title */}
         <h2
           className="text-3xl md:text-4xl font-serif font-normal text-[#2c2416] text-center mb-12"
-          style={{ fontFamily: "'Newsreader', 'Georgia', serif" }}
         >
           {SITE_CONTENT.specs.sectionTitle}
         </h2>
@@ -41,12 +40,11 @@ export const CoastalSpecs: React.FC<CoastalSpecsProps> = ({ className = "" }) =>
               </div>
               <div>
                 <p
-                  className="text-[#2c2416] font-semibold text-base"
-                  style={{ fontFamily: "'Newsreader', 'Georgia', serif" }}
+                  className="text-[#2c2416] font-bold text-base"
                 >
                   {item.label}
                 </p>
-                <p className="text-[#9a8a78] text-xs font-light mt-0.5 tracking-wide uppercase">
+                <p className="text-[#9a8a78] text-[10px] font-bold mt-0.5 tracking-luxury">
                   {item.sublabel}
                 </p>
               </div>

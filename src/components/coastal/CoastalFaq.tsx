@@ -22,7 +22,6 @@ export const CoastalFaq: React.FC<CoastalFaqProps> = ({ className = "" }) => {
         <div className="text-center mb-12">
           <h2
             className="text-3xl md:text-4xl font-serif font-normal text-[#2c2416] mb-4"
-            style={{ fontFamily: "var(--font-newsreader), 'Georgia', serif" }}
           >
             {SITE_CONTENT.faq?.sectionTitle || "Preguntas Frecuentes"}
           </h2>

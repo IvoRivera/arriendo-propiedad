@@ -65,7 +65,7 @@ export const EditorialGallery: React.FC<EditorialGalleryProps> = ({
                       <div className="w-6 h-6 rounded-full bg-[#002a45] flex items-center justify-center">
                         <Plus className="w-3.5 h-3.5 text-white" strokeWidth={2.5} />
                       </div>
-                      <span className="text-[9px] md:text-[10px] font-sans font-medium uppercase tracking-[0.2em] text-[#002a45] whitespace-nowrap">
+                      <span className="text-[9px] md:text-[10px] font-sans font-bold tracking-luxury text-[#002a45] whitespace-nowrap">
                         Ver más fotos destacadas <span className="opacity-60 ml-1">+{images.length - 3}</span>
                       </span>
                     </div>
@@ -85,10 +85,10 @@ export const EditorialGallery: React.FC<EditorialGalleryProps> = ({
               {/* Narrative Text Block (20-25% width) */}
               <div className="w-full md:w-[25%] px-4 md:px-0">
                 <div className={`flex flex-col ${index % 2 === 0 ? "md:items-start" : "md:items-end text-right"}`}>
-                  <span className="text-xs font-sans font-medium uppercase tracking-[0.4em] text-[#c8883a] mb-6">
+                  <span className="text-xs font-sans font-bold tracking-luxury text-[#c8883a] mb-6">
                     Momento {index + 1}
                   </span>
-                  <p className="text-[#2c2416] text-xl md:text-2xl font-serif font-light leading-relaxed italic opacity-90">
+                  <p className="text-[#2c2416] text-xl md:text-2xl font-light leading-relaxed opacity-90">
                     {img.alt || "La esencia del descanso frente al mar."}
                   </p>
                   <div className="mt-8 h-[1px] w-12 bg-[#e2d9cc]" />
