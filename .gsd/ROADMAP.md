@@ -89,3 +89,9 @@
 - **Plans**:
     - [x] 10.1: Visual Refinement & Mobile Optimization ✅
     - [x] 10.2: Typography Unification & Contrast ✅
+
+### Phase 11: Editorial Gallery Climax Redesign
+- **Goal**: Transform the "Explorar más" section into an immersive, premium climax that maintains visual continuity with the gallery.
+- **Status**: 🚀 In Progress
+- **Plans**:
+    - [ ] 11.1: Immersive Gallery Climax Implementation
