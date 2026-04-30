@@ -26,24 +26,34 @@ export const CoastalDiscover: React.FC<CoastalDiscoverProps> = ({ className = ""
           </p>
         </div>
 
-        {/* 4-column Experience Grid */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8 mb-16 md:mb-20">
+        {/* Responsive Grid: 1 column on mobile, 2 on tablet, 4 on desktop */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8 mb-16 md:mb-20">
           {SITE_CONTENT.discover.items.map((item, index) => (
             <div
               key={index}
-              className="group flex flex-col items-center text-center bg-[#faf7f2]/50 rounded-3xl p-6 md:p-8 border border-[#e2d9cc]/60 hover:bg-white hover:border-[#00628f]/20 hover:shadow-xl hover:shadow-[#00628f]/5 transition-all duration-500"
+              className="group flex flex-col md:items-center md:text-center bg-[#faf7f2]/50 rounded-3xl p-6 md:p-8 border border-[#e2d9cc]/60 hover:bg-white hover:border-[#00628f]/20 hover:shadow-xl hover:shadow-[#00628f]/5 transition-all duration-500"
             >
-              <div className="w-16 h-16 md:w-20 md:h-20 rounded-full bg-white border border-[#e2d9cc]/40 flex items-center justify-center mb-6 text-3xl md:text-4xl shadow-sm group-hover:scale-110 transition-transform duration-500">
-                <span aria-hidden>{item.emoji}</span>
+              {/* Mobile: Grid 1:4 | Desktop: Column Layout */}
+              <div className="grid grid-cols-5 md:flex md:flex-col items-center gap-4 md:gap-0 w-full">
+                {/* Icon Column (1/5 on mobile) */}
+                <div className="col-span-1 flex justify-start md:justify-center w-full">
+                  <div className="w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20 rounded-full bg-white border border-[#e2d9cc]/40 flex items-center justify-center md:mb-6 text-2xl sm:text-3xl md:text-4xl shadow-sm group-hover:scale-110 transition-transform duration-500 flex-shrink-0">
+                    <span aria-hidden>{item.emoji}</span>
+                  </div>
+                </div>
+
+                {/* Text Column (4/5 on mobile) */}
+                <div className="col-span-4 flex flex-col items-start md:items-center">
+                  <h3
+                    className="text-[11px] md:text-xs font-bold font-sans-luxury text-[#2c2416] tracking-luxury uppercase mb-2 md:mb-3 md:px-2"
+                  >
+                    {item.title}
+                  </h3>
+                  <p className="text-[#6b5d4f] text-xs md:text-sm font-light leading-relaxed opacity-85">
+                    {item.description}
+                  </p>
+                </div>
               </div>
-              <h3
-                className="text-[11px] md:text-xs font-bold font-sans-luxury text-[#2c2416] tracking-luxury uppercase mb-3 px-2"
-              >
-                {item.title}
-              </h3>
-              <p className="text-[#6b5d4f] text-xs md:text-sm font-light leading-relaxed opacity-85">
-                {item.description}
-              </p>
             </div>
           ))}
         </div>

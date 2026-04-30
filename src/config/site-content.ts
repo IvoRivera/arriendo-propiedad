@@ -154,7 +154,7 @@ export const SITE_CONTENT: SiteContent = {
   },
   experience: {
     sectionTitle: "La Experiencia",
-    sectionSubtitle: "No es solo un lugar para dormir. Es donde el Pacífico se convierte en el paisaje de tu día.",
+    sectionSubtitle: "Un santuario personal diseñado para que el ritmo del mar marque el pulso de tu descanso y cada despertar sea frente al infinito.",
     features: [
       {
         icon: "waves",
@@ -225,7 +225,7 @@ export const SITE_CONTENT: SiteContent = {
   },
   discover: {
     sectionTitle: "Lo que vas a vivir aquí",
-    sectionSubtitle: "No es solo el lugar, es todo lo que lo rodea: mar, buena comida y noches que se quedan contigo.",
+    sectionSubtitle: "Explora un entorno privilegiado donde la brisa marina, la mejor gastronomía local y la magia del Valle del Elqui completan tu refugio.",
     items: [
       {
         emoji: "🌊",
