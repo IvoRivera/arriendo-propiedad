@@ -147,7 +147,7 @@ export const GalleryCarousel: React.FC<GalleryCarouselProps> = ({
 
             {/* Mobile Navigation Counter */}
             <div className="flex justify-center items-center mt-4 md:hidden pb-2">
-              <div className="bg-white/70 px-4 py-1.5 rounded-full shadow-sm text-[10px] text-[#8a7a6a] font-mono uppercase tracking-widest border border-[#e2d9cc]/50">
+              <div className="bg-white px-4 py-1.5 rounded-full shadow-sm text-[10px] text-[#8a7a6a] font-sans font-medium uppercase tracking-widest border border-[#e2d9cc]/50">
                 {activeIndex + 1} / {validImages.length}
               </div>
             </div>

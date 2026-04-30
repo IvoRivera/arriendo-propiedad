@@ -65,7 +65,7 @@ export const CoastalGallery: React.FC<CoastalGalleryProps> = ({ className = "", 
               />
             </div>
             <div className="flex-1">
-              <span className="text-[10px] font-mono uppercase tracking-[0.4em] text-[#8a7a6a] mb-2 block opacity-60">Recorrido</span>
+              <span className="text-[10px] font-sans font-semibold uppercase tracking-[0.4em] text-[#8a7a6a] mb-2 block">Recorrido</span>
               <h3 className="text-xl md:text-2xl font-serif italic text-[#2c2416] leading-tight">
                 Recorrer el departamento
               </h3>
@@ -89,7 +89,7 @@ export const CoastalGallery: React.FC<CoastalGalleryProps> = ({ className = "", 
               />
             </div>
             <div className="flex-1">
-              <span className="text-[10px] font-mono uppercase tracking-[0.4em] text-[#8a7a6a] mb-2 block opacity-60">Espacios Comunes</span>
+              <span className="text-[10px] font-sans font-semibold uppercase tracking-[0.4em] text-[#8a7a6a] mb-2 block">Espacios Comunes</span>
               <h3 className="text-xl md:text-2xl font-serif italic text-[#2c2416] leading-tight">
                 Explorar amenidades
               </h3>

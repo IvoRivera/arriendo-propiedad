@@ -94,13 +94,11 @@ export const Lightbox: React.FC<LightboxProps> = ({
       >
         {/* Top Bar */}
         <div className="absolute top-0 left-0 right-0 p-4 sm:p-6 flex justify-between items-center z-[100] pointer-events-none">
-          <div className="bg-white/10 px-3 py-1.5 sm:px-4 sm:py-2 rounded-full backdrop-blur-md border border-white/5 pointer-events-auto">
-            <span className="text-white/70 text-[9px] sm:text-[10px] font-mono uppercase tracking-[0.4em]">
-              {currentIndex + 1} / {images.length}
-            </span>
+          <div className="bg-white px-4 py-1.5 rounded-full shadow-sm text-[10px] text-[#8a7a6a] font-sans font-medium uppercase tracking-widest border border-[#e2d9cc]/50 pointer-events-auto">
+            {currentIndex + 1} / {images.length}
           </div>
           <button
-            className="text-white bg-white/10 hover:bg-white/20 p-3 rounded-full transition-all cursor-pointer backdrop-blur-md border border-white/10 pointer-events-auto active:scale-90"
+            className="text-[#8a7a6a] bg-white hover:bg-neutral-50 p-3 rounded-full transition-all cursor-pointer shadow-sm border border-[#e2d9cc]/50 pointer-events-auto active:scale-90"
             onClick={onClose}
             aria-label="Cerrar galería"
           >
@@ -110,7 +108,7 @@ export const Lightbox: React.FC<LightboxProps> = ({
 
         {/* Navigation Buttons (Desktop) */}
         <button
-          className="hidden md:flex absolute left-8 text-white/40 hover:text-white p-4 z-50 transition-all cursor-pointer group active:scale-95"
+          className="hidden md:flex absolute left-8 text-[#8a7a6a] hover:text-black p-4 z-50 transition-all cursor-pointer group active:scale-95"
           onClick={(e) => { e.stopPropagation(); paginate(-1); }}
           aria-label="Imagen anterior"
         >
@@ -196,7 +194,7 @@ export const Lightbox: React.FC<LightboxProps> = ({
                     src={images[currentIndex].src}
                     alt={images[currentIndex].alt || "Vista ampliada"}
                     fill
-                    className="object-contain pointer-events-none drop-shadow-2xl"
+                    className="object-contain pointer-events-none"
                     priority
                     sizes="100vw"
                   />

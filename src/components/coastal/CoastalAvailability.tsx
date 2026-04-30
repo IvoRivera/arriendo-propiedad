@@ -180,7 +180,7 @@ export const CoastalAvailability: React.FC<CoastalAvailabilityProps> = ({ onActi
 
           {/* A. STATIC HEADER (Column 1-5) */}
           <div className="lg:col-span-5 text-center lg:text-left">
-            <span className="text-[10px] uppercase tracking-[0.4em] font-bold text-[#9a8a78] mb-4 md:mb-8 block opacity-80">
+            <span className="text-[10px] uppercase tracking-[0.4em] font-sans font-bold text-[#9a8a78] mb-4 md:mb-8 block">
               {SITE_CONTENT.availability.title}
             </span>
             <h2
@@ -257,7 +257,7 @@ export const CoastalAvailability: React.FC<CoastalAvailabilityProps> = ({ onActi
                     {!range?.from ? (
                       <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-8 bg-[#faf7f2] border border-dashed border-[#e2d9cc] rounded-3xl opacity-60">
                         <CalendarDays className="w-6 h-6 text-[#9a8a78] mb-3" />
-                        <p className="text-sm text-[#8a7a6a] font-mono uppercase tracking-widest">
+                        <p className="text-xs text-[#8a7a6a] font-sans font-semibold uppercase tracking-widest">
                           Selecciona una fecha en el calendario
                         </p>
                       </div>

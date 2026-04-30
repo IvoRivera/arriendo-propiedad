@@ -30,7 +30,7 @@ export const CoastalFooterCta: React.FC<CoastalFooterCtaProps> = ({ className = 
           whileHover={{ x: 5 }}
           whileTap={{ scale: 0.95 }}
           onClick={onAction}
-          className="group flex items-center gap-4 mx-auto text-[13px] font-mono uppercase tracking-[0.3em] text-[#2c2416] transition-all"
+          className="group flex items-center gap-4 mx-auto text-[13px] font-sans font-semibold uppercase tracking-[0.3em] text-[#2c2416] transition-all"
         >
           <span className="border-b border-[#2c2416]/20 group-hover:border-[#2c2416] pb-2 transition-all">
             Volver a disponibilidad

@@ -67,7 +67,7 @@ export const EditorialGallery: React.FC<EditorialGalleryProps> = ({
               {/* Narrative Text Block (20-25% width) */}
               <div className="w-full md:w-[25%] px-4 md:px-0">
                 <div className={`flex flex-col ${index % 2 === 0 ? "md:items-start" : "md:items-end text-right"}`}>
-                  <span className="text-[10px] font-mono uppercase tracking-[0.4em] text-[#c8883a] mb-6 opacity-60">
+                  <span className="text-xs font-sans font-medium uppercase tracking-[0.4em] text-[#c8883a] mb-6">
                     Momento {index + 1}
                   </span>
                   <p className="text-[#2c2416] text-xl md:text-2xl font-serif font-light leading-relaxed italic opacity-90">
@@ -84,13 +84,13 @@ export const EditorialGallery: React.FC<EditorialGalleryProps> = ({
         <div className="mt-24 md:mt-48 flex flex-col md:flex-row items-center justify-between gap-8 border-t border-[#e2d9cc]/30 pt-16">
           <div className="flex items-center gap-6">
             <div className="h-[1px] w-20 bg-[#c8883a]/30" />
-            <p className="text-[12px] font-mono uppercase tracking-[0.5em] text-[#8a7a6a] opacity-60">
+            <p className="text-xs font-sans font-medium uppercase tracking-[0.5em] text-[#8a7a6a]">
               Exploración Completa
             </p>
           </div>
           <button
             onClick={() => setLightboxIndex(0)}
-            className="group flex items-center gap-4 text-[13px] font-mono uppercase tracking-[0.3em] text-[#2c2416] transition-all"
+            className="group flex items-center gap-4 text-xs font-sans font-medium uppercase tracking-[0.3em] text-[#2c2416] transition-all"
           >
             <span className="border-b border-transparent group-hover:border-[#2c2416] pb-1 transition-all">
               Explorar más
