@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import Image from "next/image";
 import { Lightbox } from "./Lightbox";
 import { AnimatePresence } from "framer-motion";
+import { Plus } from "lucide-react";
 
 interface EditorialGalleryProps {
   readonly title: string;
@@ -50,9 +51,14 @@ export const EditorialGallery: React.FC<EditorialGalleryProps> = ({
             >
               {/* Image Block (70-80% width) */}
               <div
-                className="w-full md:w-[75%] relative group cursor-pointer overflow-hidden rounded-2xl md:rounded-[3rem] aspect-[4/3] md:aspect-[16/9]"
+                className={`w-full md:w-[75%] relative group cursor-pointer overflow-hidden rounded-2xl md:rounded-[3rem] aspect-[4/3] md:aspect-[16/9] ${
+                  index === displayImages.length - 1 && images.length > 5 ? "mask-fade-bottom" : ""
+                }`}
                 onClick={() => setLightboxIndex(index)}
               >
+                {index === displayImages.length - 1 && images.length > 5 && (
+                  <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-[#faf7f2] via-[#faf7f2]/40 to-transparent z-20 pointer-events-none" />
+                )}
                 <div className="absolute inset-0 z-10 bg-black/0 group-hover:bg-black/5 transition-colors duration-700" />
                 <Image
                   src={img.src}
@@ -80,24 +86,35 @@ export const EditorialGallery: React.FC<EditorialGalleryProps> = ({
           ))}
         </div>
 
-        {/* Minimalist Footer / Navigation */}
-        <div className="mt-24 md:mt-48 flex flex-col md:flex-row items-center justify-between gap-8 border-t border-[#e2d9cc]/30 pt-16">
-          <div className="flex items-center gap-6">
-            <div className="h-[1px] w-20 bg-[#c8883a]/30" />
-            <p className="text-xs font-sans font-medium uppercase tracking-[0.5em] text-[#8a7a6a]">
-              Exploración Completa
-            </p>
+        {/* Immersive Gallery Climax */}
+        {images.length > 5 && (
+          <div className="mt-8 md:mt-12 flex justify-center">
+            <button
+              onClick={() => setLightboxIndex(0)}
+              className="w-full md:w-[75%] group relative flex flex-col items-center justify-center py-10 md:py-16 px-8 rounded-2xl md:rounded-[3rem] bg-gradient-to-br from-white/60 to-white/20 backdrop-blur-xl border border-[#e2d9cc]/40 shadow-xl shadow-[#002a45]/5 hover:shadow-2xl hover:shadow-[#002a45]/10 transition-all duration-700 active:scale-[0.99] overflow-hidden"
+            >
+              {/* Subtle accent light */}
+              <div className="absolute -top-24 -left-24 w-48 h-48 bg-[#00628f]/5 blur-[80px] rounded-full group-hover:bg-[#00628f]/10 transition-colors duration-700" />
+              
+              <div className="relative flex flex-col items-center gap-4 text-center">
+                <div className="w-12 h-12 rounded-full border border-[#002a45]/10 flex items-center justify-center mb-2 group-hover:scale-110 transition-transform duration-500 bg-white/50">
+                  <Plus className="w-5 h-5 text-[#002a45]" strokeWidth={1.5} />
+                </div>
+                
+                <h3 className="text-sm md:text-base font-sans font-bold uppercase tracking-[0.3em] text-[#002a45]">
+                  Explorar galería completa
+                </h3>
+                
+                <p className="text-[10px] md:text-xs font-sans font-medium uppercase tracking-[0.2em] text-[#8a7a6a] mt-1">
+                  Ver {images.length - 5} fotos adicionales
+                </p>
+              </div>
+
+              {/* Hover highlight border */}
+              <div className="absolute inset-0 border-2 border-transparent group-hover:border-[#002a45]/5 rounded-2xl md:rounded-[3rem] transition-colors pointer-events-none" />
+            </button>
           </div>
-          <button
-            onClick={() => setLightboxIndex(0)}
-            className="group flex items-center gap-4 text-xs font-sans font-medium uppercase tracking-[0.3em] text-[#2c2416] transition-all"
-          >
-            <span className="border-b border-transparent group-hover:border-[#2c2416] pb-1 transition-all">
-              Explorar más
-            </span>
-            <span className="text-[#8a7a6a] opacity-50">[{images.length}]</span>
-          </button>
-        </div>
+        )}
       </div>
 
       <AnimatePresence mode="wait">
