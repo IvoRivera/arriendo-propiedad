@@ -24,6 +24,8 @@ import {
   rectSortingStrategy,
 } from '@dnd-kit/sortable';
 import { revalidateImages } from '@/app/actions/images';
+import { Lightbox } from '../coastal/Lightbox';
+import { AnimatePresence } from 'framer-motion';
 
 export function ImageManager() {
   const [images, setImages] = useState<DbImage[]>([]);
@@ -32,6 +34,7 @@ export function ImageManager() {
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [isReordering, setIsReordering] = useState(false);
   const [activeId, setActiveId] = useState<string | null>(null);
+  const [previewData, setPreviewData] = useState<{ images: { src: string; alt: string }[]; index: number } | null>(null);
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -216,6 +219,22 @@ export function ImageManager() {
     }
   };
 
+  const handlePreview = (id: string, category: ImageCategory) => {
+    const categoryImages = images
+      .filter(img => img.category === category)
+      .sort((a, b) => a.priority - b.priority);
+    
+    const index = categoryImages.findIndex(img => img.id === id);
+    if (index === -1) return;
+
+    const formattedImages = categoryImages.map(img => ({
+      src: img.url,
+      alt: img.metadata?.alt || "Vista previa"
+    }));
+
+    setPreviewData({ images: formattedImages, index });
+  };
+
   const handleUploadComplete = (category: ImageCategory) => {
     fetchImages();
     
@@ -305,6 +324,7 @@ export function ImageManager() {
                         image={img} 
                         onDelete={handleDelete}
                         onUpdate={handleUpdate}
+                        onPreview={(id) => handlePreview(id, cat.key)}
                         isDeleting={deletingId === img.id}
                       />
                     ))}
@@ -340,6 +360,16 @@ export function ImageManager() {
           </div>
         );
       })}
+
+      <AnimatePresence>
+        {previewData && (
+          <Lightbox
+            images={previewData.images}
+            initialIndex={previewData.index}
+            onClose={() => setPreviewData(null)}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 }

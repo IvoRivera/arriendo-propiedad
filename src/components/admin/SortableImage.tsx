@@ -11,11 +11,12 @@ interface SortableImageProps {
   image: DbImage;
   onDelete: (id: string) => void;
   onUpdate: (id: string, payload: Partial<DbImage>) => Promise<void>;
+  onPreview?: (id: string) => void;
   isDeleting: boolean;
   isOverlay?: boolean;
 }
 
-export function SortableImage({ id, image, onDelete, onUpdate, isDeleting, isOverlay }: SortableImageProps) {
+export function SortableImage({ id, image, onDelete, onUpdate, onPreview, isDeleting, isOverlay }: SortableImageProps) {
   const {
     attributes,
     listeners,
@@ -74,7 +75,10 @@ export function SortableImage({ id, image, onDelete, onUpdate, isDeleting, isOve
         isOverlay ? 'shadow-2xl ring-2 ring-[#6b7c4a]/20 scale-[1.02]' : 'shadow-sm hover:shadow-md'
       }`}
     >
-      <div className="aspect-[4/3] relative overflow-hidden bg-gray-100 flex items-center justify-center shrink-0">
+      <div 
+        className="aspect-[4/3] relative overflow-hidden bg-gray-100 flex items-center justify-center shrink-0 cursor-zoom-in group/img"
+        onClick={() => !isOverlay && onPreview?.(image.id)}
+      >
         {image?.url?.trim() ? (
           <img
             src={image.url}
