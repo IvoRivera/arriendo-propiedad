@@ -172,12 +172,25 @@ export const Lightbox: React.FC<LightboxProps> = ({
                 setLastPinchDistance(null);
                 if (scale.get() < 1.05) resetZoom();
               }}
+              onWheel={(e) => {
+                const currentScale = scale.get();
+                const delta = -e.deltaY * 0.01;
+                const newScale = Math.min(Math.max(currentScale + delta, 1), 4);
+                scale.set(newScale);
+                setIsZoomed(newScale > 1.05);
+              }}
+              onDoubleClick={() => {
+                const targetScale = scale.get() > 1.05 ? 1 : 2.5;
+                scale.set(targetScale);
+                setIsZoomed(targetScale > 1.05);
+              }}
               onPointerDown={(e) => {
+                // Keep tap logic for mobile devices where doubleClick might not fire as expected
                 const now = Date.now();
                 if (now - lastTap < 300) {
-                  const targetScale = scale.get() === 1 ? 2.5 : 1;
+                  const targetScale = scale.get() > 1.05 ? 1 : 2.5;
                   scale.set(targetScale);
-                  setIsZoomed(targetScale > 1);
+                  setIsZoomed(targetScale > 1.05);
                 }
                 setLastTap(now);
               }}
