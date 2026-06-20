@@ -24,9 +24,6 @@ const CoastalDiscover = dynamic(() =>
 const CoastalSpecs = dynamic(() =>
   import("@/components/coastal/CoastalSpecs").then((mod) => mod.CoastalSpecs)
 );
-const CoastalSocialProof = dynamic(() =>
-  import("@/components/coastal/CoastalSocialProof").then((mod) => mod.CoastalSocialProof)
-);
 const CoastalFaq = dynamic(() =>
   import("@/components/coastal/CoastalFaq").then((mod) => mod.CoastalFaq)
 );
@@ -143,7 +140,7 @@ export function HomeClient({ dynamicImages, property }: HomeClientProps) {
 
       <CoastalDiscover />
       <CoastalSpecs />
-      <CoastalSocialProof />
+      {/* <CoastalSocialProof /> */}
 
       <div ref={faqRef}>
         <CoastalFaq />
