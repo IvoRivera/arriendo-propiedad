@@ -1,46 +1,45 @@
-import { calculateBookingPrice } from '../src/lib/pricing';
-import * as schemaValidator from '../src/lib/schemaValidator';
+import { calculateBookingPrice } from "../src/lib/pricing";
+import * as schemaValidator from "../src/lib/schemaValidator";
+
+function getErrorMessage(err: unknown) {
+  return err instanceof Error ? err.message : String(err);
+}
 
 async function verifyPricingGuard() {
-  console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-  console.log(' [SchemaGuard] TESTING PRICING SERVICE GUARD');
-  console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+  console.log("====================================================");
+  console.log("[SchemaGuard] Testing pricing service guard");
+  console.log("====================================================");
 
-  // 1. Test Positive Case (Schema should be OK)
-  console.log('\n 🧪 Test 1: Calculating price with healthy schema...');
+  console.log("\nTest 1: Calculating price with healthy schema...");
   try {
-    const result = await calculateBookingPrice('2026-05-01', '2026-05-05');
-    console.log(` ✅ SUCCESS: Pricing calculated correctly ($${result.totalPrice})`);
+    const result = await calculateBookingPrice("2026-05-01", "2026-05-05");
+    console.log(`SUCCESS: Pricing calculated correctly ($${result.totalPrice})`);
   } catch (err) {
-    console.error(' ❌ UNEXPECTED FAILURE:', err.message);
+    console.error("UNEXPECTED FAILURE:", getErrorMessage(err));
   }
 
-  // 2. Test Negative Case (Injecting a fake missing column)
-  console.log('\n 🧪 Test 2: Simulating broken schema (injecting missing column)...');
-  
-  // Mock the validateSchema function to return failure
+  console.log("\nTest 2: Simulating broken schema...");
   const originalValidate = schemaValidator.validateSchema;
   (schemaValidator as any).validateSchema = async () => ({
     success: false,
-    missing: [{ table: 'properties', column: 'FAKE_CRITICAL_COL', exists: false }]
+    missing: [{ table: "properties", column: "FAKE_CRITICAL_COL", exists: false }],
   });
 
   try {
-    await calculateBookingPrice('2026-05-01', '2026-05-05');
-    console.error(' ❌ FAILURE: Pricing logic should have been blocked!');
+    await calculateBookingPrice("2026-05-01", "2026-05-05");
+    console.error("FAILURE: Pricing logic should have been blocked.");
   } catch (err) {
-    if (err.message.includes('[SchemaGuard]')) {
-      console.log(' ✅ SUCCESS: Pricing blocked as expected.');
-      console.log(`    Message: ${err.message}`);
+    const message = getErrorMessage(err);
+    if (message.includes("[SchemaGuard]")) {
+      console.log("SUCCESS: Pricing blocked as expected.");
+      console.log(`Message: ${message}`);
     } else {
-      console.error(' ❌ WRONG ERROR:', err.message);
+      console.error("WRONG ERROR:", message);
     }
   }
 
-  // Restore original function
   (schemaValidator as any).validateSchema = originalValidate;
-  
-  console.log('\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+  console.log("\n====================================================");
 }
 
 verifyPricingGuard().catch(console.error);

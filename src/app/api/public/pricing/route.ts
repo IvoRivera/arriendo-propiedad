@@ -4,6 +4,8 @@ import { getLiveConfigServer, getPropertyBaseConfig } from '@/lib/systemConfigSe
 import { validateSchema } from '@/lib/schemaValidator';
 import { parseBasePrice } from '@/lib/pricing-utils';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: NextRequest) {
   try {
     // [SchemaGuard] Early Integrity Check
@@ -64,6 +66,10 @@ export async function GET(request: NextRequest) {
         seasonalPrices: seasonalPrices || [],
         overrides: overrides || [],
         holidays: holidays || []
+      }
+    }, {
+      headers: {
+        'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=900'
       }
     });
   } catch (err: any) {

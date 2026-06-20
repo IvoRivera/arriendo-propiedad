@@ -1,5 +1,5 @@
 import 'server-only';
-import { supabaseAdmin } from '@/lib/supabase';
+import { supabaseService } from '@/lib/supabaseServer';
 import { unstable_cache } from 'next/cache';
 import { validateSchema } from '@/lib/schemaValidator';
 import { DbImage } from '@/services/image-service';
@@ -23,7 +23,7 @@ export class ImageServiceServer {
         throw new Error(`[SchemaGuard] [ImageService] Inconsistencia detectada. Faltan: ${missing}`);
       }
 
-      const { data, error } = await supabaseAdmin
+      const { data, error } = await supabaseService
         .from('images')
         .select('*')
         .order('category', { ascending: true })

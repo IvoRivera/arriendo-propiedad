@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { supabasePublic } from '@/lib/supabase';
+import { supabaseService } from '@/lib/supabaseServer';
 
 // Enable ISR (Incremental Static Regeneration) for this endpoint.
 // It will revalidate data at most every 60 seconds, drastically reducing Supabase load.
@@ -8,12 +8,12 @@ export const revalidate = 60;
 export async function GET() {
   try {
     // 1. Fetch Manual Blocks
-    const { data: manualBlocks, error: manualError } = await supabasePublic
+    const { data: manualBlocks, error: manualError } = await supabaseService
       .from('blocked_dates')
       .select('start_date, end_date');
 
     // 2. Fetch Confirmed Bookings
-    const { data: confirmedBookings, error: bookingError } = await supabasePublic
+    const { data: confirmedBookings, error: bookingError } = await supabaseService
       .from('booking_requests')
       .select('check_in, check_out')
       .eq('status', 'confirmed');
@@ -75,6 +75,10 @@ export async function GET() {
         blockedDates: uniqueBlockedDates,
         bookedRanges: bookedRanges,
         lastUpdated: new Date().toISOString()
+      }
+    }, {
+      headers: {
+        'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300'
       }
     });
 

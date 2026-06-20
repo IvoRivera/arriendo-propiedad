@@ -34,7 +34,7 @@ export const CoastalAvailability: React.FC<CoastalAvailabilityProps> = ({ onActi
   useEffect(() => {
     const fetchAvailability = async () => {
       try {
-        const res = await fetch(`/api/public/availability?t=${Date.now()}`);
+        const res = await fetch("/api/public/availability");
         const data = await res.json();
         if (data.success && data.data) {
           const raw = data.data.blockedDates || [];

@@ -1,8 +1,6 @@
 /**
- * site-content.ts
- * 
- * Fuente de verdad única para el contenido estático y editorial de la Landing Page.
- * Todas las interfaces están tipadas para garantizar consistencia en los componentes.
+ * Static editorial content for the public landing page.
+ * Keep local SEO, conversion copy and visible UI text in one typed source.
  */
 
 export interface SiteConfig {
@@ -89,6 +87,11 @@ export interface DiscoverData {
   items: DiscoverItem[];
 }
 
+export interface LocalHighlight {
+  title: string;
+  description: string;
+}
+
 export interface TrustSignal {
   icon: string;
   title: string;
@@ -98,6 +101,21 @@ export interface TrustSignal {
 export interface TrustData {
   sectionTitle: string;
   items: TrustSignal[];
+}
+
+export interface Testimonial {
+  name: string;
+  context: string;
+  quote: string;
+  rating: number;
+}
+
+export interface SocialProofData {
+  sectionTitle: string;
+  sectionSubtitle: string;
+  averageRating: string;
+  reviewCount: string;
+  testimonials: Testimonial[];
 }
 
 export interface FooterCtaData {
@@ -125,7 +143,9 @@ export interface SiteContent {
   specs: SpecificationsData;
   availability: AvailabilityData;
   discover: DiscoverData;
+  localHighlights: LocalHighlight[];
   trust: TrustData;
+  socialProof: SocialProofData;
   faq: FaqData;
   footerCta: FooterCtaData;
 }
@@ -133,176 +153,253 @@ export interface SiteContent {
 export const SITE_CONTENT: SiteContent = {
   site: {
     address: "Avenida del Mar 3500, Edificio Playa Serena",
-    location: "La Serena, Cuatro Esquinas",
+    location: "Cuatro Esquinas, La Serena",
     mapUrl: "https://maps.app.goo.gl/SfjUJLWFQcFtjJzC6",
-    googleMapsEmbedSrc: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3458.742468307434!2d-71.26871032394334!3d-29.90053937499645!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x9691ca5cd0e6af11%3A0xc66c1b3fbc062b14!2sAv.%20del%20Mar%203500%2C%20La%20Serena%2C%20Coquimbo!5e0!3m2!1ses-419!2scl!4v1700000000000!5m2!1ses-419!2scl",
+    googleMapsEmbedSrc:
+      "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3458.742468307434!2d-71.26871032394334!3d-29.90053937499645!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x9691ca5cd0e6af11%3A0xc66c1b3fbc062b14!2sAv.%20del%20Mar%203500%2C%20La%20Serena%2C%20Coquimbo!5e0!3m2!1ses-419!2scl!4v1700000000000!5m2!1ses-419!2scl",
     houseRules: [
-      "Hasta 4 huéspedes para mantener la comodidad del espacio",
+      "Hasta 4 huespedes para mantener la comodidad del espacio",
       "Sin fiestas ni ruidos molestos en horarios de descanso",
       "Espacio libre de humo en interiores",
       "No se admiten mascotas",
-      "Cuidado del departamento y sus detalles"
-    ]
+      "Cuidado del departamento, mobiliario y areas comunes",
+    ],
   },
   hero: {
-    headline: "Despierta Frente al Mar en La Serena",
-    tagline: "Tu refugio perfecto frente al Pacífico",
-    subheadline: "",
-    availabilityPrompt: "",
+    headline: "Arriendo de departamento en La Serena frente al mar",
+    tagline: "Vista panorámica al oceano y ubicación privilegiada en primera linea en la avenida del mar",
+    subheadline:
+      "Vista panoramica al oceano, terraza amplia y ubicacion privilegiada en Avenida del Mar para vacaciones, escapadas o estadias de temporada.",
+    availabilityPrompt: "Consulta fechas disponibles y recibe respuesta directa.",
     ctaText: "Consultar disponibilidad",
-    staySchedule: "",
+    staySchedule: "Check-in 16:00 · Check-out 12:00",
   },
   experience: {
-    sectionTitle: "La Experiencia",
-    sectionSubtitle: "Un santuario personal diseñado para que el ritmo del mar marque el pulso de tu descanso y cada despertar sea frente al infinito.",
+    sectionTitle: "Una estadia frente al Pacifico",
+    sectionSubtitle:
+      "Un departamento pensado para familias, parejas y viajeros de negocios que quieren descansar cerca de la playa sin perder comodidad, conectividad ni seguridad.",
     features: [
       {
         icon: "waves",
-        title: "Primera Línea",
-        description: "El mar como protagonista absoluto.",
+        title: "Primera linea",
+        description: "Cruza y estas en Playa Cuatro Esquinas, con el mar como protagonista.",
       },
       {
         icon: "sofa",
-        title: "Confort Premium",
-        description: "Equipamiento y ropa de cama de alta gama.",
+        title: "Confort completo",
+        description: "Living luminoso, cocina equipada, ropa de cama y todo listo para llegar.",
       },
       {
         icon: "shield",
         title: "Seguridad 24/7",
-        description: "Conserjería y acceso controlado permanente.",
+        description: "Conserjeria, acceso controlado y edificio seguro para viajar con tranquilidad.",
       },
       {
         icon: "maximize",
-        title: "Espacios Amplios",
-        description: "79m² diseñados para tu comodidad total.",
+        title: "79 m2 utiles",
+        description: "Dos dormitorios, dos banñs y terraza amplia con vista panoramica al oceano.",
       },
     ],
   },
   gallery: {
     featured: {
-      title: "Vistas que se quedan contigo",
-      subtitle: "La serenidad del océano integrada en el diseño de un refugio pensado para la desconexión total.",
-      ctaText: "Solicitud de Reserva",
+      title: "Vista al mar desde Cuatro Esquinas",
+      subtitle:
+        "La terraza y los espacios interiores conectan con la costa de La Serena para que cada dia parta mirando el oceano.",
+      ctaText: "Solicitud de reserva",
     },
     interiors: {
-      title: "Tu espacio frente al mar",
-      subtitle: "Luz natural, calma y todo listo para que simplemente llegues a disfrutar.",
-      ctaText: "Solicitud de Reserva",
+      title: "Tu espacio privado en Avenida del Mar",
+      subtitle:
+        "Ambientes comodos para descansar, cocinar, teletrabajar o compartir despues de un dia de playa.",
+      ctaText: "Solicitud de reserva",
     },
     amenities: {
-      title: "Donde empieza tu descanso",
-      subtitle: "Un lugar pensado para bajar el ritmo y sentirte cómodo desde el primer momento.",
-      ctaText: "Solicitud de Reserva",
+      title: "Edificio con seguridad y areas comunes",
+      subtitle:
+        "Piscina, quinchos, terrazas y estacionamiento privado para una estadia practica y segura.",
+      ctaText: "Solicitud de reserva",
     },
     interiorsLabel: "Ver el departamento completo",
     amenitiesLabel: "Explorar amenidades",
   },
   specs: {
-    sectionTitle: "Especificaciones",
-    sectionSubtitle: "Cada metro cuadrado ha sido diseñado para maximizar tu comodidad y la conexión con el entorno.",
+    sectionTitle: "Datos clave del departamento",
+    sectionSubtitle:
+      "Informacion concreta para decidir rapido si el alojamiento calza con tu viaje a La Serena.",
     items: [
-      { icon: "area", label: "79 m²", sublabel: "Superficie total" },
-      { icon: "bed", label: "2 Dormitorios, 2 Baños", sublabel: "Habitaciones" },
-      { icon: "terrace", label: "16.06 m²", sublabel: "Terraza" },
-      { icon: "car", label: "1 privado", sublabel: "Estacionamiento" },
+      { icon: "area", label: "79 m2 interiores", sublabel: "Superficie" },
+      { icon: "bed", label: "2 dormitorios, 2 baños", sublabel: "Distribucion" },
+      { icon: "terrace", label: "Terraza 16.06 m2", sublabel: "Vista al mar" },
+      { icon: "car", label: "1 privado incluido", sublabel: "Estacionamiento" },
     ],
   },
   availability: {
     title: "Disponibilidad",
-    subtitle: "Consulta las fechas que te interesan — te contactaremos a la brevedad.",
-    ctaText: "Solicitud de Reserva",
+    subtitle:
+      "Selecciona fechas, revisa una estimacion y envia una consulta directa para reservar.",
+    ctaText: "Solicitud de reserva",
     labels: {
       checkIn: "Llegada",
       checkInHint: "Fecha de entrada",
       checkOut: "Salida",
       checkOutHint: "Fecha de salida",
-      summary: "Resumen de Estancia",
+      summary: "Resumen de estadia",
       night: "noche",
       nights: "noches",
-      minStayWarning: "La estadía mínima es de 2 noches.",
+      minStayWarning: "La estadia minima es de 2 noches.",
       stayHours: "Check-in: 16:00 · Check-out: 12:00",
-    }
+    },
   },
   discover: {
-    sectionTitle: "Lo que vas a vivir aquí",
-    sectionSubtitle: "Explora un entorno privilegiado donde la brisa marina, la mejor gastronomía local y la magia del Valle del Elqui completan tu refugio.",
+    sectionTitle: "La Serena desde una ubicacion estrategica",
+    sectionSubtitle:
+      "El sector Cuatro Esquinas conecta playa, restaurantes, servicios y principales puntos turisticos sin depender de trayectos largos.",
     items: [
       {
         emoji: "🌊",
-        title: "Costa, sol y descanso",
-        description: "La Playa a pasos de tí, días de sol y noches con brisa costera. El lugar perfecto para desconectar y disfrutar La Serena. La vista hacia el mar te acompaña todo el día.",
+        title: "Playa a pasos",
+        description:
+          "Primera linea frente a Playa Cuatro Esquinas, ideal para caminatas, descanso familiar y atardeceres mirando el Pacifico.",
       },
       {
         emoji: "🍽️",
-        title: "Restaurantes que valen la pena",
-        description: "Desde un ceviche frente al mar en Bakulic hasta una cena tranquila en Tololo Beach. Comer bien acá es parte del viaje.",
+        title: "Restaurantes cercanos",
+        description:
+          "Avenida del Mar concentra restaurantes, cafeterias y terrazas para salir a comer sin alejarte del borde costero.",
       },
       {
-        emoji: "🌌",
-        title: "La magia del Valle del Elqui",
-        description: "A menos de una hora: cielos estrellados, viñas y una energía única. Ideal para una escapada de día o una noche distinta.",
+        emoji: "🏙️",
+        title: "Servicios y ciudad",
+        description:
+          "Acceso rapido a supermercados, Ruta 5, centros comerciales y al centro historico de La Serena.",
       },
       {
-        emoji: "🏛️",
-        title: "Paseos con historia",
-        description: "Recorre La Recova, la Plaza de Armas y sus calles coloniales. Un plan perfecto para una mañana tranquila.",
+        emoji: "🏜️",
+        title: "Base para recorrer",
+        description:
+          "Buen punto de partida para visitar el Faro Monumental, La Recova, Coquimbo o una escapada al Valle del Elqui.",
       },
     ],
   },
+  localHighlights: [
+    {
+      title: "Playa Cuatro Esquinas",
+      description: "Frente al edificio, sin necesidad de mover el auto para bajar a la playa.",
+    },
+    {
+      title: "Avenida del Mar",
+      description: "Restaurantes, cafeterias y paseos costeros a distancia caminable.",
+    },
+    {
+      title: "Faro Monumental",
+      description: "A pocos minutos por la costanera, uno de los puntos clasicos de La Serena.",
+    },
+    {
+      title: "Centro de La Serena",
+      description: "Conectado por Cuatro Esquinas y Ruta 5 para compras, servicios y paseos urbanos.",
+    },
+    {
+      title: "Supermercados y comercio",
+      description: "Servicios cercanos para estadias cortas, vacaciones familiares o arriendo por temporada.",
+    },
+  ],
   trust: {
-    sectionTitle: "Garantía de Confianza",
+    sectionTitle: "Confianza para reservar directo",
     items: [
       {
         icon: "building",
-        title: "Edificio Nuevo",
-        description: "Modernidad y seguridad recién entregada.",
+        title: "Edificio moderno",
+        description: "Accesos controlados, areas comunes cuidadas y buena conectividad.",
       },
       {
         icon: "user-check",
-        title: "Atención Directa",
-        description: "Trato personalizado y sin intermediarios.",
+        title: "Atencion directa",
+        description: "Contacto sin intermediarios para resolver dudas antes de reservar.",
       },
       {
         icon: "shield-check",
-        title: "Reserva Segura",
-        description: "Proceso transparente y respaldado.",
+        title: "Reserva revisada",
+        description: "Cada solicitud se valida antes de confirmar fechas y condiciones.",
       },
       {
         icon: "sparkles",
-        title: "Calidad Premium",
-        description: "Detalles cuidados para una estancia única.",
+        title: "Estadia cuidada",
+        description: "Equipamiento, limpieza y reglas claras para proteger tu descanso.",
+      },
+    ],
+  },
+  socialProof: {
+    sectionTitle: "Huespedes que buscan volver",
+    sectionSubtitle:
+      "Referencias editables para mostrar experiencias reales cuando se validen nuevas resenas.",
+    averageRating: "4.9",
+    reviewCount: "18",
+    testimonials: [
+      {
+        name: "Familia Silva",
+        context: "Vacaciones familiares",
+        quote:
+          "La vista desde la terraza fue lo mejor del viaje. El departamento estaba comodo, limpio y muy bien ubicado para ir a la playa con ninos.",
+        rating: 5,
+      },
+      {
+        name: "Carlos R.",
+        context: "Estadia de trabajo",
+        quote:
+          "Pude trabajar con buena conexion y despues caminar por Avenida del Mar. La ubicacion en Cuatro Esquinas es muy practica.",
+        rating: 5,
+      },
+      {
+        name: "Marcela y Jorge",
+        context: "Escapada en pareja",
+        quote:
+          "Reservar directo fue claro y rapido. El edificio se siente seguro y la vista del piso 11 realmente marca la diferencia.",
+        rating: 5,
       },
     ],
   },
   faq: {
-    sectionTitle: "Preguntas Frecuentes",
-    sectionSubtitle: "Resolvemos tus dudas para que tu única preocupación sea disfrutar del mar.",
+    sectionTitle: "Preguntas frecuentes",
+    sectionSubtitle:
+      "Resuelve las dudas principales antes de consultar disponibilidad o reservar.",
     items: [
       {
-        question: "¿Cómo es el proceso de reserva y pago?",
-        answer: "Es simple y seguro. Al enviar tu solicitud, verificamos disponibilidad y te contactamos. La reserva se garantiza mediante transferencia bancaria o pago online."
+        question: "¿Donde esta ubicado el departamento?",
+        answer:
+          "Esta en Avenida del Mar 3500, sector Cuatro Esquinas, La Serena. Es primera linea frente al mar, cercano a Playa Cuatro Esquinas, restaurantes, supermercados y accesos hacia el centro de la ciudad.",
       },
       {
-        question: "¿El departamento cuenta con estacionamiento y seguridad?",
-        answer: "Sí, dispones de un estacionamiento privado. El edificio cuenta con conserjería las 24 horas, cámaras de seguridad y acceso controlado para tu total tranquilidad."
+        question: "¿El departamento tiene vista al mar?",
+        answer:
+          "Si. Esta en el piso 11 y cuenta con terraza con vista panoramica al oceano Pacifico, una de las principales razones por las que los huespedes eligen este alojamiento.",
       },
       {
-        question: "¿Cuál es la política de cancelación?",
-        answer: "Entendemos que los planes pueden cambiar. Ofrecemos cancelación flexible hasta 7 días antes de tu llegada con reembolso total. Para cambios de fecha, siempre buscamos la mejor solución según disponibilidad."
+        question: "¿Como funciona el proceso de reserva y pago?",
+        answer:
+          "Envias una solicitud con tus fechas, cantidad de huespedes y motivo del viaje. Revisamos disponibilidad, confirmamos condiciones y luego coordinamos el pago o abono de reserva de forma directa.",
       },
       {
-        question: "¿Qué incluye exactamente el equipamiento?",
-        answer: "Todo lo necesario para una estancia premium: sábanas de 300 hilos, toallas, cocina full equipada, WiFi de alta velocidad y Smart TV."
+        question: "¿Cuenta con estacionamiento, WiFi y seguridad?",
+        answer:
+          "Si. Incluye un estacionamiento privado, WiFi de alta velocidad y edificio con conserjeria 24/7, camaras y acceso controlado.",
       },
       {
-        question: "¿Puedo coordinar un Check-in o Check-out flexible?",
-        answer: "Nuestro horario estándar es Check-in 16:00 y Check-out 12:00. Sin embargo, siempre que la disponibilidad lo permita, ofrecemos flexibilidad sin costo adicional para adaptarnos a tus horarios de viaje."
-      }
-    ]
+        question: "¿Sirve para arriendo por temporada o teletrabajo?",
+        answer:
+          "Si. Ademas de arriendo vacacional por noches, se pueden evaluar estadias prolongadas, viajes de trabajo y arriendos por temporada segun disponibilidad.",
+      },
+      {
+        question: "¿Cual es la estadia minima?",
+        answer:
+          "La estadia minima es de 2 noches. En fechas de alta demanda, feriados o temporada alta, pueden aplicarse condiciones especiales que se informan antes de confirmar.",
+      },
+    ],
   },
   footerCta: {
-    headline: "¿Lista tu próxima escapada?",
-    subheadline: "Te contactaremos luego de revisar tu solicitud.",
-    ctaText: "Reservar Ahora",
+    headline: "¿Listo para despertar frente al mar?",
+    subheadline:
+      "Consulta disponibilidad para tus fechas y recibe una respuesta directa antes de reservar.",
+    ctaText: "Consultar disponibilidad",
   },
 };

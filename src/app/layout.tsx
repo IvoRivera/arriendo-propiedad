@@ -1,5 +1,15 @@
 import type { Metadata, Viewport } from "next";
 import { Inter, Newsreader } from "next/font/google";
+import { Analytics } from "@/components/Analytics";
+import { ConfigProvider } from "@/components/providers/ConfigProvider";
+import {
+  OG_IMAGE,
+  SEO_DESCRIPTION,
+  SEO_KEYWORDS,
+  SEO_TITLE,
+  SITE_URL,
+} from "@/config/seo";
+import { Toaster } from "react-hot-toast";
 import "./globals.css";
 
 const inter = Inter({
@@ -22,9 +32,59 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: "Departamento Premium Frente al Mar | La Serena, Cuatro Esquinas",
-  description:
-    "Exclusivo departamento en La Serena (Cuatro Esquinas). 2 Dormitorios, terraza frontal al Pacífico, diseño premium. Reserva tu estadía.",
+  metadataBase: new URL(SITE_URL),
+  applicationName: "Departamento La Serena Frente al Mar",
+  title: {
+    default: SEO_TITLE,
+    template: "%s | Departamento La Serena",
+  },
+  description: SEO_DESCRIPTION,
+  keywords: SEO_KEYWORDS,
+  alternates: {
+    canonical: "/",
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+      "max-video-preview": -1,
+    },
+  },
+  openGraph: {
+    type: "website",
+    locale: "es_CL",
+    url: SITE_URL,
+    siteName: "Departamento frente al mar en La Serena",
+    title: SEO_TITLE,
+    description: SEO_DESCRIPTION,
+    images: [
+      {
+        url: OG_IMAGE,
+        width: 1200,
+        height: 630,
+        alt: "Vista al mar desde departamento en Cuatro Esquinas La Serena",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: SEO_TITLE,
+    description: SEO_DESCRIPTION,
+    images: [OG_IMAGE],
+  },
+  verification: {
+    google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION,
+  },
+  category: "travel",
+  formatDetection: {
+    telephone: true,
+    address: true,
+    email: false,
+  },
   icons: {
     icon: [
       { url: "/favicon.ico", sizes: "any" },
@@ -37,38 +97,18 @@ export const metadata: Metadata = {
   manifest: "/site.webmanifest",
 };
 
-import { ConfigProvider } from "@/components/providers/ConfigProvider";
-
-import { Toaster } from 'react-hot-toast';
-
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="es">
-      <head>
-        {/* Bug Guard: Previene que inyecciones Web3 de navegadores móviles crasheen la app */}
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              try {
-                if (typeof window !== 'undefined' && (window.ethereum === undefined || window.ethereum === null)) {
-                  window.ethereum = { selectedAdress: undefined };
-                }
-              } catch (e) {}
-            `,
-          }}
-        />
-      </head>
+    <html lang="es-CL">
       <body className={`${inter.variable} ${newsreader.variable} font-sans antialiased bg-[#faf7f2] text-[#2c2416]`}>
-        <ConfigProvider>
-          {children}
-        </ConfigProvider>
+        <ConfigProvider>{children}</ConfigProvider>
         <Toaster position="bottom-right" />
+        <Analytics />
       </body>
     </html>
   );
 }
-

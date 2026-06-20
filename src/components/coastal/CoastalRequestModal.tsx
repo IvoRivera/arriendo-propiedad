@@ -15,6 +15,7 @@ import { toast } from "react-hot-toast";
 import { SITE_CONTENT } from "@/config/site-content";
 import { getPriceForDate, type SeasonalPricing } from "@/lib/pricingClient";
 import { isValidStay, calculateNights, isRangeBlocked } from "@/lib/dateUtils";
+import { trackConversion } from "@/lib/analytics";
 
 // Simplified country logic - only used for reference if needed in future
 const CHILE_PREFIX = "+56";
@@ -247,7 +248,7 @@ export const CoastalRequestModal: React.FC<CoastalRequestModalProps> = ({
     const timeoutId = setTimeout(() => controller.abort(), 10000);
 
     try {
-      const res = await fetch(`/api/public/availability?t=${Date.now()}`, {
+      const res = await fetch("/api/public/availability", {
         signal: controller.signal
       });
       clearTimeout(timeoutId);
@@ -398,7 +399,7 @@ export const CoastalRequestModal: React.FC<CoastalRequestModalProps> = ({
           throw new Error(SITE_CONTENT.availability.labels.minStayWarning);
         }
 
-        const resAvail = await fetch(`/api/public/availability?t=${Date.now()}`);
+        const resAvail = await fetch("/api/public/availability");
         const availability = await resAvail.json();
 
         if (availability.success && availability.data) {
@@ -449,6 +450,10 @@ export const CoastalRequestModal: React.FC<CoastalRequestModalProps> = ({
       }
 
       setIsSubmitted(true);
+      trackConversion("booking_request_submit", {
+        booking_mode: intentMode,
+        has_price: Boolean(calculatedPricing?.totalPrice),
+      });
       toast.success(intentMode === 'standard' ? "¡Solicitud enviada!" : "¡Propuesta solicitada!");
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "Error desconocido";
@@ -475,6 +480,7 @@ export const CoastalRequestModal: React.FC<CoastalRequestModalProps> = ({
       <div className="relative w-full max-w-2xl bg-[#faf7f2] sm:rounded-[40px] shadow-2xl min-h-full sm:min-h-0 flex flex-col z-10 animate-in fade-in slide-in-from-bottom-4 duration-300">
         <button
           onClick={onClose}
+          aria-label="Cerrar formulario de reserva"
           className="absolute top-4 right-4 sm:top-8 sm:right-8 text-[#6b5d4f] hover:text-[#2c2416] transition-colors p-3 z-20 rounded-full hover:bg-black/5"
         >
           <X className="w-6 h-6" />
