@@ -504,7 +504,7 @@ export const CoastalRequestModal: React.FC<CoastalRequestModalProps> = ({
                   {intentMode === 'standard' ? 'Solicitar Estadía' : 'Propuesta Personalizada'}
                 </h3>
                 <p className="text-[#9a8a78] text-[10px] uppercase tracking-luxury mt-2 font-bold font-sans-luxury">
-                  {intentMode === 'standard' ? 'Completa tus datos para postular' : 'Cuéntanos sobre tu estadía ideal'}
+                  {intentMode === 'standard' ? 'Completa tus datos para la reserva' : 'Cuéntanos sobre tu estadía ideal'}
                 </p>
               </div>
 
